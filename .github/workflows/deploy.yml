@@ -28,12 +28,13 @@ jobs:
         run: |
           pushd functions/function-executor
           ../../mvnw -B -V package -P ${{ matrix.variant }}
-      - id: Deploy
-        uses: google-github-actions/deploy-cloud-functions@main
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
         with:
-          credentials: ${{ secrets.GCP_CREDENTIALS }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          name: ${{ matrix.variant }}
-          runtime: java11
-          entry_point: gwc.GFunctionExecutor
-          source_dir: functions/function-executor/target/deployment
+          service_account_key: ${{ secrets.GCP_CREDENTIALS }}
+          export_default_credentials: true
+      - id: Deploy
+        run: |
+          gcloud functions deploy ${{ matrix.variant }} --entry-point gwc.GFunctionExecutor --runtime java11 --trigger-http --memory 2048MB --allow-unauthenticated --source functions/function-executor/target/deployment --region europe-west1
+
