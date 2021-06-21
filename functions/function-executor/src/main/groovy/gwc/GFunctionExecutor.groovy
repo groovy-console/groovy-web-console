@@ -2,6 +2,8 @@ package gwc
 
 import com.google.cloud.functions.*
 import java.util.logging.*
+
+import gwc.spock.ScriptRunner
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.control.messages.*
 import groovy.json.*
@@ -18,12 +20,12 @@ class GFunctionExecutor implements HttpFunction {
     void service(HttpRequest request, HttpResponse response) {
         response.appendHeader('Access-Control-Allow-Origin', '*')
         
-        if (request.getMethod() == 'OPTIONS') {
+        if (request.method == 'OPTIONS') {
             response.appendHeader('Access-Control-Allow-Methods', 'POST')
             response.appendHeader('Access-Control-Allow-Headers', 'Content-Type')
             response.appendHeader('Access-Control-Max-Age', '3600')
         } else {
-            def inputScriptOrClass = new JsonSlurper().parse(request.reader).code
+            String inputScriptOrClass = new JsonSlurper().parse(request.reader).code
             log.info("Input code:\n---\n${inputScriptOrClass}\n---\n")
 
             // Setup a metaclass registry listener
@@ -44,7 +46,12 @@ class GFunctionExecutor implements HttpFunction {
             System.setOut(outPrintStream)
             def result = null
             try {
-                result = shell.evaluate(inputScriptOrClass)
+                if (inputScriptOrClass =~ "extends\\s+(?:spock\\.lang\\.)?Specification") {
+                    // TODO revisit colored output
+                    result = new ScriptRunner(disableColors: true).run(inputScriptOrClass)
+                } else {
+                    result = shell.evaluate(inputScriptOrClass)
+                }
             } catch (MultipleCompilationErrorsException e) {
                 e.errorCollector.errors.each { err ->
                     switch (err) {
@@ -82,11 +89,13 @@ class GFunctionExecutor implements HttpFunction {
             log.info("Error:\n---\n${errorOutput}\n---\n")
 
             response.contentType = 'application/json'
-            response.writer << JsonOutput.toJson(
-                out: outOutput,
-                err: errorOutput,
-                result: result
-            )
+            response.writer.withCloseable {
+                it << JsonOutput.toJson(
+                    out: outOutput,
+                    err: errorOutput,
+                    result: result
+                )
+            }
         }
     }
 
