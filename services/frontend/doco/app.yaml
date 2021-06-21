@@ -1,0 +1,19 @@
+runtime: java11
+entrypoint: ls
+service: doco
+
+handlers:
+- url: /$
+  static_dir: static/index.html
+- url: /(.+)$
+  static_files: static/\1/index.html
+  upload: static/.+/index.html
+- url: /(.+)
+  static_files: static/\1
+  upload: static/(.*)
+
+# - url: /(.+)/(.+)
+#   static_files: static/\1/\2
+#   upload: static/(.*)/(.*)
+# - url: /
+#   static_dir: static
