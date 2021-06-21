@@ -12,6 +12,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
     <groovy.version>3.0.8</groovy.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencyManagement>
@@ -44,6 +45,13 @@
       <artifactId>groovy-all</artifactId>
       <version>${groovy.version}</version>
       <type>pom</type>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.groovy</groupId>
+          <artifactId>groovy-test-testng</artifactId>
+          <!-- Exclude testng for now, as this causes surefire to ignore junit5 platform tests -->
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.spockframework</groupId>
@@ -77,6 +85,11 @@
             <exclude>.google/</exclude>
           </excludes>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M5</version>
       </plugin>
       <plugin>
         <groupId>com.google.cloud.functions</groupId>
