@@ -105,11 +105,10 @@
         <version>1.12.1</version>
         <executions>
           <execution>
-            <id>groovy-compile</id>
-            <phase>process-resources</phase>
             <goals>
               <goal>addSources</goal>
               <goal>compile</goal>
+              <goal>compileTests</goal>
             </goals>
           </execution>
         </executions>
