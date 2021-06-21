@@ -11,18 +11,19 @@
   <properties>
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
+    <groovy.version>3.0.8</groovy.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>com.google.cloud.functions</groupId>
       <artifactId>functions-framework-api</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.4</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>3.0.6</version>
+      <version>${groovy.version}</version>
       <type>pom</type>
     </dependency>
     <dependency>
@@ -47,7 +48,7 @@
       <plugin>
         <groupId>com.google.cloud.functions</groupId>
         <artifactId>function-maven-plugin</artifactId>
-        <version>0.9.4</version>
+        <version>0.9.7</version>
         <configuration>
           <functionTarget>gwc.GFunctionExecutor</functionTarget>
         </configuration>
@@ -55,7 +56,7 @@
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
-        <version>1.9.0</version>
+        <version>1.12.1</version>
         <executions>
           <execution>
             <id>groovy-compile</id>
@@ -66,15 +67,6 @@
             </goals>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>3.0.5</version>
-            <scope>runtime</scope>
-            <type>pom</type>
-          </dependency>
-        </dependencies>
       </plugin>
     </plugins>
   </build>
