@@ -12,15 +12,103 @@
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
     <groovy.version>3.0.8</groovy.version>
+    <spock.version>2.0-groovy-3.0</spock.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+
+  <profiles>
+    <profile>
+      <id>groovy_3_0</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <groovy.version>3.0.8</groovy.version>
+        <spock.version>2.0-groovy-3.0</spock.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.codehaus.groovy</groupId>
+          <artifactId>groovy-all</artifactId>
+          <version>${groovy.version}</version>
+          <type>pom</type>
+          <exclusions>
+            <exclusion>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-test-testng</artifactId>
+              <!-- Exclude testng for now, as this causes surefire to ignore junit5 platform tests -->
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>groovy_2_5</id>
+      <properties>
+        <groovy.version>2.5.14</groovy.version>
+        <spock.version>2.0-groovy-2.5</spock.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.codehaus.groovy</groupId>
+          <artifactId>groovy-all</artifactId>
+          <version>${groovy.version}</version>
+          <type>pom</type>
+          <exclusions>
+            <exclusion>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-test-testng</artifactId>
+              <!-- Exclude testng for now, as this causes surefire to ignore junit5 platform tests -->
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>groovy_4_0_alpha3</id>
+      <properties>
+        <groovy.version>4.0.0-alpha-3</groovy.version>
+        <spock.version>2.0-groovy-3.0</spock.version>
+        <!-- gmavenplus doesn't allow the setting of system properties to disable the spock version check  -->
+        <skipTests>true</skipTests>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.groovy</groupId>
+          <artifactId>groovy-all</artifactId>
+          <version>${groovy.version}</version>
+          <type>pom</type>
+          <exclusions>
+            <exclusion>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-test-testng</artifactId>
+              <!-- Exclude testng for now, as this causes surefire to ignore junit5 platform tests -->
+            </exclusion>
+          </exclusions>
+        </dependency>
+
+        <dependency>
+          <groupId>org.spockframework</groupId>
+          <artifactId>spock-core</artifactId>
+          <scope>compile</scope>
+          <exclusions>
+            <exclusion>
+              <!-- need to exclude here as groovy changed their groupId-->
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.spockframework</groupId>
         <artifactId>spock-bom</artifactId>
-        <version>2.0-groovy-3.0</version>
+        <version>${spock.version}</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -41,19 +129,6 @@
       <version>1.0.4</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.groovy</groupId>
-      <artifactId>groovy-all</artifactId>
-      <version>${groovy.version}</version>
-      <type>pom</type>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.groovy</groupId>
-          <artifactId>groovy-test-testng</artifactId>
-          <!-- Exclude testng for now, as this causes surefire to ignore junit5 platform tests -->
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.spockframework</groupId>
       <artifactId>spock-core</artifactId>
       <scope>compile</scope>
@@ -71,6 +146,7 @@
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
       <version>21.0.1</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
@@ -111,11 +187,66 @@
         <version>1.12.1</version>
         <executions>
           <execution>
+            <id>default</id>
             <goals>
               <goal>addSources</goal>
               <goal>compile</goal>
               <goal>compileTests</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!--   https://cloud.google.com/functions/docs/concepts/java-deploy?hl=en#build_and_deploy_a_thin_jar_with_external_dependencies   -->
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>libs/</classpathPrefix>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.2</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <overWriteReleases>false</overWriteReleases>
+              <includeScope>runtime</includeScope>
+              <outputDirectory>${project.build.directory}/libs</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>package</phase>
+            <goals><goal>copy-resources</goal></goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/deployment</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.build.directory}</directory>
+                  <includes>
+                    <include>${project.build.finalName}.jar</include>
+                    <include>libs/**</include>
+                  </includes>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>
+            </configuration>
           </execution>
         </executions>
       </plugin>

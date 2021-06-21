@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: ['groovy_3_0', 'groovy_2_5'] # disable 'groovy_4_0_alpha3' for now
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache Maven wrapper and dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+          key: deploy-${{ runner.os }}-variant-${{ matrix.variant }}-mvn--${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            deploy-${{ runner.os }}-variant-${{ matrix.variant }}-
+            deploy-${{ runner.os }}-
+      - name: 'Set up JDK'
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: build jar
+        run: |
+          pushd functions/function-executor
+          ../../mvnw -B -V package -P ${{ matrix.variant }}
+      - id: Deploy
+        uses: google-github-actions/deploy-cloud-functions@main
+        with:
+          credentials: ${{ secrets.GCP_CREDENTIALS }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          name: ${{ matrix.variant }}
+          runtime: java11
+          entry_point: gwc.GFunctionExecutor
+          source_directory: functions/function-executor/target/deployment
