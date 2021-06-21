@@ -36,4 +36,4 @@ jobs:
           name: ${{ matrix.variant }}
           runtime: java11
           entry_point: gwc.GFunctionExecutor
-          source_directory: functions/function-executor/target/deployment
+          source_dir: functions/function-executor/target/deployment
