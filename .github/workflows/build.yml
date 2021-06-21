@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: ['groovy_3_0', 'groovy_2_5'] # disable 'groovy_4_0_alpha3' for now
     steps:
       - uses: actions/checkout@v2
       - name: Cache Maven wrapper and dependencies
@@ -15,8 +18,9 @@ jobs:
         with:
           path: |
             ~/.m2/repository
-          key: test-${{ runner.os }}-mvn-${{ hashFiles('**/pom.xml') }}
+          key: test-${{ runner.os }}}-variant-${{ matrix.variant }}-mvn-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
+            test-${{ runner.os }}}-variant-${{ matrix.variant }}-
             test-${{ runner.os }}-
       - name: 'Set up JDK'
         uses: actions/setup-java@v1
@@ -25,4 +29,4 @@ jobs:
       - name: test
         run: |
           pushd functions/function-executor
-          ../../mvnw -B -V test
+          ../../mvnw -B -V package -P ${{ matrix.variant }}
