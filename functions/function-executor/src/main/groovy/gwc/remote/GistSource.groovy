@@ -33,7 +33,7 @@ class GistSource implements RemoteSource {
     }
   }
 
-  private void findGroovyContent(String gistInfo) {
+  private String findGroovyContent(String gistInfo) {
     def gistResponse = new JsonSlurper().parseText(gistInfo)
     // https://docs.github.com/en/rest/reference/gists#truncation
     // The Gist API provides up to one megabyte of content for each file in the gist.
