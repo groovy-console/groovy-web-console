@@ -33,7 +33,12 @@ function updateOutput() {
         outputCM.setValue(executionResult.out || "");
     } else if (tabResult.parentNode.classList.contains("is-active")) {
         if (executionResult.result !== null && executionResult.result !== undefined) {
-            outputCM.setValue(JSON.stringify(executionResult.result, null, 2));
+            console.log("Type of result: ", typeof executionResult.result);
+            if ((typeof executionResult.result) === 'string') {
+                outputCM.setValue(executionResult.result);
+            } else {
+                outputCM.setValue(JSON.stringify(executionResult.result, null, 2));
+            }
         } else {
             outputCM.setValue("null");
         }
