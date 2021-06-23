@@ -17,3 +17,18 @@ export async function loadGist(gistId) {
     }
     throw new Error("Could not find a non-truncated groovy script");
 }
+
+export async function loadGithubFile(githubFile) {
+    const raw = githubFile.replace(/\/(blob|raw)\//, "/")
+
+    if(!(/\w+\/w+\/[a-f0-9]{40}\/[\w/]+/.exec(githubFile))) {
+        throw new Error("Only canonical links to resources are allowed, you can get them by pressing 'y' on github webpage.")
+    }
+
+    const headers = new Headers();
+    headers.append("Accept", "*/*");
+    const response = await fetch(`https://rawcdn.githack.com/${raw}`, {
+        headers
+    });
+    return await response.text()
+}

@@ -125,4 +125,8 @@ if (queryParams.has("code")) {
     const {loadGist} = await import("./github.js");
     const gistCode = await loadGist(queryParams.get("gist"));
     codeCM.setValue(gistCode);
+}else if(queryParams.has("github")) {
+    const {loadGithubFile} = await import("./github.js");
+    const githubCode = await loadGithubFile(queryParams.get("github"));
+    codeCM.setValue(githubCode);
 }
