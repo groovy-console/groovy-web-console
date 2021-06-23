@@ -117,3 +117,10 @@ executeButton.onclick = async function(event) {
     }
     updateOutput();
 };
+
+const queryParams = new URLSearchParams(location.search)
+if(queryParams.has("gist")) {
+    const {loadGist} = await import("./github.js");
+    const gistCode = await loadGist(queryParams.get("gist"));
+    codeCM.setValue(gistCode);
+}
