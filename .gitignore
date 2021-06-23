@@ -28,3 +28,7 @@ hs_err_pid*
 
 # maven
 target/
+
+# javascript
+node_modules/
+dist/
