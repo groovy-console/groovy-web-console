@@ -119,7 +119,9 @@ executeButton.onclick = async function(event) {
 };
 
 const queryParams = new URLSearchParams(location.search)
-if(queryParams.has("gist")) {
+if (queryParams.has("code")) {
+    codeCM.setValue(atob(queryParams.get("code")))
+} else if(queryParams.has("gist")) {
     const {loadGist} = await import("./github.js");
     const gistCode = await loadGist(queryParams.get("gist"));
     codeCM.setValue(gistCode);
