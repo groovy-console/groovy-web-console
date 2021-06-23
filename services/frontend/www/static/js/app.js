@@ -19,7 +19,7 @@ const outputCM = CodeMirror.fromTextArea(outputArea, {
     lineWrapping: true,
 });
 
-var executionResult = { out: "", err: "", result: null };
+let executionResult = {out: "", err: "", result: null};
 
 function clearOutput() {
     executionResult.out = "";
@@ -92,15 +92,15 @@ executeButton.onclick = async function(event) {
           tabError.click();
 
           // check if it's a syntax error
-          var lineColInfo = executionResult.err.match(/.*@ line (\d+), column (\d+).$/);
+          const lineColInfo = executionResult.err.match(/.*@ line (\d+), column (\d+).$/);
           if (lineColInfo && lineColInfo.length >= 3) {
             codeCM.setCursor({line: parseInt(lineColInfo[1]) - 1, ch: parseInt(lineColInfo[2]) - 1});
             codeCM.focus();
           } else { // check if it's an exception
-            var exceptionLines = executionResult.err.split('\n');
-            var scriptLineFound = exceptionLines.find(line => line.match(/\tat Script1\.run\(Script1\.groovy:(\d+)\)$/));
+            const exceptionLines = executionResult.err.split('\n');
+            const scriptLineFound = exceptionLines.find(line => line.match(/\tat Script1\.run\(Script1\.groovy:(\d+)\)$/));
             if (scriptLineFound) {
-              var lineNumber = scriptLineFound.slice(scriptLineFound.indexOf(':') + 1, scriptLineFound.length - 1);
+              const lineNumber = scriptLineFound.slice(scriptLineFound.indexOf(':') + 1, scriptLineFound.length - 1);
               codeCM.setCursor({line: parseInt(lineNumber) - 1, ch: 0});
               codeCM.focus();
             }
