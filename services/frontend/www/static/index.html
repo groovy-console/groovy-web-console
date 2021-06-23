@@ -131,6 +131,45 @@
         </div>
       </section>
 
-<script type="module" src="js/app.js"></script>
+
+    <section class="section">
+        <h1 class="title is-1">Help</h1>
+        <h2 class="title is-2">Sharing scripts</h2>
+        <div class="block">
+            <h3 class="title is-3">Sharing directly in the URL</h3>
+            <p>
+                You can encode the script as Base64 and then, simply append it to the url via <code>&amp;code=&lt;code&gt;</code>.
+                This is best used for shorter scripts.
+            </p>
+            <p>
+                <a href="//?code=aW1wb3J0IHNwb2NrLmxhbmcuKgoKY2xhc3MgQVNwZWMgZXh0ZW5kcyBTcGVjaWZpY2F0aW9uIHsKICBkZWYgImhlbGxvIHdvcmxkIigpIHsKICAgIGV4cGVjdDogdHJ1ZQogIH0KfQo=">Example</a>
+            </p>
+        </div>
+        <div class="block">
+            <h3 class="title is-3">Sharing as gist</h3>
+            <p>
+                You can save your code on <a href="https://gist.github.com">https://gist.github.com</a> and then share by appending the gistId in the url<code>&amp;gist=&lt;gistid&gt;</code>.
+                Important: that file needs to have the <code>.groovy</code> extension, otherwise it won't be picked up.
+            </p>
+            <p>
+                <a href="//?gist=58f61cf36e112ff654041eeec8d11a98">Example</a>
+            </p>
+        </div>
+        <div class="block">
+            <h3 class="title is-3">Sharing from a repository</h3>
+            <p>
+                You can share a file from a github repository via its canonical url via this parameter <code>&amp;github=&lt;canonical-path-to-file&gt;</code>.
+                You can get the <code>canonical-path-to-file</code> by going to the file on the github frontend, then press <code>y</code> now your url should include the commit hash instead of the branch name in the url,
+                then omit the <code>https://github.com/</code> and copy the rest.
+            </p>
+            <p>
+                <a href="//?github=spockframework/spock/blob/6d2e6cc6475346f2fef256124e37f70514f0b98e/spock-specs/src/test/groovy/org/spockframework/docs/datadriven/v7/MathSpec.groovy">Example</a>
+            </p>
+        </div>
+    </section>
+
+
+
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>

@@ -19,6 +19,9 @@ export async function loadGist(gistId) {
 }
 
 export async function loadGithubFile(githubFile) {
+    if (githubFile.indexOf("http") === 0) {
+        throw new Error("No absolute URLs are allowed.")
+    }
     const raw = githubFile.replace(/\/(blob|raw)\//, "/")
 
     if(!(/\w+\/w+\/[a-f0-9]{40}\/[\w/]+/.exec(githubFile))) {
