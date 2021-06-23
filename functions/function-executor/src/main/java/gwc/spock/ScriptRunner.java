@@ -36,7 +36,7 @@ public class ScriptRunner {
 
   private boolean disableColors = false;
 
-  public String run(@Language(value = "Groovy", prefix = "import spock.lang.*\n") String scriptText) {
+  public String run(@Language(value = "Groovy", suffix = "\nimport spock.lang.*") String scriptText) {
     scriptText = addSpockLangStarImport(scriptText);
     ScriptCompiler compiler = new ScriptCompiler();
     List<Class> classes = compiler.compile(scriptText);
@@ -64,7 +64,7 @@ public class ScriptRunner {
   }
 
   private String addSpockLangStarImport(String text) {
-    return "import spock.lang.*\n" + text;
+    return text + "\nimport spock.lang.*";
   }
 
   private List<Class> findTestClasses(List<Class> classes) {

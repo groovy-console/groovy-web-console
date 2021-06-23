@@ -127,4 +127,25 @@ class ASpec extends Specification {
          └─ maximum of 4 and 2 is 4 ✔
 '''
   }
+
+
+  def "works with package declaration"() {
+    when:
+    def result = scriptRunner.run ('''
+package acme.foo
+
+class ASpec extends Specification {
+  def "hello world"() {
+    expect: true
+  }
+}
+''').normalize()
+    then:
+    result == '''\
+╷
+└─ Spock ✔
+   └─ ASpec ✔
+      └─ hello world ✔
+'''
+  }
 }
