@@ -24,7 +24,7 @@ export async function loadGithubFile(githubFile) {
     }
     const raw = githubFile.replace(/\/(blob|raw)\//, "/")
 
-    if(!(/\w+\/w+\/[a-f0-9]{40}\/[\w/]+/.exec(githubFile))) {
+    if(!(/\w+\/\w+\/[a-f0-9]{40}\/[\w/]+/.exec(raw))) {
         throw new Error("Only canonical links to resources are allowed, you can get them by pressing 'y' on github webpage.")
     }
 
