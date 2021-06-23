@@ -44,7 +44,7 @@ function updateOutput() {
         }
     } else if (tabError.parentNode.classList.contains("is-active")) {
         outputCM.setValue(executionResult.err || "");
-    } 
+    }
 }
 
 const tabOutput = document.getElementById("tabOutput");
@@ -77,14 +77,14 @@ executeButton.onclick = async function(event) {
 
     clearOutput();
     const groovyVersion = document.getElementById("version").value;
-    const response = await fetch(`https://europe-west1-gwc-experiment.cloudfunctions.net/${groovyVersion}`, { 
+    const response = await fetch(`https://europe-west1-gwc-experiment.cloudfunctions.net/${groovyVersion}`, {
         method: 'POST',
         headers: headers,
         body: JSON.stringify({
             code: codeCM.getValue()
         })
     });
-    
+
     executionResult = { out: "", err: "", result: null };
     if (response.ok) {
         executionResult = await response.json();
@@ -118,9 +118,22 @@ executeButton.onclick = async function(event) {
     updateOutput();
 };
 
+const save = document.getElementById("save")
+save.onclick = async function () {
+    const {compressToBase64} = await import("./compression.js");
+    const editorContent = codeCM.getValue();
+    const codez = compressToBase64(editorContent);
+    console.log("compressed", codez);
+}
+
 const queryParams = new URLSearchParams(location.search)
 if (queryParams.has("code")) {
-    codeCM.setValue(atob(queryParams.get("code")))
+    const {decodeUrlSafe} = await import("./compression.js");
+    codeCM.setValue(decodeUrlSafe(queryParams.get("code")))
+}else if (queryParams.has("codez")) {
+    const {decompressFromBase64} = await import("./compression.js");
+    const code = decompressFromBase64(queryParams.get("codez"));
+    codeCM.setValue(code);
 } else if(queryParams.has("gist")) {
     const {loadGist} = await import("./github.js");
     const gistCode = await loadGist(queryParams.get("gist"));
