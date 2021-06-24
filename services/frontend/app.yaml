@@ -2,19 +2,11 @@ runtime: java11
 entrypoint: ls
 
 handlers:
+  - url: /
+    static_files: index.html
+    upload: index.html
 
-- url: /
-  static_files: dist/index.html
-  upload: dist/index.html
+  - url: /(.+)
+    static_files: \1
+    upload: (.*)
 
-- url: /favicon.ico
-  static_files: dist/favicon.ico
-  upload: dist/favicon.ico
-
-- url: /js/(.*\.js)
-  static_files: dist/js/\1
-  upload: dist/js/(.*\.js)
-
-- url: /css/(.*\.css)
-  static_files: dist/css/\1
-  upload: dist/css/(.*\.css)
