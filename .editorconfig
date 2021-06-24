@@ -10,6 +10,6 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
-[*.{java,groovy,gradle,xml,js,ts}]
+[*.{java,json,groovy,gradle,xml,js,ts}]
 indent_style = space
 indent_size = 2
