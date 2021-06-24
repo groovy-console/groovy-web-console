@@ -2,8 +2,8 @@ name: Build Frontend
 
 on:
   push:
-    branches:
-      - main
+    branches-ignore:
+      - gh-pages
     paths:
       - services/frontend/**
 

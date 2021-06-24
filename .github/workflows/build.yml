@@ -2,8 +2,8 @@ name: Build and Test
 
 on:
   push:
-    branches:
-      - main
+    branches-ignore:
+      - gh-pages
     paths:
       - functions/**
 
