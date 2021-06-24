@@ -1,9 +1,10 @@
 name: Build and Test
 
 on:
+  pull_request:
   push:
-    branches:
-      - main
+    branches-ignore:
+      - gh-pages
     paths:
       - functions/**
 

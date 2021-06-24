@@ -1,2 +1,2 @@
-gcloud app deploy www/ --appyaml=app.yaml
+gcloud app deploy dist/ --appyaml=app.yaml
 

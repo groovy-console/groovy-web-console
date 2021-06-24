@@ -1,0 +1,22 @@
+name: Build Frontend
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - gh-pages
+    paths:
+      - services/frontend/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+      - run: cd services/frontend && npm ci
+      - run: cd services/frontend && npm run build
+      - run: cd services/frontend && npm run lint

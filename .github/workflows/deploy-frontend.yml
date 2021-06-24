@@ -8,14 +8,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+      - run: cd services/frontend && npm ci
+      - run: cd services/frontend && npm run build
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@master
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_CREDENTIALS }}
           export_default_credentials: true
-      - id: Deploy
-        run: |
-          pushd services/frontend
-          ./deploy.sh
+      - run: cd services/frontend && ./deploy.sh
 

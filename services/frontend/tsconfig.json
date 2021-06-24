@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "Node",
+    "noImplicitAny": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "ES6",
+  }
+}
