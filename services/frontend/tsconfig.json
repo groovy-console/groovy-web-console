@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
-    "noImplicitAny": true,
-    "target": "ES6",
-    "module": "ES6",
+    "esModuleInterop": true,
+    "module": "esnext",
     "moduleResolution": "Node",
-    "sourceMap": true
+    "noImplicitAny": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "ES6",
   }
 }

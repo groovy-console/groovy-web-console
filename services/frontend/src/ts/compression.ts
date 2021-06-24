@@ -1,5 +1,3 @@
-import * as pako from 'pako'
-
 export function encodeUrlSafe(bytes:string) {
     return btoa(bytes)
         .replace(/\+/g, '-') // Convert '+' to '-'
@@ -28,10 +26,12 @@ function uint8ArrayToString (u8:string) { // TODO check whether to:string works 
     return String.fromCharCode.apply(null, u8);
 }
 
-export function compressToBase64(value:string) {
+export async function compressToBase64(value:string) {
+    const pako = await import(/* webpackChunkName: "pako" */ 'pako')
     return encodeUrlSafe(uint8ArrayToString(pako.deflate(value, { to: 'string' })))
 }
 
-export function decompressFromBase64(value:string) {
+export async function decompressFromBase64(value:string) {
+    const pako = await import(/* webpackChunkName: "pako" */ 'pako')
     return pako.inflate(str2UInt8Array(decodeUrlSafe(value)), {to: 'string'});
 }
