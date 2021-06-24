@@ -17,6 +17,5 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: '14.x'
-      - run: pushd services/frontend
-      - run: npm ci
-      - run: npm run build
+      - run: cd services/frontend && npm ci
+      - run: cd services/frontend && npm run build
