@@ -1,6 +1,6 @@
 import {ExecutionResult} from "./types";
 import {fromEvent} from "rxjs";
-import {concatMap, debounceTime, map, tap} from "rxjs/operators";
+import {concatMap, map, tap, throttleTime} from "rxjs/operators";
 import {executeScript} from "./groovy-console";
 import {compressToBase64, decodeUrlSafe, decompressFromBase64} from "./compression";
 import {loadGist, loadGithubFile} from "./github";
@@ -109,17 +109,23 @@ export function initFromUrl() {
 export function initView() {
     fromEvent(executeButton, 'click')
         .pipe(
-            tap(() => clearOutput()),
+            throttleTime(500),
+            tap(() => {
+                executeButton.classList.add("is-loading")
+                clearOutput()
+            }),
             concatMap(() => executeScript(version.value, codeCM.getValue())),
             tap(result => handleExecutionResult(result))
         )
         .subscribe({
             next: result => {
                 executionResult = result;
+                executeButton.classList.remove("is-loading")
                 updateOutput()
             },
             error: err => {
                 console.log("Response NOT OK", err);
+                executeButton.classList.remove("is-loading")
                 executionResult = {
                     out: "",
                     err: "An error occured while sending the Groovy script for execution",
@@ -131,7 +137,7 @@ export function initView() {
 
     fromEvent(save, 'click')
         .pipe(
-            debounceTime(1000),
+            throttleTime(500),
             map(() => codeCM.getValue()),
             concatMap(editorContent => compressToBase64(editorContent))
         ).subscribe(codez => {
