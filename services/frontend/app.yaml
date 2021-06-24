@@ -7,6 +7,14 @@ handlers:
   static_files: dist/index.html
   upload: dist/index.html
 
-- url: /(.*)
-  static_files: dist/\1
-  upload: dist/(.*)
+- url: /favicon.ico
+  static_files: dist/favicon.ico
+  upload: dist/favicon.ico
+
+- url: /js/(.*\.js)
+  static_files: dist/js/\1
+  upload: dist/js/(.*\.js)
+
+- url: /css/(.*\.css)
+  static_files: dist/css/\1
+  upload: dist/css/(.*\.css)
