@@ -1,6 +1,6 @@
 import {ExecutionResult} from "./types";
 import {fromEvent} from "rxjs";
-import {concatMap, map, tap, throttleTime} from "rxjs/operators";
+import {concatMap, delay, map, tap, throttleTime} from "rxjs/operators";
 import {executeScript} from "./groovy-console";
 import {compressToBase64, decodeUrlSafe, decompressFromBase64} from "./compression";
 import {loadGist, loadGithubFile} from "./github";
@@ -10,7 +10,9 @@ const codeArea = document.getElementById('code') as HTMLTextAreaElement;
 const outputArea = document.getElementById("output") as HTMLTextAreaElement;
 const version = document.getElementById("version") as HTMLSelectElement;
 const executeButton = document.getElementById("execute");
-const save = document.getElementById("save")
+const save = document.getElementById("save");
+const shareLink = document.getElementById("shareLink") as HTMLInputElement;
+const shareLinkTooltip = document.getElementById("shareLinkTooltip");
 const tabOutput = document.getElementById("tabOutput");
 const tabResult = document.getElementById("tabResult");
 const tabError = document.getElementById("tabError");
@@ -111,8 +113,8 @@ export function initView() {
         .pipe(
             throttleTime(500),
             tap(() => {
-                executeButton.classList.add("is-loading")
-                clearOutput()
+                executeButton.classList.add("is-loading");
+                clearOutput();
             }),
             concatMap(() => executeScript(version.value, codeCM.getValue())),
             tap(result => handleExecutionResult(result))
@@ -120,18 +122,18 @@ export function initView() {
         .subscribe({
             next: result => {
                 executionResult = result;
-                executeButton.classList.remove("is-loading")
-                updateOutput()
+                executeButton.classList.remove("is-loading");
+                updateOutput();
             },
             error: err => {
                 console.log("Response NOT OK", err);
-                executeButton.classList.remove("is-loading")
+                executeButton.classList.remove("is-loading");
                 executionResult = {
                     out: "",
                     err: "An error occured while sending the Groovy script for execution",
                     result: null
                 };
-                updateOutput()
+                updateOutput();
             }
         });
 
@@ -141,8 +143,21 @@ export function initView() {
             map(() => codeCM.getValue()),
             concatMap(editorContent => compressToBase64(editorContent))
         ).subscribe(codez => {
-        console.log("compressed", codez)
+        shareLink.value = `${location.origin + location.pathname}?codez=${codez}`;
+        (shareLink.parentNode.parentNode as HTMLElement).classList.remove("is-hidden");
     });
+
+    fromEvent(shareLink, 'click')
+        .pipe(
+            throttleTime(500),
+            tap(() => {
+                shareLink.focus();
+                shareLink.select();
+                document.execCommand("copy")}),
+            tap(() => shareLinkTooltip.classList.add("has-tooltip-active")),
+            delay(500),
+            tap(() => shareLinkTooltip.classList.remove("has-tooltip-active")),
+        ).subscribe();
 
     tabs.forEach(tab => addTabBehavior(tab));
     switchTab(tabOutput);

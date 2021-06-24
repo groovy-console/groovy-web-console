@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.1/addon/fold/foldgutter.min.css"
           integrity="sha512-YwkMTlTHn8dBnwa47IF+cKsS00HPiiVhQ4DpwT1KF2gUftfFR7aefepabSPLAs6zrMyD89M3w0Ow6mQ5XJEUCw=="
           crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tooltip@1.2.0/dist/bulma-tooltip.min.css" integrity="sha256-OdzWB7wl1AMkFaqhYBnoQJGUJMDAexXa44rXs/d2n4A=" crossorigin="anonymous">
     <link rel="stylesheet" href="css/style.css"/>
 </head>
 
@@ -93,6 +94,14 @@
                           </span>
                             <span>Save</span>
                         </button>
+                    </div>
+                </div>
+                <div class="box is-hidden">
+                    <div class="control has-icons-right">
+                        <input class="input" type="text" name="shareLink" id="shareLink" readonly>
+                        <span class="icon is-small is-right" data-tooltip="Copied to Clipboard" id="shareLinkTooltip">
+                            <i class="fas fa-copy"></i>
+                          </span>
                     </div>
                 </div>
             </div>
