@@ -101,9 +101,10 @@ export function initView () {
         executeButton.classList.remove('is-loading')
         executionResult = {
           out: '',
-          err: 'An error occured while sending the Groovy script for execution',
+          err: 'An error occurred while sending the Groovy script for execution',
           result: null
         }
+        switchTab(tabError)
         updateOutput()
       }
     })
