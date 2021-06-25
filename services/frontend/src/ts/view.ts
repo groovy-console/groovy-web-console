@@ -2,9 +2,8 @@ import { ExecutionResult } from './types'
 import { fromEvent } from 'rxjs'
 import { concatMap, delay, map, tap, throttleTime } from 'rxjs/operators'
 import { executeScript } from './groovy-console'
-import { compressToBase64, decodeUrlSafe, decompressFromBase64 } from './compression'
-import { loadGist, loadGithubFile } from './github'
-import { createEditor, createOutput } from './codemirror'
+import { compressToBase64 } from './compression'
+import { CodeEditor, OutputEditor } from './codemirror'
 
 const codeArea = document.getElementById('code') as HTMLTextAreaElement
 const outputArea = document.getElementById('output') as HTMLTextAreaElement
@@ -19,54 +18,45 @@ const tabError = document.getElementById('tabError')
 const tabs = [tabOutput, tabResult, tabError]
 let activeTab: HTMLElement
 
-let executionResult: ExecutionResult = { out: '', err: '', result: null }
+let executionResult: ExecutionResult = {
+  out: '',
+  err: '',
+  result: null
+}
 
-const codeCM = createEditor(codeArea)
-const outputCM = createOutput(outputArea)
+const codeCM = new CodeEditor(codeArea)
+const outputCM = new OutputEditor(outputArea)
 
 function clearOutput () {
   executionResult.out = ''
   executionResult.err = ''
   executionResult.result = null
-  outputCM.setValue('')
+  outputCM.setContent('')
 }
 
 function updateOutput () {
   if (activeTab === tabOutput) {
-    outputCM.setValue(executionResult.out || '')
+    outputCM.setContent(executionResult.out || '')
   } else if (activeTab === tabResult) {
     if (executionResult.result !== null && executionResult.result !== undefined) {
       console.log('Type of result: ', typeof executionResult.result)
       if (typeof executionResult.result === 'string') {
-        outputCM.setValue(executionResult.result)
+        outputCM.setContent(executionResult.result)
       } else {
-        outputCM.setValue(JSON.stringify(executionResult.result, null, 2))
+        outputCM.setContent(JSON.stringify(executionResult.result, null, 2))
       }
     } else {
-      outputCM.setValue('null')
+      outputCM.setContent('null')
     }
   } else if (activeTab === tabError) {
-    outputCM.setValue(executionResult.err || '')
+    outputCM.setContent(executionResult.err || '')
   }
 }
 
 function handleExecutionResult (result: ExecutionResult) {
   if (result.err) {
     switchTab(tabError)
-    // check if it's a syntax error
-    const lineColInfo = result.err.match(/.*@ line (\d+), column (\d+).$/)
-    if (lineColInfo && lineColInfo.length >= 3) {
-      codeCM.setCursor({ line: parseInt(lineColInfo[1]) - 1, ch: parseInt(lineColInfo[2]) - 1 })
-      codeCM.focus()
-    } else { // check if it's an exception
-      const exceptionLines = result.err.split('\n')
-      const scriptLineFound = exceptionLines.find(line => line.match(/\tat Script1\.run\(Script1\.groovy:(\d+)\)$/))
-      if (scriptLineFound) {
-        const lineNumber = scriptLineFound.slice(scriptLineFound.indexOf(':') + 1, scriptLineFound.length - 1)
-        codeCM.setCursor({ line: parseInt(lineNumber) - 1, ch: 0 })
-        codeCM.focus()
-      }
-    }
+    codeCM.handleErrorResult(result.err)
   } else if (result.out) {
     switchTab(tabOutput)
   } else if (result.result) {
@@ -89,22 +79,6 @@ function addTabBehavior (tab: HTMLElement) {
     ).subscribe(() => updateOutput())
 }
 
-export function initFromUrl () {
-  const queryParams = new URLSearchParams(location.search)
-  if (queryParams.has('code')) {
-    codeCM.setValue(decodeUrlSafe(queryParams.get('code')))
-  } else if (queryParams.has('codez')) {
-    decompressFromBase64(queryParams.get('codez'))
-      .then(code => codeCM.setValue(code))
-  } else if (queryParams.has('gist')) {
-    loadGist(queryParams.get('gist'))
-      .subscribe(gistCode => codeCM.setValue(gistCode))
-  } else if (queryParams.has('github')) {
-    loadGithubFile(queryParams.get('github'))
-      .subscribe(githubCode => codeCM.setValue(githubCode))
-  }
-}
-
 export function initView () {
   fromEvent(executeButton, 'click')
     .pipe(
@@ -113,7 +87,7 @@ export function initView () {
         executeButton.classList.add('is-loading')
         clearOutput()
       }),
-      concatMap(() => executeScript(version.value, codeCM.getValue())),
+      concatMap(() => executeScript(version.value, codeCM.getCode())),
       tap(result => handleExecutionResult(result))
     )
     .subscribe({
@@ -137,7 +111,7 @@ export function initView () {
   fromEvent(save, 'click')
     .pipe(
       throttleTime(500),
-      map(() => codeCM.getValue()),
+      map(() => codeCM.getCode()),
       concatMap(editorContent => compressToBase64(editorContent))
     ).subscribe(codez => {
       shareLink.value = `${location.origin + location.pathname}?codez=${codez}`;
@@ -159,4 +133,5 @@ export function initView () {
 
   tabs.forEach(tab => addTabBehavior(tab))
   switchTab(tabOutput)
+  codeCM.loadFromUrl()
 }

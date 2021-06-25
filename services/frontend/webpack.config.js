@@ -1,8 +1,10 @@
 const path = require('path');
 
 
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
 module.exports = {
 
@@ -27,6 +29,10 @@ module.exports = {
         usedExports: true,
         // https://webpack.js.org/plugins/split-chunks-plugin/
         runtimeChunk: 'single',
+        minimizer: [
+          `...`, // For webpack@5 you can use the `...` syntax to extend existing minimizers (i.e. `terser-webpack-plugin`)
+          new CssMinimizerPlugin(),
+        ],
         splitChunks: {
             cacheGroups: {
                 /*
@@ -59,7 +65,11 @@ module.exports = {
                 test: /\.tsx?/,
                 use: 'ts-loader',
                 exclude: /node_modules/,
-            }
+            },
+          {
+            test: /\.css$/i,
+            use: [MiniCssExtractPlugin.loader, "css-loader"],
+          },
         ]
     },
 
@@ -77,8 +87,11 @@ module.exports = {
         // copy css
         new CopyPlugin({
             patterns: [
-                {from: "./src/resources/", to: path.join(__dirname, 'dist')},
+                {from: "./src/static/", to: path.join(__dirname, 'dist')},
             ],
         }),
+      new MiniCssExtractPlugin({
+        filename: '[name].[contenthash].css',
+      }),
     ],
 };
