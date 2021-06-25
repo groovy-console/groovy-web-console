@@ -8,12 +8,11 @@ import 'codemirror/addon/fold/foldcode'
 import 'codemirror/addon/fold/foldgutter'
 import 'codemirror/addon/fold/foldgutter.css'
 import 'codemirror/addon/lint/lint.css'
-import 'codemirror/addon/lint/lint'
+import { Annotation } from 'codemirror/addon/lint/lint'
 import 'codemirror/addon/selection/active-line'
 import 'codemirror/mode/groovy/groovy'
 import { decodeUrlSafe, decompressFromBase64 } from './compression'
 import { loadGist, loadGithubFile } from './github'
-import { Annotation } from 'codemirror/addon/lint/lint'
 
 export class CodeEditor {
   private codeMirror: CodeMirror.EditorFromTextArea
@@ -22,11 +21,11 @@ export class CodeEditor {
   constructor (codeArea: HTMLTextAreaElement) {
     this.codeMirror = this.createEditor(codeArea)
 
-    this.codeMirror.on("change", ()=> {
+    this.codeMirror.on('change', () => {
       // clear errors when the user changes the editor,
       // as we don't have a way to check the correctness locally
       if (this.lintErrors.length > 0) {
-        this.clearErrors();
+        this.clearErrors()
       }
     })
   }
@@ -124,13 +123,13 @@ export class CodeEditor {
   }
 }
 
-
 export class OutputEditor {
   private codeMirror: CodeMirror.EditorFromTextArea
 
   constructor (codeArea: HTMLTextAreaElement) {
     this.codeMirror = this.createOutput(codeArea)
   }
+
   createOutput (outputArea: HTMLTextAreaElement) {
     return CodeMirror.fromTextArea(<HTMLTextAreaElement>outputArea, <any>{
       readOnly: true,
@@ -139,7 +138,6 @@ export class OutputEditor {
       lineWrapping: true
     })
   }
-
 
   public setContent (code: string) {
     this.codeMirror.setValue(code)
