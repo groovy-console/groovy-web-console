@@ -8,7 +8,8 @@ import 'codemirror/addon/fold/foldcode'
 import 'codemirror/addon/fold/foldgutter'
 import 'codemirror/addon/fold/foldgutter.css'
 import 'codemirror/addon/lint/lint.css'
-import { Annotation } from 'codemirror/addon/lint/lint'
+import 'codemirror/addon/lint/lint' // eslint-disable-line import/no-duplicates , we need this for the lint functionality to work
+import { Annotation } from 'codemirror/addon/lint/lint' // eslint-disable-line import/no-duplicates , we need this for the type
 import 'codemirror/addon/selection/active-line'
 import 'codemirror/mode/groovy/groovy'
 import { decodeUrlSafe, decompressFromBase64 } from './compression'
