@@ -18,7 +18,7 @@ Use `mvn package -P groovy_2_5`
 
 Go to https://github.com/glaforge/gwc-experiment/actions/workflows/deploy.yml and click on `Run Workflow`
 
-## Frontend  
+## Frontend
 
 ### Building the frontend
 
@@ -29,6 +29,10 @@ You need to have Node 14 LTS installed.
 3. Build the frontend with `npm run build`
 
 The output will be in `services/frontend/dist`.
+
+### Running the frontend locally
+
+Do the same steps as building the frontend but substitute the last command for: `npm run serve`
 
 ### Deploy App Engine web frontend
 
