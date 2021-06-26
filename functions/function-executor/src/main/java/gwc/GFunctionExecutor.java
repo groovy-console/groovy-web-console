@@ -58,7 +58,9 @@ public class GFunctionExecutor implements HttpFunction {
       var originalOut = System.out;
       System.setOut(outPrintStream);
       Object result = null;
+      ExecutionInfo stats = new ExecutionInfo();
       try {
+        long executionStart = System.currentTimeMillis();
         if (SPOCK_SCRIPT.matcher(inputScriptOrClass).find()) {
           if(new BigDecimal(GroovySystem.getShortVersion()).compareTo(new BigDecimal("4.0"))>= 0) {
             // disable groovy version check in Spock for groovy 4.0 or greater
@@ -76,6 +78,7 @@ public class GFunctionExecutor implements HttpFunction {
           var shell = new GroovyShell(binding);
           result = shell.evaluate(inputScriptOrClass);
         }
+        stats.setExecutionTime(System.currentTimeMillis() - executionStart);
       } catch (MultipleCompilationErrorsException e) {
         e.getErrorCollector().getErrors().forEach(err -> {
           if (err instanceof SimpleMessage) {
@@ -109,7 +112,7 @@ public class GFunctionExecutor implements HttpFunction {
       response.setContentType("application/json");
 
       try (Writer writer = response.getWriter()) {
-        String responseContent = GSON.toJson(new ExecutionResult(outOutput, errorOutput.toString(), result));
+        String responseContent = GSON.toJson(new ExecutionResult(outOutput, errorOutput.toString(), result, stats));
         writer.write(responseContent);
       }
     }
