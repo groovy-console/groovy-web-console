@@ -32,12 +32,14 @@ import org.junit.platform.launcher.core.*;
 /**
  * Runs a script containing one or more Spock specifications.
  */
+
+@SuppressWarnings({"rawtypes"})
 public class ScriptRunner {
 
   private boolean disableColors = false;
 
+  // import is added via ImportCustomizer in ScriptCompiler
   public String run(@Language(value = "Groovy", suffix = "\nimport spock.lang.*") String scriptText) {
-    scriptText = addSpockLangStarImport(scriptText);
     ScriptCompiler compiler = new ScriptCompiler();
     List<Class> classes = compiler.compile(scriptText);
     List<Class> testClasses = findTestClasses(classes);
@@ -61,10 +63,6 @@ public class ScriptRunner {
     }
 
     return stringWriter.toString();
-  }
-
-  private String addSpockLangStarImport(String text) {
-    return text + "\nimport spock.lang.*";
   }
 
   private List<Class> findTestClasses(List<Class> classes) {

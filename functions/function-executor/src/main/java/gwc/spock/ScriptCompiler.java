@@ -16,20 +16,28 @@
 
 package gwc.spock;
 
+import spock.lang.Specification;
+
 import java.util.List;
 
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.*;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.codehaus.groovy.control.io.StringReaderSource;
 
 // cannot use GCL as-is because we need a StringReaderSource
 // only reason why we inherit from GCL is that ClassCollector has protected constructor
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class ScriptCompiler extends GroovyClassLoader {
   public List<Class> compile(String scriptText) throws CompilationFailedException {
-    CompilationUnit unit = new CompilationUnit(this);
+    CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
+    ImportCustomizer importCustomizer = new ImportCustomizer();
+    importCustomizer.addStarImports(Specification.class.getPackageName());
+    compilerConfiguration.addCompilationCustomizers(importCustomizer);
+
+    CompilationUnit unit = new CompilationUnit(compilerConfiguration, null, this);
     SourceUnit su = new SourceUnit("Script1.groovy", new StringReaderSource(scriptText, unit.getConfiguration()),
-        unit.getConfiguration(), unit.getClassLoader(), unit.getErrorCollector());
+      unit.getConfiguration(), unit.getClassLoader(), unit.getErrorCollector());
     unit.addSource(su);
 
     ClassCollector collector = createCollector(unit, su);
