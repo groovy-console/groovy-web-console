@@ -60,18 +60,10 @@ public class GFunctionExecutor implements HttpFunction {
       Object result = null;
       ExecutionInfo stats = new ExecutionInfo();
       try {
+        disableSpockVersionCheckForUnsupportedGroovyVersion();
         long executionStart = System.currentTimeMillis();
         if (SPOCK_SCRIPT.matcher(inputScriptOrClass).find()) {
-          if(new BigDecimal(GroovySystem.getShortVersion()).compareTo(new BigDecimal("4.0"))>= 0) {
-            // disable groovy version check in Spock for groovy 4.0 or greater
-            System.setProperty("spock.iKnowWhatImDoing.disableGroovyVersionCheck", "true");
-          } else {
-            System.clearProperty("spock.iKnowWhatImDoing.disableGroovyVersionCheck");
-          }
-          ScriptRunner scriptRunner = new ScriptRunner();
-          // TODO revisit colored output
-          scriptRunner.setDisableColors(true);
-          result = scriptRunner.run(inputScriptOrClass);
+          result = executeSpock(inputScriptOrClass, result);
         } else {
           var binding = new Binding();
           binding.setVariable("out", outPrintStream);
@@ -115,6 +107,23 @@ public class GFunctionExecutor implements HttpFunction {
         String responseContent = GSON.toJson(new ExecutionResult(outOutput, errorOutput.toString(), result, stats));
         writer.write(responseContent);
       }
+    }
+  }
+
+  private Object executeSpock(String inputScriptOrClass, Object result) {
+    ScriptRunner scriptRunner = new ScriptRunner();
+    // TODO revisit colored output
+    scriptRunner.setDisableColors(true);
+    result = scriptRunner.run(inputScriptOrClass);
+    return result;
+  }
+
+  private void disableSpockVersionCheckForUnsupportedGroovyVersion() {
+    if(new BigDecimal(GroovySystem.getShortVersion()).compareTo(new BigDecimal("4.0"))>= 0) {
+      // disable groovy version check in Spock for groovy 4.0 or greater
+      System.setProperty("spock.iKnowWhatImDoing.disableGroovyVersionCheck", "true");
+    } else {
+      System.clearProperty("spock.iKnowWhatImDoing.disableGroovyVersionCheck");
     }
   }
 
