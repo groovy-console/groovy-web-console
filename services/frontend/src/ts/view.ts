@@ -1,5 +1,5 @@
 import { ExecutionResult } from './types'
-import { fromEvent } from 'rxjs'
+import { fromEvent, of } from 'rxjs'
 import { concatMap, delay, map, tap, throttleTime } from 'rxjs/operators'
 import { GroovyConsole } from './groovy-console'
 import { compressToBase64 } from './compression'
@@ -133,16 +133,21 @@ export function initView () {
       tap(() => shareLinkTooltip.classList.remove('has-tooltip-active'))
     ).subscribe()
 
-  groovyConsole.getAvailableGroovyVersions()
-    .subscribe(versions => {
-      version.innerHTML = '' // remove children
-      versions.forEach(gv => {
-        const optionElement = document.createElement('option')
-        optionElement.value = gv.id
-        optionElement.text = gv.name
-        version.add(optionElement)
+  of(1)
+    .pipe(
+      tap(() => (version.parentNode as HTMLElement).classList.add('is-loading')),
+      concatMap(() => groovyConsole.getAvailableGroovyVersions()),
+      tap(() => (version.parentNode as HTMLElement).classList.remove('is-loading')),
+      tap(versions => {
+        version.innerHTML = '' // remove children
+        versions.forEach(gv => {
+          const optionElement = document.createElement('option')
+          optionElement.value = gv.id
+          optionElement.text = gv.name
+          version.add(optionElement)
+        })
       })
-    })
+    ).subscribe()
 
   tabs.forEach(tab => addTabBehavior(tab))
   switchTab(tabOutput)
