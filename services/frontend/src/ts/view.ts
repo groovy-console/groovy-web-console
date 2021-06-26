@@ -1,10 +1,11 @@
 import { ExecutionResult } from './types'
 import { fromEvent } from 'rxjs'
 import { concatMap, delay, map, tap, throttleTime } from 'rxjs/operators'
-import { executeScript } from './groovy-console'
+import { GroovyConsole } from './groovy-console'
 import { compressToBase64 } from './compression'
 import { CodeEditor, OutputEditor } from './codemirror'
 
+const groovyConsole = new GroovyConsole()
 const codeArea = document.getElementById('code') as HTMLTextAreaElement
 const outputArea = document.getElementById('output') as HTMLTextAreaElement
 const version = document.getElementById('version') as HTMLSelectElement
@@ -87,7 +88,7 @@ export function initView () {
         executeButton.classList.add('is-loading')
         clearOutput()
       }),
-      concatMap(() => executeScript(version.value, codeCM.getCode())),
+      concatMap(() => groovyConsole.executeScript(version.value, codeCM.getCode())),
       tap(result => handleExecutionResult(result))
     )
     .subscribe({
@@ -131,6 +132,17 @@ export function initView () {
       delay(500),
       tap(() => shareLinkTooltip.classList.remove('has-tooltip-active'))
     ).subscribe()
+
+  groovyConsole.getAvailableGroovyVersions()
+    .subscribe(versions => {
+      version.innerHTML = '' // remove children
+      versions.forEach(gv => {
+        const optionElement = document.createElement('option')
+        optionElement.value = gv.id
+        optionElement.text = gv.name
+        version.add(optionElement)
+      })
+    })
 
   tabs.forEach(tab => addTabBehavior(tab))
   switchTab(tabOutput)
