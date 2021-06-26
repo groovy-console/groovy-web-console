@@ -3,7 +3,6 @@
     "version": "0.0.1",
     "dependencies": {
         "node-fetch": "^2.6.1",
-        "cors": "^2.8.5",
         "google-auth-library": "^7.1.1"
     }
-}  
+}
