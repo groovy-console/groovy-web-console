@@ -69,8 +69,6 @@
       <properties>
         <groovy.version>4.0.0-alpha-3</groovy.version>
         <spock.version>2.0-groovy-3.0</spock.version>
-        <!-- gmavenplus doesn't allow the setting of system properties to disable the spock version check  -->
-        <skipTests>true</skipTests>
       </properties>
       <dependencies>
         <dependency>

@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        variant: ['groovy_3_0', 'groovy_2_5'] # disable 'groovy_4_0_alpha3' for now
+        variant: ['groovy_3_0', 'groovy_2_5', 'groovy_4_0_alpha3']
     steps:
       - uses: actions/checkout@v2
       - name: Cache Maven wrapper and dependencies
@@ -32,4 +32,4 @@ jobs:
       - name: test
         run: |
           pushd functions/function-executor
-          ../../mvnw -B -V package -P ${{ matrix.variant }}
+          ../../mvnw -B -V package -P ${{ matrix.variant }} "-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true"

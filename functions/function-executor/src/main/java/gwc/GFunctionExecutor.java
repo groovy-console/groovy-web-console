@@ -1,6 +1,7 @@
 package gwc;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
@@ -59,6 +60,12 @@ public class GFunctionExecutor implements HttpFunction {
       Object result = null;
       try {
         if (SPOCK_SCRIPT.matcher(inputScriptOrClass).find()) {
+          if(new BigDecimal(GroovySystem.getShortVersion()).compareTo(new BigDecimal("4.0"))>= 0) {
+            // disable groovy version check in Spock for groovy 4.0 or greater
+            System.setProperty("spock.iKnowWhatImDoing.disableGroovyVersionCheck", "true");
+          } else {
+            System.clearProperty("spock.iKnowWhatImDoing.disableGroovyVersionCheck");
+          }
           ScriptRunner scriptRunner = new ScriptRunner();
           // TODO revisit colored output
           scriptRunner.setDisableColors(true);
