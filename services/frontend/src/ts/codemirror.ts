@@ -1,13 +1,10 @@
 import CodeMirror from 'codemirror'
-import 'codemirror/lib/codemirror.css'
 import 'codemirror/addon/display/autorefresh'
 import 'codemirror/addon/edit/closebrackets'
 import 'codemirror/addon/edit/matchbrackets'
 import 'codemirror/addon/fold/brace-fold'
 import 'codemirror/addon/fold/foldcode'
 import 'codemirror/addon/fold/foldgutter'
-import 'codemirror/addon/fold/foldgutter.css'
-import 'codemirror/addon/lint/lint.css'
 // Since Codemirror 5 is not designed for Typescript usage, we have to import the whole lint file to work,
 // but to use the type we need to import it directly, ESLint will complain about that, so ignore the rules here
 import 'codemirror/addon/lint/lint' // eslint-disable-line import/no-duplicates

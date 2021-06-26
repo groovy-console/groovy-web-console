@@ -1,0 +1,16 @@
+@charset "utf-8";
+
+@import '~bulma/css/bulma.css';
+@import '~@creativebulma/bulma-tooltip/dist/bulma-tooltip.css';
+// important bulma must be loaded before code mirror to not mess up the styles in the output editor
+@import '~codemirror/lib/codemirror.css';
+@import '~codemirror/addon/fold/foldgutter.css';
+@import '~codemirror/addon/lint/lint.css';
+
+.CodeMirror {
+    height: auto;
+}
+
+.hero .tabs ul {
+    color: black;
+}
