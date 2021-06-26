@@ -29,7 +29,7 @@ public class GFunctionExecutor implements HttpFunction {
   private static final Gson GSON = new Gson();
 
 
-  GFunctionExecutor() {
+  public GFunctionExecutor() {
     LOG.info("Groovy function executor initialized");
   }
 
