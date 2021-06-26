@@ -53,7 +53,7 @@ public class GFunctionExecutor implements HttpFunction {
   private void handleRealInvocation(HttpRequest request, HttpResponse response) throws IOException {
     ScriptRequest scriptRequest = GSON.fromJson(request.getReader(), ScriptRequest.class);
     String inputScriptOrClass = scriptRequest.getCode();
-    LOG.info("Input code:\n---\n${inputScriptOrClass}\n---\n");
+    LOG.info("Input code:\n---\n" + inputScriptOrClass + "\n---\n");
 
 
     var errorOutput = new StringBuilder();
