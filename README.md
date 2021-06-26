@@ -34,6 +34,10 @@ The output will be in `services/frontend/dist`.
 
 Do the same steps as building the frontend but substitute the last command for: `npm run serve`
 
+### Checking code style
+
+You can check the code style with `npm run lint` and automatically fix most issues with `npm run lint-fix`.
+
 ### Deploy App Engine web frontend
 
 The web frontend consists only of static assets (HTML, JavaScript, and CSS).
