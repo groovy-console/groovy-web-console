@@ -9,7 +9,7 @@ const codeArea = document.getElementById('code') as HTMLTextAreaElement
 const outputArea = document.getElementById('output') as HTMLTextAreaElement
 const version = document.getElementById('version') as HTMLSelectElement
 const executeButton = document.getElementById('execute')
-const save = document.getElementById('save')
+const share = document.getElementById('share')
 const shareLink = document.getElementById('shareLink') as HTMLInputElement
 const shareLinkTooltip = document.getElementById('shareLinkTooltip')
 const tabOutput = document.getElementById('tabOutput')
@@ -109,7 +109,7 @@ export function initView () {
       }
     })
 
-  fromEvent(save, 'click')
+  fromEvent(share, 'click')
     .pipe(
       throttleTime(500),
       map(() => codeCM.getCode()),
