@@ -1,4 +1,4 @@
-# gwc-experiment
+# Groovy Web Console
 
 ## Backend
 
