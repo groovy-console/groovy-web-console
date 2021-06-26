@@ -130,10 +130,10 @@
 
 
 <section class="section">
-    <h1 class="title is-1">Help</h1>
     <h2 class="title is-2">Sharing scripts</h2>
-    <div class="block">
-        <h3 class="title is-3">Sharing directly in the URL</h3>
+    <div class="columns">
+    <div class="column">
+        <h3 class="title is-3">Directly in the URL</h3>
         <p>
             You can encode the script as Base64 (URL-safe without padding) and then, simply append it to the url via
             <code>&amp;code=&lt;code&gt;</code>.
@@ -142,6 +142,7 @@
         <p>
             <a href="?code=ZGVmIHNjcmlwdCA9ICIiIlwKcHJpbnRsbiBoZWxsbyB3b3JsZAoiIiIKcHJpbnRsbiAiP2NvZGU9JHtCYXNlNjQudXJsRW5jb2Rlci53aXRob3V0UGFkZGluZygpLmVuY29kZVRvU3RyaW5nKHNjcmlwdC5ieXRlcyl9Igo">Example</a>
         </p>
+        <br/>
         <p>
             For larger scripts you can also use a compressed (deflate) Base64 encoded version with via <code>&amp;codez=&lt;code&gt;</code>.
             This is also used by the groovy console.
@@ -150,19 +151,20 @@
             <a href="?codez=eJxtjrtuAjEQRfv5ipFFsW5cRVSsIh6pQUrKNAYPYDTY1uxsVoD49-wihLagnHtH5554LlkUT_7Pu1Yju2ssbkV79kqybrW0-q1C_gwQaI_NTmJRrNEY8wtFYlJOeCTmjF0WDtAXsLgozUX8ZQzAPD5qTNTh28fKwtC9k6jGDOu6qMcl54b8lglvgBgVZ7Onpdv29AbuL03zucuBrvXktvANTT9cK_yVhkweqB6-8SHEdKiso0fxk_utIRgPO80v8crau4F_h_92Kg">Example</a>
         </p>
     </div>
-    <div class="block">
-        <h3 class="title is-3">Sharing as gist</h3>
+    <div class="column">
+        <h3 class="title is-3">As gist</h3>
         <p>
             You can save your code on <a href="https://gist.github.com">https://gist.github.com</a> and then share by
             appending the gistId in the url<code>&amp;gist=&lt;gistid&gt;</code>.
+        </p><p>
             Important: that file needs to have the <code>.groovy</code> extension, otherwise it won't be picked up.
         </p>
         <p>
             <a href="?gist=58f61cf36e112ff654041eeec8d11a98">Example</a>
         </p>
     </div>
-    <div class="block">
-        <h3 class="title is-3">Sharing from a repository</h3>
+    <div class="column">
+        <h3 class="title is-3">From a repository</h3>
         <p>
             You can share a file from a github repository via its canonical url via this parameter <code>&amp;github=&lt;canonical-path-to-file&gt;</code>.
             You can get the <code>canonical-path-to-file</code> by going to the file on the github frontend, then press
@@ -172,6 +174,7 @@
         <p>
             <a href="?github=spockframework/spock/blob/6d2e6cc6475346f2fef256124e37f70514f0b98e/spock-specs/src/test/groovy/org/spockframework/docs/datadriven/v7/MathSpec.groovy">Example</a>
         </p>
+    </div>
     </div>
 </section>
 
