@@ -74,10 +74,7 @@ public class GFunctionExecutor implements HttpFunction {
     } catch (MultipleCompilationErrorsException e) {
       handleCompilationErrors(errorOutput, e);
     } catch (Throwable t) {
-      sanitizeStacktrace(t);
-      var errorWriter = new StringWriter();
-      t.printStackTrace(new PrintWriter(errorWriter));
-      errorOutput.append(errorWriter);
+      throwableToErrorOutput(errorOutput, t);
     }
 
     String outOutput = outputRedirector.getOutput();
@@ -88,11 +85,21 @@ public class GFunctionExecutor implements HttpFunction {
     response.setContentType("application/json");
 
     try (Writer writer = response.getWriter()) {
-      String responseContent = GSON.toJson(new ExecutionResult(
-        outOutput,
-        errorOutput.toString(),
-        result,
-        stats));
+      String responseContent;
+      try {
+        responseContent = GSON.toJson(new ExecutionResult(
+          outOutput,
+          errorOutput.toString(),
+          result,
+          stats));
+      } catch (Exception e) { // serialization of result may fail, so catch the exception
+        errorOutput.append("\nFailed to serialize result: ").append(e.getMessage());
+        responseContent = GSON.toJson(new ExecutionResult(
+          outOutput,
+          errorOutput.toString(),
+          null,
+          stats));
+      }
       writer.write(responseContent);
     }
   }
@@ -130,6 +137,13 @@ public class GFunctionExecutor implements HttpFunction {
         errorOutput.append(((SyntaxErrorMessage)err).getCause().getMessage());
       }
     });
+  }
+
+  private void throwableToErrorOutput(StringBuilder errorOutput, Throwable t) {
+    sanitizeStacktrace(t);
+    var errorWriter = new StringWriter();
+    t.printStackTrace(new PrintWriter(errorWriter));
+    errorOutput.append(errorWriter);
   }
 
   private void sanitizeStacktrace(Throwable t) {

@@ -1,15 +1,10 @@
 package gwc
 
-import org.spockframework.util.SpockReleaseInfo
-import org.spockframework.util.VersionNumber
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Subject
+import org.spockframework.util.*
+import spock.lang.*
 
-import com.google.cloud.functions.HttpRequest
-import com.google.cloud.functions.HttpResponse
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
+import com.google.cloud.functions.*
+import groovy.json.*
 
 class GFunctionExecutorTest extends Specification {
   @Shared
@@ -73,6 +68,48 @@ class ASpec extends Specification {
    └─ ASpec ✔
       └─ hello world ✔
 '''
+  }
+
+  def "can return objects"() {
+    given:
+    httpRequest.method >> "POST"
+    httpRequest.reader >> createReader([code: '[a: 1, b: "hello", c: [d: 42]]'])
+    def output = new StringWriter()
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.appendHeader('Access-Control-Allow-Origin', '*')
+    1 * httpResponse.setContentType('application/json')
+    1 * httpResponse.getWriter() >> new BufferedWriter(output)
+
+    and:
+    def response = new JsonSlurper().parseText(output.toString())
+    response.out.normalize() == outErrorPrefix
+    response.err == ''
+    response.result == [a: 1, b: "hello", c: [d: 42]]
+  }
+
+  def "can deal with serialization errors"() {
+    given:
+    httpRequest.method >> "POST"
+    httpRequest.reader >> createReader([code: "GroovySystem"])
+    def output = new StringWriter()
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.appendHeader('Access-Control-Allow-Origin', '*')
+    1 * httpResponse.setContentType('application/json')
+    1 * httpResponse.getWriter() >> new BufferedWriter(output)
+
+    and:
+    def response = new JsonSlurper().parseText(output.toString())
+    response.out.normalize() == outErrorPrefix
+    response.err == '\nFailed to serialize result: Attempted to serialize java.lang.Class: groovy.lang.GroovySystem. Forgot to register a type adapter?'
+    response.result == null
   }
 
   BufferedReader createReader(Map input) {
