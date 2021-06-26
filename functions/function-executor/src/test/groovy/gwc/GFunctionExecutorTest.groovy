@@ -1,5 +1,8 @@
 package gwc
 
+import org.spockframework.util.SpockReleaseInfo
+import org.spockframework.util.VersionNumber
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -9,6 +12,9 @@ import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
 class GFunctionExecutorTest extends Specification {
+  @Shared
+  String outErrorPrefix = SpockReleaseInfo.isCompatibleGroovyVersion(VersionNumber.parse(GroovySystem.version)) ? "" :
+    "Executing Spock ${SpockReleaseInfo.version} with NOT compatible Groovy version ${GroovySystem.version} due to set spock.iKnowWhatImDoing.disableGroovyVersionCheck system property. This is unsupported and may result in weird runtime errors!\n"
 
   @Subject
   GFunctionExecutor executor = new GFunctionExecutor()
@@ -32,7 +38,7 @@ class GFunctionExecutorTest extends Specification {
 
     and:
     def response = new JsonSlurper().parseText(output.toString())
-    response.out == 'Hello World'
+    response.out.normalize() == outErrorPrefix + 'Hello World'
     response.err == ''
     response.result == null
   }
@@ -59,7 +65,7 @@ class ASpec extends Specification {
 
     and:
     def response = new JsonSlurper().parseText(output.toString())
-    response.out == ''
+    response.out.normalize() == outErrorPrefix
     response.err == ''
     response.result.normalize() == '''\
 ╷
