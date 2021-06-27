@@ -13,6 +13,8 @@ import 'codemirror/addon/selection/active-line'
 import 'codemirror/mode/groovy/groovy'
 import { decodeUrlSafe, decompressFromBase64 } from './compression'
 import { loadGist, loadGithubFile } from './github'
+import { from, of } from 'rxjs'
+import { concatMap, tap } from 'rxjs/operators'
 
 export class CodeEditor {
   private codeMirror: CodeMirror.EditorFromTextArea
@@ -106,20 +108,27 @@ export class CodeEditor {
     this.codeMirror.performLint()
   }
 
-  public loadFromUrl () {
-    const queryParams = new URLSearchParams(location.search)
-    if (queryParams.has('code')) {
-      this.setCode(decodeUrlSafe(queryParams.get('code')))
-    } else if (queryParams.has('codez')) {
-      decompressFromBase64(queryParams.get('codez'))
-        .then(code => this.setCode(code))
-    } else if (queryParams.has('gist')) {
-      loadGist(queryParams.get('gist'))
-        .subscribe(gistCode => this.setCode(gistCode))
-    } else if (queryParams.has('github')) {
-      loadGithubFile(queryParams.get('github'))
-        .subscribe(githubCode => this.setCode(githubCode))
-    }
+  public loadFromUrl (query:string) {
+    return of(new URLSearchParams(query))
+      .pipe(
+        concatMap(queryParams => {
+          if (queryParams.has('code')) {
+            return of(decodeUrlSafe(queryParams.get('code')))
+          } else if (queryParams.has('codez')) {
+            return from(decompressFromBase64(queryParams.get('codez')))
+          } else if (queryParams.has('gist')) {
+            return loadGist(queryParams.get('gist'))
+          } else if (queryParams.has('github')) {
+            return loadGithubFile(queryParams.get('github'))
+          }
+          return of('')
+        }),
+        tap(code => {
+          if (code !== '') {
+            this.setCode(code)
+          }
+        })
+      )
   }
 }
 

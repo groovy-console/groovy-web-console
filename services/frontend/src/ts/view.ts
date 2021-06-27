@@ -151,5 +151,20 @@ export function initView () {
 
   tabs.forEach(tab => addTabBehavior(tab))
   switchTab(tabOutput)
-  codeCM.loadFromUrl()
+
+  of(location.search).pipe(
+    // TODO figure out how to display a loading spinner on top of the editor
+    concatMap(query => codeCM.loadFromUrl(query))
+  ).subscribe({
+    error: err => {
+      console.log('Could not load script', err)
+      executionResult = {
+        out: '',
+        err: 'An error occurred while loading the remote script.\nThis can be caused by the NoScript browser extension.',
+        result: null
+      }
+      switchTab(tabError)
+      updateOutput()
+    }
+  })
 }
