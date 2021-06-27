@@ -42,6 +42,6 @@ export class GroovyConsole {
   }
 
   public pingFunction (groovyVersion:string) {
-    return fromFetch(`${baseUrl}${groovyVersion}`, {method: 'OPTIONS'})
+    return fromFetch(`${baseUrl}${groovyVersion}`, { method: 'OPTIONS' })
   }
 }
