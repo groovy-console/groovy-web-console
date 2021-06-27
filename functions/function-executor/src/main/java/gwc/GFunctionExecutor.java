@@ -39,13 +39,19 @@ public class GFunctionExecutor implements HttpFunction {
 
     if ("OPTIONS".equals(request.getMethod())) {
       handlePreFlightRequest(response);
+    } else if ("POST".equals(request.getMethod())) {
+      if (!"application/json".equalsIgnoreCase((request.getContentType().orElse("")))) {
+         response.setStatusCode(406);
+      } else {
+        handleRealInvocation(request, response);
+      }
     } else {
-      handleRealInvocation(request, response);
+      response.setStatusCode(204);
     }
   }
 
   private void handlePreFlightRequest(HttpResponse response) {
-    response.appendHeader("Access-Control-Allow-Methods", "POST");
+    response.appendHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
     response.appendHeader("Access-Control-Allow-Headers", "Content-Type");
     response.appendHeader("Access-Control-Max-Age", "3600");
   }
