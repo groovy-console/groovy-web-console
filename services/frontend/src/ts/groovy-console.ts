@@ -40,4 +40,8 @@ export class GroovyConsole {
       map(response => response as ExecutionResult)
     )
   }
+
+  public pingFunction (groovyVersion:string) {
+    return fromFetch(`${baseUrl}${groovyVersion}`, {method: 'OPTIONS'})
+  }
 }

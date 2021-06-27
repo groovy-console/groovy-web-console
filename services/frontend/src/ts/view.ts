@@ -147,7 +147,12 @@ export function initView () {
           version.add(optionElement)
         })
       })
-    ).subscribe()
+    ).subscribe(() => groovyConsole.pingFunction(version.value).subscribe())
+
+  fromEvent(version, 'change')
+    .pipe(
+      throttleTime(500)
+    ).subscribe(() => groovyConsole.pingFunction(version.value).subscribe())
 
   tabs.forEach(tab => addTabBehavior(tab))
   switchTab(tabOutput)
