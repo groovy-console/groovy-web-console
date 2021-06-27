@@ -14,3 +14,13 @@ export interface GistFile {
 export interface GistResponse {
   files: Map<string, GistFile>
 }
+
+export interface StackOverflowQuestion {
+  title: string,
+  tags: string[],
+  body_markdown: string
+}
+
+export interface StackOverflowResponse {
+  items: StackOverflowQuestion[]
+}

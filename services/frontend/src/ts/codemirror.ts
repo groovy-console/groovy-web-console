@@ -15,6 +15,7 @@ import { decodeUrlSafe, decompressFromBase64 } from './compression'
 import { loadGist, loadGithubFile } from './github'
 import { from, of } from 'rxjs'
 import { concatMap, tap } from 'rxjs/operators'
+import { loadCodeFromQuestion } from './stackoverflow'
 
 export class CodeEditor {
   private codeMirror: CodeMirror.EditorFromTextArea
@@ -120,6 +121,8 @@ export class CodeEditor {
             return loadGist(queryParams.get('gist'))
           } else if (queryParams.has('github')) {
             return loadGithubFile(queryParams.get('github'))
+          } else if (queryParams.has('stackoverflow')) {
+            return loadCodeFromQuestion(queryParams.get('stackoverflow'))
           }
           return of('')
         }),
