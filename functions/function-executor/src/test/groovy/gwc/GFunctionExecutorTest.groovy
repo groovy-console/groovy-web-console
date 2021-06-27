@@ -20,6 +20,7 @@ class GFunctionExecutorTest extends Specification {
   def "can execute ordinary script"() {
     given:
     httpRequest.method >> "POST"
+    httpRequest.contentType >> Optional.of("application/json")
     httpRequest.reader >> createReader([code: "print 'Hello World'"])
     def output = new StringWriter()
 
@@ -41,6 +42,7 @@ class GFunctionExecutorTest extends Specification {
   def "can execute Spock Specification script"() {
     given:
     httpRequest.method >> "POST"
+    httpRequest.contentType >> Optional.of("application/json")
     httpRequest.reader >> createReader([code: '''
 class ASpec extends Specification {
   def "hello world"() {
@@ -73,6 +75,7 @@ class ASpec extends Specification {
   def "can return objects"() {
     given:
     httpRequest.method >> "POST"
+    httpRequest.contentType >> Optional.of("application/json")
     httpRequest.reader >> createReader([code: '[a: 1, b: "hello", c: [d: 42]]'])
     def output = new StringWriter()
 
@@ -94,6 +97,7 @@ class ASpec extends Specification {
   def "can deal with serialization errors"() {
     given:
     httpRequest.method >> "POST"
+    httpRequest.contentType >> Optional.of("application/json")
     httpRequest.reader >> createReader([code: "GroovySystem"])
     def output = new StringWriter()
 
