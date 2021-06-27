@@ -18,7 +18,7 @@ export interface GistResponse {
 export interface StackOverflowQuestion {
   title: string,
   tags: string[],
-  body_markdown: string
+  body_markdown: string // eslint-disable-line camelcase
 }
 
 export interface StackOverflowResponse {
