@@ -95,12 +95,12 @@ public class GFunctionExecutor implements HttpFunction {
         responseContent = GSON.toJson(executionResult);
       } catch (Exception e) { // serialization of result may fail, so catch the exception
         errorOutput.append("\nFailed to serialize result: ").append(e.getMessage());
-        executionResult.setOut(errorOutput.toString());
+        executionResult.setErr(errorOutput.toString());
         executionResult.setResult(null);
         responseContent = GSON.toJson(executionResult);
       } catch (StackOverflowError e) { // serialization of result may fail, so catch the exception
         errorOutput.append("\nFailed to serialize result due to circular references.");
-        executionResult.setOut(errorOutput.toString());
+        executionResult.setErr(errorOutput.toString());
         executionResult.setResult(null);
         responseContent = GSON.toJson(executionResult);
       }
