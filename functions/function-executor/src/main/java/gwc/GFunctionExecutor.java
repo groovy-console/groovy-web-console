@@ -92,7 +92,7 @@ public class GFunctionExecutor implements HttpFunction {
           errorOutput.toString(),
           result,
           stats));
-      } catch (Exception e) { // serialization of result may fail, so catch the exception
+      } catch (Exception | StackOverflowError e) { // serialization of result may fail, so catch the exception
         errorOutput.append("\nFailed to serialize result: ").append(e.getMessage());
         responseContent = GSON.toJson(new ExecutionResult(
           outOutput,
