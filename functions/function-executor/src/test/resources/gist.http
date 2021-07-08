@@ -9,3 +9,4 @@ Accept: application/vnd.github.v3+json
 
 ###
 
+GET https://europe-west1-gwc-experiment.cloudfunctions.net/list_runtimes
