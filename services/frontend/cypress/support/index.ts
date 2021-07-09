@@ -13,8 +13,30 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
+/// <reference types="cypress" />
+
 // Import commands.ts using ES2015 syntax:
 import './commands'
 
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+// Must be declared global to be detected by typescript (allows import/export)
+declare global {
+  // eslint-disable-next-line no-unused-vars
+  namespace Cypress {
+    // eslint-disable-next-line no-unused-vars
+    interface Chainable<Subject = any> {
+      /**
+       * Asserts that the main CodeMirror editor has specific value.
+       * @param expectedValue the expected value
+       */
+      assertCodeEditorValue(expectedValue: string):void
+      /**
+       * Sets up a stub for the 'list_runtimes' network request.
+       * @example cy.dataCy('greeting')
+       */
+      stubListRuntimes(): void
+      }
+  }
+}
+
+// Convert this to a module instead of script (allows import/export)
+export {}

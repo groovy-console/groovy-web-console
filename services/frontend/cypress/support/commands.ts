@@ -23,3 +23,18 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+Cypress.Commands.add('assertCodeEditorValue', (expectedValue) => {
+  cy.get('#code + .CodeMirror')
+    .then((editor:any) => {
+      expect(editor[0].CodeMirror.getValue()).to.eq(expectedValue)
+    })
+})
+Cypress.Commands.add('stubListRuntimes', () => {
+  cy.intercept(
+    {
+      method: 'GET', // Route all GET requests
+      url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/list_runtimes' // that have a URL that matches '/users/*'
+    },
+    { fixture: 'list_runtimes.json' }
+  ).as('list_runtimes') // with this alias we can later refer to this mock
+})
