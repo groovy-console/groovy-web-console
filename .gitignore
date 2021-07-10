@@ -32,3 +32,4 @@ target/
 # javascript
 node_modules/
 dist/
+/services/frontend/cypress/videos/
