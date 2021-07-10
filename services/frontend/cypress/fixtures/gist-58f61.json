@@ -1,0 +1,82 @@
+{
+  "url": "https://api.github.com/gists/58f61cf36e112ff654041eeec8d11a98",
+  "forks_url": "https://api.github.com/gists/58f61cf36e112ff654041eeec8d11a98/forks",
+  "commits_url": "https://api.github.com/gists/58f61cf36e112ff654041eeec8d11a98/commits",
+  "id": "58f61cf36e112ff654041eeec8d11a98",
+  "node_id": "MDQ6R2lzdDU4ZjYxY2YzNmUxMTJmZjY1NDA0MWVlZWM4ZDExYTk4",
+  "git_pull_url": "https://gist.github.com/58f61cf36e112ff654041eeec8d11a98.git",
+  "git_push_url": "https://gist.github.com/58f61cf36e112ff654041eeec8d11a98.git",
+  "html_url": "https://gist.github.com/58f61cf36e112ff654041eeec8d11a98",
+  "files": {
+    "HelloWorld.groovy": {
+      "filename": "HelloWorld.groovy",
+      "type": "text/plain",
+      "language": "Groovy",
+      "raw_url": "https://gist.githubusercontent.com/leonard84/58f61cf36e112ff654041eeec8d11a98/raw/03f4e458b99479aaf77994e660896436705ba8c2/HelloWorld.groovy",
+      "size": 104,
+      "truncated": false,
+      "content": "import spock.lang.*\n\nclass ASpec extends Specification {\n  def \"hello world\"() {\n    expect: true\n  }\n}\n"
+    }
+  },
+  "public": true,
+  "created_at": "2021-06-21T20:33:19Z",
+  "updated_at": "2021-06-21T20:33:20Z",
+  "description": "Hello World",
+  "comments": 0,
+  "user": null,
+  "comments_url": "https://api.github.com/gists/58f61cf36e112ff654041eeec8d11a98/comments",
+  "owner": {
+    "login": "leonard84",
+    "id": 1151511,
+    "node_id": "MDQ6VXNlcjExNTE1MTE=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/1151511?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/leonard84",
+    "html_url": "https://github.com/leonard84",
+    "followers_url": "https://api.github.com/users/leonard84/followers",
+    "following_url": "https://api.github.com/users/leonard84/following{/other_user}",
+    "gists_url": "https://api.github.com/users/leonard84/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/leonard84/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/leonard84/subscriptions",
+    "organizations_url": "https://api.github.com/users/leonard84/orgs",
+    "repos_url": "https://api.github.com/users/leonard84/repos",
+    "events_url": "https://api.github.com/users/leonard84/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/leonard84/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "forks": [],
+  "history": [
+    {
+      "user": {
+        "login": "leonard84",
+        "id": 1151511,
+        "node_id": "MDQ6VXNlcjExNTE1MTE=",
+        "avatar_url": "https://avatars.githubusercontent.com/u/1151511?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/leonard84",
+        "html_url": "https://github.com/leonard84",
+        "followers_url": "https://api.github.com/users/leonard84/followers",
+        "following_url": "https://api.github.com/users/leonard84/following{/other_user}",
+        "gists_url": "https://api.github.com/users/leonard84/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/leonard84/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/leonard84/subscriptions",
+        "organizations_url": "https://api.github.com/users/leonard84/orgs",
+        "repos_url": "https://api.github.com/users/leonard84/repos",
+        "events_url": "https://api.github.com/users/leonard84/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/leonard84/received_events",
+        "type": "User",
+        "site_admin": false
+      },
+      "version": "cfd983c0e065b8e9730d5f91af5fd62e3e5e8795",
+      "committed_at": "2021-06-21T20:33:19Z",
+      "change_status": {
+        "total": 7,
+        "additions": 7,
+        "deletions": 0
+      },
+      "url": "https://api.github.com/gists/58f61cf36e112ff654041eeec8d11a98/cfd983c0e065b8e9730d5f91af5fd62e3e5e8795"
+    }
+  ],
+  "truncated": false
+}
