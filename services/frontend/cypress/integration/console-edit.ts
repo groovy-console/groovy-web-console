@@ -1,3 +1,4 @@
+import { interceptIndefinitely } from '../support/utils'
 
 describe('groovy webconsole', () => {
   beforeEach(() => {
@@ -88,5 +89,28 @@ describe('groovy webconsole', () => {
     cy.assertTabActive('tabResult')
 
     cy.assertOutputEditorValue('╷\n└─ Spock ✔\n   └─ ASpec ✔\n      └─ hello world ✔\n')
+  })
+
+  it('displays loading spinner when executing code', () => {
+    cy.setCodeEditorValue('println "hello world"')
+
+    const response = interceptIndefinitely(
+      {
+        method: 'POST',
+        url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/groovy_2_5'
+      },
+      { fixture: 'execute_hello_world_2_5.json' },
+      'execute_hello_world_2_5')
+
+    cy.get('#execute')
+      .should('not.have.class', 'is-loading') // should not display loading initially
+      .click()
+      .should('have.class', 'is-loading') // should display loading after click on execute
+      .then(() => {
+        response.sendResponse() // let the network request complete
+        cy.wait(`@${response.alias}`)
+      })
+      .get('#execute') // we need to select the element again
+      .should('not.have.class', 'is-loading') // loading indicator should be gone
   })
 })
