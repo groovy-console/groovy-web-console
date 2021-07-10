@@ -10,6 +10,8 @@ describe('groovy webconsole', () => {
   it('displays available groovy versions', () => {
     cy.visit('/')
 
+    cy.wait(['@list_runtimes', '@warmup_request'])
+
     // We use the `cy.get()` command to get all elements that match the selector.
     // Then, we use `should` to assert that there are three matched items
     cy.get('#version option').should('have.length', 3)
@@ -18,11 +20,15 @@ describe('groovy webconsole', () => {
   it('can load initial editor content from "code" parameter', () => {
     cy.visit('/?code=cHJpbnRsbiAiaGVsbG8gd29ybGQi')
 
+    cy.wait('@warmup_request')
+
     cy.assertCodeEditorValue('println "hello world"')
   })
 
   it('can load initial editor content from "codez" parameter', () => {
     cy.visit('/?codez=eJwrKMrMK8nJU1DKSM3JyVcozy_KSVECAFiSB8g')
+
+    cy.wait('@warmup_request')
 
     cy.assertCodeEditorValue('println "hello world"')
   })
@@ -36,7 +42,7 @@ describe('groovy webconsole', () => {
     cy.visit('/?gist=58f61cf36e112ff654041eeec8d11a98')
 
     // wait for the mocked request to respond
-    cy.wait('@gist')
+    cy.wait(['@warmup_request', '@gist'])
 
     cy.assertCodeEditorValue('import spock.lang.*\n\nclass ASpec extends Specification {\n  def "hello world"() {\n    expect: true\n  }\n}\n')
   })
@@ -50,7 +56,7 @@ describe('groovy webconsole', () => {
     cy.visit('/?github=spockframework/spock/blob/6d2e6cc6475346f2fef256124e37f70514f0b98e/spock-specs/src/test/groovy/org/spockframework/docs/datadriven/v7/MathSpec.groovy')
 
     // wait for the mocked request to respond
-    cy.wait('@github')
+    cy.wait(['@warmup_request', '@github'])
 
     cy.assertCodeEditorValue('println "hello world"')
   })

@@ -64,5 +64,5 @@ Cypress.Commands.add('stubListRuntimes', () => {
       url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/groovy_*'
     },
     ''
-  ).as('pre_load_request')
+  ).as('warmup_request')
 })
