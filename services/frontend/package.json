@@ -8,8 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:ui": "cypress run",
     "serve": "webpack serve",
-    "lint": "eslint src/ts/**",
-    "lint-fix": "eslint --fix src/ts/**",
+    "lint": "eslint src/ts/** cypress/**/*.ts",
+    "lint-fix": "eslint --fix src/ts/** cypress/**/*.ts",
     "ci": "start-server-and-test serve http://localhost:9000 test:ui"
   },
   "keywords": [
