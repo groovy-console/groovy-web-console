@@ -46,7 +46,12 @@ declare global {
        */
       stubListRuntimes(): void
 
-      assertTabActive(tabId: 'tabOutput' | 'tabResult' | 'tabError')
+      /**
+       * Asserts that the given tab is active
+       *
+       * @param tabId the id of the tab
+       */
+      assertTabActive(tabId: 'tabOutput' | 'tabResult' | 'tabError'): void
       }
   }
 }
