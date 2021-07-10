@@ -26,4 +26,32 @@ describe('groovy webconsole', () => {
 
     cy.assertCodeEditorValue('println "hello world"')
   })
+
+  it('can load initial editor content from "gist" parameter', () => {
+    cy.intercept({
+      method: 'GET',
+      url: 'https://api.github.com/gists/58f61cf36e112ff654041eeec8d11a98'
+    }, { fixture: 'gist-58f61' }).as('gist')
+
+    cy.visit('/?gist=58f61cf36e112ff654041eeec8d11a98')
+
+    // wait for the mocked request to respond
+    cy.wait('@gist')
+
+    cy.assertCodeEditorValue('import spock.lang.*\n\nclass ASpec extends Specification {\n  def "hello world"() {\n    expect: true\n  }\n}\n')
+  })
+
+  it('can load initial editor content from "github" parameter', () => {
+    cy.intercept({
+      method: 'GET',
+      url: 'https://rawcdn.githack.com/spockframework/spock/6d2e6cc6475346f2fef256124e37f70514f0b98e/spock-specs/src/test/groovy/org/spockframework/docs/datadriven/v7/MathSpec.groovy'
+    }, 'println "hello world"').as('github')
+
+    cy.visit('/?github=spockframework/spock/blob/6d2e6cc6475346f2fef256124e37f70514f0b98e/spock-specs/src/test/groovy/org/spockframework/docs/datadriven/v7/MathSpec.groovy')
+
+    // wait for the mocked request to respond
+    cy.wait('@github')
+
+    cy.assertCodeEditorValue('println "hello world"')
+  })
 })

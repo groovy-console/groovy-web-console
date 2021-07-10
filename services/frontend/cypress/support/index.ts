@@ -29,9 +29,20 @@ declare global {
        * @param expectedValue the expected value
        */
       assertCodeEditorValue(expectedValue: string):void
+
+      /**
+       * Sets the value of the main CodeMirror editor
+       * @param newValue
+       */
+      setCodeEditorValue(newValue: string):void
+
+      /**
+       * Asserts that the output CodeMirror editor has specific value.
+       * @param expectedValue the expected value
+       */
+      assertOutputEditorValue(expectedValue: string):void
       /**
        * Sets up a stub for the 'list_runtimes' network request.
-       * @example cy.dataCy('greeting')
        */
       stubListRuntimes(): void
       }
