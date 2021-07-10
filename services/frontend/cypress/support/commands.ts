@@ -48,6 +48,12 @@ Cypress.Commands.add('assertOutputEditorValue', (expectedValue) => {
     })
 })
 
+Cypress.Commands.add('assertTabActive', (tabId) => {
+  cy.get(`#${tabId}`)
+    .parent()
+    .should('have.class', 'is-active')
+})
+
 Cypress.Commands.add('stubListRuntimes', () => {
   cy.intercept(
     {

@@ -1,0 +1,8 @@
+{
+  "out": "",
+  "err": "unexpected char: 0xFFFF @ line 1, column 21.",
+  "info": {
+    "executionTime": -1,
+    "groovyVersion": "2.5.14"
+  }
+}

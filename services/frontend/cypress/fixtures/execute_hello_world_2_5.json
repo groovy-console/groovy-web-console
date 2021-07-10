@@ -1,0 +1,8 @@
+{
+  "out": "hello world\n",
+  "err": "",
+  "info": {
+    "executionTime": 25,
+    "groovyVersion": "2.5.14"
+  }
+}

@@ -45,6 +45,8 @@ declare global {
        * Sets up a stub for the 'list_runtimes' network request.
        */
       stubListRuntimes(): void
+
+      assertTabActive(tabId: 'tabOutput' | 'tabResult' | 'tabError')
       }
   }
 }
