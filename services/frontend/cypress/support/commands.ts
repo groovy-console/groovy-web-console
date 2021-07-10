@@ -28,7 +28,7 @@
 
 Cypress.Commands.add('assertCodeEditorValue', (expectedValue) => {
   cy.get('#code + .CodeMirror')
-    .then((editor:any) => {
+    .should((editor:any) => {
       expect(editor[0].CodeMirror.getValue()).to.eq(expectedValue)
     })
 })
@@ -43,7 +43,7 @@ Cypress.Commands.add('setCodeEditorValue', (newValue) => {
 
 Cypress.Commands.add('assertOutputEditorValue', (expectedValue) => {
   cy.get('#output + .CodeMirror')
-    .then((editor:any) => {
+    .should((editor:any) => {
       expect(editor[0].CodeMirror.getValue()).to.eq(expectedValue)
     })
 })
