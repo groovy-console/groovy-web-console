@@ -67,22 +67,16 @@ public class GFunctionExecutor implements HttpFunction {
     Object result = null;
     ExecutionInfo stats = new ExecutionInfo();
     try (var ignore = new MetaClassRegistryGuard();
-         var ignore2 = outputRedirector.redirect()) {
+         var ignore2 = outputRedirector.redirect();
+         var igonre3 = new SystemPropertiesGuard()) {
       disableSpockVersionCheckForUnsupportedGroovyVersion();
-      
-      Properties originalSysProps = new Properties();
-      originalSysProps.putAll(System.getProperties());
-      try {
-        long executionStart = System.currentTimeMillis();
-        if (SPOCK_SCRIPT.matcher(inputScriptOrClass).find()) {
-          result = executeSpock(inputScriptOrClass);
-        } else {
-          result = executeGroovyScript(inputScriptOrClass, outputRedirector);
-        }
-        stats.setExecutionTime(System.currentTimeMillis() - executionStart);
-      } finally {
-        System.setProperties(originalSysProps);
+      long executionStart = System.currentTimeMillis();
+      if (SPOCK_SCRIPT.matcher(inputScriptOrClass).find()) {
+        result = executeSpock(inputScriptOrClass);
+      } else {
+        result = executeGroovyScript(inputScriptOrClass, outputRedirector);
       }
+      stats.setExecutionTime(System.currentTimeMillis() - executionStart);
     } catch (MultipleCompilationErrorsException e) {
       handleCompilationErrors(errorOutput, e);
     } catch (Throwable t) {
