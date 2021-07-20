@@ -18,7 +18,7 @@ import org.codehaus.groovy.control.messages.*;
 
 @Log
 public class GFunctionExecutor implements HttpFunction {
-  private static final Logger LOG = Logger.getLogger(GroovyFunctionExecutor.class.getName());
+  private static final Logger LOG = Logger.getLogger(GFunctionExecutor.class.getName());
 
   private static final Pattern SPOCK_SCRIPT = Pattern.compile("extends\\s+(?:spock\\.lang\\.)?Specification");
   private static final List<String> FILTER_STACKTRACE = List.of(
