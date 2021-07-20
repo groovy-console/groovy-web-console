@@ -116,6 +116,27 @@ class ASpec extends Specification {
     response.result == null
   }
 
+  def "ensure system properties are not affected by scripts"() {
+    given:
+    httpRequest.method >> "POST"
+    httpRequest.contentType >> Optional.of("application/json")
+    httpRequest.reader >> createReader([code: "System.setProperty('foo', 'bar')"])
+    def output = new StringWriter()
+    def originalSysProps = new Properties();
+    originalSysProps.putAll(System.getProperties());
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.appendHeader('Access-Control-Allow-Origin', '*')
+    1 * httpResponse.setContentType('application/json')
+    1 * httpResponse.getWriter() >> new BufferedWriter(output)
+
+    and:
+    !System.getProperties().containsKey('foo')
+  }
+
   BufferedReader createReader(Map input) {
     new BufferedReader(new StringReader(JsonOutput.toJson(input)))
   }

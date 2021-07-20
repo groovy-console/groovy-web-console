@@ -61,7 +61,6 @@ public class GFunctionExecutor implements HttpFunction {
     String inputScriptOrClass = scriptRequest.getCode();
     LOG.info("Input code:\n---\n" + inputScriptOrClass + "\n---\n");
 
-
     var errorOutput = new StringBuilder();
 
     OutputRedirector outputRedirector = new OutputRedirector();
@@ -70,13 +69,20 @@ public class GFunctionExecutor implements HttpFunction {
     try (var ignore = new MetaClassRegistryGuard();
          var ignore2 = outputRedirector.redirect()) {
       disableSpockVersionCheckForUnsupportedGroovyVersion();
-      long executionStart = System.currentTimeMillis();
-      if (SPOCK_SCRIPT.matcher(inputScriptOrClass).find()) {
-        result = executeSpock(inputScriptOrClass);
-      } else {
-        result = executeGroovyScript(inputScriptOrClass, outputRedirector);
+      
+      Properties originalSysProps = new Properties();
+      originalSysProps.putAll(System.getProperties());
+      try {
+        long executionStart = System.currentTimeMillis();
+        if (SPOCK_SCRIPT.matcher(inputScriptOrClass).find()) {
+          result = executeSpock(inputScriptOrClass);
+        } else {
+          result = executeGroovyScript(inputScriptOrClass, outputRedirector);
+        }
+        stats.setExecutionTime(System.currentTimeMillis() - executionStart);
+      } finally {
+        System.setProperties(originalSysProps);
       }
-      stats.setExecutionTime(System.currentTimeMillis() - executionStart);
     } catch (MultipleCompilationErrorsException e) {
       handleCompilationErrors(errorOutput, e);
     } catch (Throwable t) {
