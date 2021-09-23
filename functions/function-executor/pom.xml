@@ -26,6 +26,17 @@
         <groovy.version>3.0.9</groovy.version>
         <spock.version>2.0-groovy-3.0</spock.version>
       </properties>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-bom</artifactId>
+            <version>${groovy.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
       <dependencies>
         <dependency>
           <groupId>org.codehaus.groovy</groupId>
@@ -48,6 +59,17 @@
         <groovy.version>2.5.15</groovy.version>
         <spock.version>2.0-groovy-2.5</spock.version>
       </properties>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-bom</artifactId>
+            <version>${groovy.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
       <dependencies>
         <dependency>
           <groupId>org.codehaus.groovy</groupId>
@@ -70,6 +92,17 @@
         <groovy.version>4.0.0-beta-1</groovy.version>
         <spock.version>2.0-groovy-3.0</spock.version>
       </properties>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-bom</artifactId>
+            <version>${groovy.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
       <dependencies>
         <dependency>
           <groupId>org.apache.groovy</groupId>
