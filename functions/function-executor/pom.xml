@@ -87,9 +87,9 @@
       </dependencies>
     </profile>
     <profile>
-      <id>groovy_4_0_beta1</id>
+      <id>groovy_4_0_rc1</id>
       <properties>
-        <groovy.version>4.0.0-beta-1</groovy.version>
+        <groovy.version>4.0.0-rc-1</groovy.version>
         <spock.version>2.0-groovy-3.0</spock.version>
       </properties>
       <dependencyManagement>
