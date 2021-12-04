@@ -1,5 +1,5 @@
 import { ExecutionResult } from './types'
-import { fromEvent, of } from 'rxjs'
+import { fromEvent, Observable, of } from 'rxjs'
 import { concatMap, delay, map, tap, throttleTime } from 'rxjs/operators'
 import { GroovyConsole } from './groovy-console'
 import { compressToBase64 } from './compression'
@@ -9,7 +9,9 @@ const groovyConsole = new GroovyConsole()
 const codeArea = document.getElementById('code') as HTMLTextAreaElement
 const outputArea = document.getElementById('output') as HTMLTextAreaElement
 const version = document.getElementById('version') as HTMLSelectElement
+const astPhaseSelect = document.getElementById('astPhase') as HTMLSelectElement
 const executeButton = document.getElementById('execute')
+const inspectAstButton = document.getElementById('inspectAst')
 const share = document.getElementById('share')
 const shareLink = document.getElementById('shareLink') as HTMLInputElement
 const shareLinkTooltip = document.getElementById('shareLinkTooltip')
@@ -80,26 +82,26 @@ function addTabBehavior (tab: HTMLElement) {
     ).subscribe(() => updateOutput())
 }
 
-export function initView () {
-  fromEvent(executeButton, 'click')
+function scriptExecution (target: HTMLElement, action: () => Observable<ExecutionResult>) {
+  fromEvent(target, 'click')
     .pipe(
       throttleTime(500),
       tap(() => {
-        executeButton.classList.add('is-loading')
+        target.classList.add('is-loading')
         clearOutput()
       }),
-      concatMap(() => groovyConsole.executeScript(version.value, codeCM.getCode())),
+      concatMap(action),
       tap(result => handleExecutionResult(result))
     )
     .subscribe({
       next: result => {
         executionResult = result
-        executeButton.classList.remove('is-loading')
+        target.classList.remove('is-loading')
         updateOutput()
       },
       error: err => {
         console.log('Response NOT OK', err)
-        executeButton.classList.remove('is-loading')
+        target.classList.remove('is-loading')
         executionResult = {
           out: '',
           err: 'An error occurred while sending the Groovy script for execution',
@@ -109,6 +111,11 @@ export function initView () {
         updateOutput()
       }
     })
+}
+
+export function initView () {
+  scriptExecution(executeButton, () => groovyConsole.executeScript(version.value, codeCM.getCode()))
+  scriptExecution(inspectAstButton, () => groovyConsole.inspectAst(version.value, codeCM.getCode(), astPhaseSelect.value))
 
   fromEvent(share, 'click')
     .pipe(

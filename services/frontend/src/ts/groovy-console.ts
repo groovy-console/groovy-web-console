@@ -31,15 +31,30 @@ export class GroovyConsole {
   }
 
   public executeScript (groovyVersion: string, script: string): Observable<ExecutionResult> {
+    const body = JSON.stringify({
+      code: script,
+      action: 'run'
+    })
+    return this.performRequest(groovyVersion, body)
+  }
+
+  public inspectAst (groovyVersion: string, script: string, astPhase: string): Observable<ExecutionResult> {
+    const body = JSON.stringify({
+      code: script,
+      astPhase,
+      action: 'ast'
+    })
+    return this.performRequest(groovyVersion, body)
+  }
+
+  private performRequest (groovyVersion: string, body: string) {
     const headers = new Headers()
     headers.append('Content-Type', 'application/json')
     const url = LOCAL_DEVELOPMENT ? baseUrl : `${baseUrl}${groovyVersion}`
     return fromFetch(url, {
       method: 'POST',
       headers: headers,
-      body: JSON.stringify({
-        code: script
-      })
+      body: body
     }).pipe(
       concatMap(response => response.json()),
       map(response => response as ExecutionResult)
