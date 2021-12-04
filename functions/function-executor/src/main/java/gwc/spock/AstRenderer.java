@@ -7,9 +7,11 @@ import java.util.*;
 import org.codehaus.groovy.control.CompilePhase;
 
 public class AstRenderer {
-  public String render(String script, String compilePhase) {
+  public String render(String script, String compilePhase, boolean isSpock) {
     CompilePhase phase = parseCompilePhase(compilePhase);
-    TranspileResult transpileResult = embeddedSpecCompiler.transpileWithImports(script, EnumSet.allOf(Show.class), phase);
+    TranspileResult transpileResult = isSpock ?
+      embeddedSpecCompiler.transpileWithImports(script, EnumSet.allOf(Show.class), phase) :
+      embeddedSpecCompiler.transpile(script, EnumSet.allOf(Show.class), phase);
     return transpileResult.getSource();
   }
 

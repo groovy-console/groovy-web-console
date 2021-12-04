@@ -71,12 +71,15 @@ public class GFunctionExecutor implements HttpFunction {
          var igonre3 = new SystemPropertiesGuard()) {
       disableSpockVersionCheckForUnsupportedGroovyVersion();
       long executionStart = System.currentTimeMillis();
+      boolean isSpock = SPOCK_SCRIPT.matcher(inputScriptOrClass).find();
       if ("ast".equalsIgnoreCase(scriptRequest.getAction())) {
-        result = transpileScript(inputScriptOrClass, scriptRequest.getAstPhase());
-      } else if (SPOCK_SCRIPT.matcher(inputScriptOrClass).find()) {
-        result = executeSpock(inputScriptOrClass);
+        result = transpileScript(inputScriptOrClass, scriptRequest.getAstPhase(), isSpock);
       } else {
-        result = executeGroovyScript(inputScriptOrClass, outputRedirector);
+        if (isSpock) {
+          result = executeSpock(inputScriptOrClass);
+        } else {
+          result = executeGroovyScript(inputScriptOrClass, outputRedirector);
+        }
       }
       stats.setExecutionTime(System.currentTimeMillis() - executionStart);
     } catch (MultipleCompilationErrorsException e) {
@@ -130,8 +133,8 @@ public class GFunctionExecutor implements HttpFunction {
     return scriptRunner.run(inputScriptOrClass);
   }
 
-  private String transpileScript(String script, String astPhase) {
-    return new AstRenderer().render(script, astPhase);
+  private String transpileScript(String script, String astPhase, boolean isSpock) {
+    return new AstRenderer().render(script, astPhase, isSpock);
   }
 
   private void disableSpockVersionCheckForUnsupportedGroovyVersion() {
