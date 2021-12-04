@@ -87,7 +87,12 @@ module.exports = {
   // generate source map
   devtool: 'source-map',
   devServer: {
-    contentBase: path.join(__dirname, 'dist'),
+    static: {
+      directory: path.join(__dirname, 'dist')
+    },
+    client: {
+      overlay: { errors: true, warnings: false }
+    },
     compress: true,
     port: 9000
   },
