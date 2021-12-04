@@ -15,5 +15,10 @@ module.exports = {
     '@typescript-eslint'
   ],
   rules: {
+  },
+  globals: {
+    // also define in src/@types/globals.d.ts
+    GROOVY_CONSOLE_SERVICE_URL: 'readonly',
+    LOCAL_DEVELOPMENT: 'readonly'
   }
 }
