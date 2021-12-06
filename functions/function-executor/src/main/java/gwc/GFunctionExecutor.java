@@ -11,7 +11,7 @@ import com.google.gson.Gson;
 import groovy.lang.*;
 import groovy.util.logging.Log;
 import gwc.representations.*;
-import gwc.spock.ScriptRunner;
+import gwc.spock.*;
 import gwc.util.*;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.*;
@@ -41,7 +41,7 @@ public class GFunctionExecutor implements HttpFunction {
       handlePreFlightRequest(response);
     } else if ("POST".equals(request.getMethod())) {
       if (!"application/json".equalsIgnoreCase((request.getContentType().orElse("")))) {
-         response.setStatusCode(406);
+        response.setStatusCode(406);
       } else {
         handleRealInvocation(request, response);
       }
@@ -71,10 +71,15 @@ public class GFunctionExecutor implements HttpFunction {
          var igonre3 = new SystemPropertiesGuard()) {
       disableSpockVersionCheckForUnsupportedGroovyVersion();
       long executionStart = System.currentTimeMillis();
-      if (SPOCK_SCRIPT.matcher(inputScriptOrClass).find()) {
-        result = executeSpock(inputScriptOrClass);
+      boolean isSpock = SPOCK_SCRIPT.matcher(inputScriptOrClass).find();
+      if ("ast".equalsIgnoreCase(scriptRequest.getAction())) {
+        result = transpileScript(inputScriptOrClass, scriptRequest.getAstPhase(), isSpock);
       } else {
-        result = executeGroovyScript(inputScriptOrClass, outputRedirector);
+        if (isSpock) {
+          result = executeSpock(inputScriptOrClass);
+        } else {
+          result = executeGroovyScript(inputScriptOrClass, outputRedirector);
+        }
       }
       stats.setExecutionTime(System.currentTimeMillis() - executionStart);
     } catch (MultipleCompilationErrorsException e) {
@@ -126,6 +131,10 @@ public class GFunctionExecutor implements HttpFunction {
     // TODO revisit colored output
     scriptRunner.setDisableColors(true);
     return scriptRunner.run(inputScriptOrClass);
+  }
+
+  private String transpileScript(String script, String astPhase, boolean isSpock) {
+    return new AstRenderer().render(script, astPhase, isSpock);
   }
 
   private void disableSpockVersionCheckForUnsupportedGroovyVersion() {

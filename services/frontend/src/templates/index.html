@@ -91,6 +91,27 @@
                             <span>Share as Link</span>
                         </button>
                     </div>
+
+
+                    <div class="control select ml-6">
+                        <select name="astPhase" id="astPhase">
+                            <option value="CONVERSION">Conversion</option>
+                            <option value="SEMANTIC_ANALYSIS">Semantic Analysis</option>
+                            <option value="CANONICALIZATION">Canonicalization</option>
+                            <option value="INSTRUCTION_SELECTION">Instruction Selection</option>
+                            <option value="CLASS_GENERATION">Class Generation</option>
+                            <option value="OUTPUT">Output</option>
+                            <option value="FINALIZATION" selected>Finalization</option>
+                        </select>
+                    </div>
+                    <div class="control">
+                        <button class="button is-white" id="inspectAst">
+                    <span class="icon is-small">
+                        <i class="fas fa-search"></i>
+                      </span>
+                            <span>Inspect Ast</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="box is-hidden">
                     <div class="control has-icons-right">
