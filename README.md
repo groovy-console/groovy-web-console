@@ -16,7 +16,7 @@ Use `mvn package -P groovy_2_5`
 
 ### Deploying the backend
 
-Go to https://github.com/glaforge/gwc-experiment/actions/workflows/deploy.yml and click on `Run Workflow`
+Go to https://github.com/groovy-console/groovy-web-console/actions/workflows/deploy.yml and click on `Run Workflow`
 
 ## Frontend
 
@@ -44,7 +44,7 @@ You can check the code style with `npm run lint` and automatically fix most issu
 ### Deploy App Engine web frontend
 
 The web frontend consists only of static assets (HTML, JavaScript, and CSS).
-Go to https://github.com/glaforge/gwc-experiment/actions/workflows/deploy-frontend.yml and click on `Run Workflow`.
+Go to https://github.com/groovy-console/groovy-web-console/actions/workflows/deploy-frontend.yml and click on `Run Workflow`.
 
 Alternatively, to deploy it manually after building it, go to the `services/frontend` directory, and type: `./deploy.sh`
 
