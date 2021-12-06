@@ -225,6 +225,7 @@
         <version>0.9.7</version>
         <configuration>
           <functionTarget>gwc.GFunctionExecutor</functionTarget>
+          <port>9080</port>
         </configuration>
       </plugin>
       <plugin>

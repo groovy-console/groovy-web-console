@@ -7,10 +7,11 @@
     "build": "webpack --mode=production",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:ui": "cypress run",
-    "serve": "webpack serve",
+    "serve-remote": "webpack serve",
+    "serve-local": "webpack serve --mode=development",
     "lint": "eslint src/ts/** cypress/**/*.ts",
     "lint-fix": "eslint --fix src/ts/** cypress/**/*.ts",
-    "ci": "start-server-and-test serve http://localhost:9000 test:ui"
+    "ci": "start-server-and-test serve-remote http://localhost:9000 test:ui"
   },
   "keywords": [
     "groovy",

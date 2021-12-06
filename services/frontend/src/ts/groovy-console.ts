@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs'
+import { Observable, of } from 'rxjs'
 import { ExecutionResult } from './types'
 import { fromFetch } from 'rxjs/fetch'
 import { concatMap, map } from 'rxjs/operators'
@@ -11,10 +11,14 @@ export class GroovyVersion {
   }
 }
 
-const baseUrl = 'https://europe-west1-gwc-experiment.cloudfunctions.net/'
+const baseUrl = GROOVY_CONSOLE_SERVICE_URL
 
 export class GroovyConsole {
   public getAvailableGroovyVersions (): Observable<GroovyVersion[]> {
+    // eslint-disable-next-line no-undef
+    if (LOCAL_DEVELOPMENT) {
+      return of([new GroovyVersion('groovy_127.0.0.1')])
+    }
     const headers = new Headers()
     headers.append('Content-Type', 'application/json')
     return fromFetch(`${baseUrl}list_runtimes`, {
@@ -29,7 +33,8 @@ export class GroovyConsole {
   public executeScript (groovyVersion: string, script: string): Observable<ExecutionResult> {
     const headers = new Headers()
     headers.append('Content-Type', 'application/json')
-    return fromFetch(`${baseUrl}${groovyVersion}`, {
+    const url = LOCAL_DEVELOPMENT ? baseUrl : `${baseUrl}${groovyVersion}`
+    return fromFetch(url, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({

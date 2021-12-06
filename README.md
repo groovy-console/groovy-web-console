@@ -4,7 +4,7 @@
 
 ### Building the backend
 
-Go to `functions/function-executor` and type `mvn package`.
+Go to `functions/function-executor` and type `mvnw package`.
 The output will be in `functions/function-executor/target/deployment`.
 
 There are different profiles, one for each groovy version:
@@ -32,7 +32,10 @@ The output will be in `services/frontend/dist`.
 
 ### Running the frontend locally
 
-Do the same steps as building the frontend but substitute the last command for: `npm run serve`
+Do the same steps as building the frontend but substitute the last command for:
+
+ * `npm run serve-remote` to run the frontend with the remote backend
+ * `npm run serve-local` to run the frontend with the local backend (start it with `mvnw function:run`)
 
 ### Checking code style
 
