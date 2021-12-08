@@ -22,7 +22,7 @@ Go to https://github.com/groovy-console/groovy-web-console/actions/workflows/dep
 
 ### Building the frontend
 
-You need to have Node 14 LTS installed.
+You need to have Node 16 LTS installed.
 
 1. Navigate to `services/frontend`
 2. Install dependencies with `npm ci`
