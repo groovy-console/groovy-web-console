@@ -12,5 +12,5 @@ import '../resources/css/style.scss'
 
 initView()
 
-library.add(faCopy, faFileCode, faHome, faPlay, faSave, faShare, faSearch, faUser)
+library.add(faCopy, faGithub, faPlay, faSave, faShare, faSearch)
 dom.i2svg()
