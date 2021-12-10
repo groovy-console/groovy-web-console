@@ -1,7 +1,7 @@
 import { dom, library } from '@fortawesome/fontawesome-svg-core'
 import {
   faCopy,
-  faGithub,
+  faCode,
   faPlay,
   faSave,
   faSearch,
@@ -12,5 +12,5 @@ import '../resources/css/style.scss'
 
 initView()
 
-library.add(faCopy, faGithub, faPlay, faSave, faShare, faSearch)
+library.add(faCopy, faCode, faPlay, faSave, faShare, faSearch)
 dom.i2svg()
