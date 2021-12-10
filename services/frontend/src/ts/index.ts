@@ -1,13 +1,11 @@
 import { dom, library } from '@fortawesome/fontawesome-svg-core'
 import {
   faCopy,
-  faFileCode,
-  faHome,
+  faGithub,
   faPlay,
   faSave,
   faSearch,
-  faShare,
-  faUser
+  faShare
 } from '@fortawesome/free-solid-svg-icons'
 import { initView } from './view'
 import '../resources/css/style.scss'
