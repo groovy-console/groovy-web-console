@@ -36,5 +36,5 @@ jobs:
           export_default_credentials: true
       - id: Deploy
         run: |
-          gcloud functions deploy ${{ matrix.variant }} --entry-point gwc.GFunctionExecutor --runtime java11 --trigger-http --memory 8192MB --allow-unauthenticated --source functions/function-executor/target/deployment --region europe-west1
+          gcloud functions deploy ${{ matrix.variant }} --entry-point gwc.GFunctionExecutor --runtime java11 --trigger-http --memory 8192MB --allow-unauthenticated --source functions/function-executor/target/deployment --region europe-west1 -service-account minimal-sa@gwc-experiment.iam.gserviceaccount.com
 
