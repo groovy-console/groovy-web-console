@@ -57,6 +57,16 @@ describe('groovy webconsole', () => {
       cy.wait(['@warmup_request', '@gist'])
 
       cy.assertCodeEditorValue('import spock.lang.*\n\nclass ASpec extends Specification {\n  def "hello world"() {\n    expect: true\n  }\n}\n')
+    });
+
+    ['2_5', '3_0', '4_0'].forEach(version => {
+      it(`can set groovy version via "g" parameter for "groovy_${version}"`, () => {
+        cy.visit(`/?g=groovy_${version}`)
+
+        cy.wait('@warmup_request')
+
+        cy.get('#version').should('have.value', `groovy_${version}`)
+      })
     })
 
     it('can load initial editor content from "github" parameter', () => {

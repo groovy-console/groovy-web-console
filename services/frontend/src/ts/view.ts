@@ -1,5 +1,5 @@
 import { ExecutionResult } from './types'
-import { fromEvent, Observable, of } from 'rxjs'
+import { combineLatest, fromEvent, Observable, of, startWith } from 'rxjs'
 import { concatMap, delay, map, tap, throttleTime } from 'rxjs/operators'
 import { GroovyConsole } from './groovy-console'
 import { compressToBase64 } from './compression'
@@ -123,7 +123,7 @@ export function initView () {
       map(() => codeCM.getCode()),
       concatMap(editorContent => compressToBase64(editorContent))
     ).subscribe(codez => {
-      shareLink.value = `${location.origin + location.pathname}?codez=${codez}`;
+      shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`;
       (shareLink.parentNode.parentNode as HTMLElement).classList.remove('is-hidden')
     })
 
@@ -136,21 +136,36 @@ export function initView () {
       tap(() => shareLinkTooltip.classList.remove('has-tooltip-active'))
     ).subscribe()
 
-  of(1)
+  const fetchGroovyVersion = of(1)
     .pipe(
       tap(() => (version.parentNode as HTMLElement).classList.add('is-loading')),
       concatMap(() => groovyConsole.getAvailableGroovyVersions()),
-      tap(() => (version.parentNode as HTMLElement).classList.remove('is-loading')),
-      tap(versions => {
+      tap(() => (version.parentNode as HTMLElement).classList.remove('is-loading'))
+    )
+
+  const groovyParam = of(location.search)
+    .pipe(
+      map(query => new URLSearchParams(query)),
+      map(queryParams => queryParams.has('g') ? queryParams.get('g') : ''),
+      startWith('')
+    )
+
+  combineLatest([fetchGroovyVersion, groovyParam])
+    .pipe(
+      tap(([versions, paramVersion]) => {
         version.innerHTML = '' // remove children
         versions.forEach(gv => {
           const optionElement = document.createElement('option')
           optionElement.value = gv.id
           optionElement.text = gv.name
+          if (paramVersion !== '' && gv.id.startsWith(paramVersion)) {
+            optionElement.selected = true
+          }
           version.add(optionElement)
         })
       })
-    ).subscribe(() => groovyConsole.pingFunction(version.value).subscribe())
+    )
+    .subscribe(() => groovyConsole.pingFunction(version.value).subscribe())
 
   fromEvent(version, 'change')
     .pipe(
