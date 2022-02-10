@@ -17,15 +17,15 @@ describe('groovy webconsole', () => {
   it('can save editor contents', () => {
     cy.setCodeEditorValue('println "hello world"')
 
-    cy.get('#shareLink')
+    cy.get('#shareAsCodeLink')
       .should('not.be.visible')
 
-    cy.get('#share')
+    cy.get('#shareAsCode')
       .click()
 
-    cy.get('#shareLink')
+    cy.get('#shareAsCodeLink')
       .should('be.visible')
-      .should('have.value', 'http://localhost:9000/?codez=eJwrKMrMK8nJU1DKSM3JyVcozy_KSVECAFiSB8g')
+      .should('have.value', 'http://localhost:9000/?g=groovy_2_5&codez=eJwrKMrMK8nJU1DKSM3JyVcozy_KSVECAFiSB8g')
   })
 
   it('can execute groovy script', () => {
