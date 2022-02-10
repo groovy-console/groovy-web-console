@@ -130,11 +130,7 @@ export function initView () {
   fromEvent(shareLink, 'click')
     .pipe(
       throttleTime(500),
-      tap(() => {
-        shareLink.focus()
-        shareLink.select()
-        document.execCommand('copy')
-      }),
+      concatMap(() => navigator.clipboard.writeText(shareLink.value)),
       tap(() => shareLinkTooltip.classList.add('has-tooltip-active')),
       delay(500),
       tap(() => shareLinkTooltip.classList.remove('has-tooltip-active'))
