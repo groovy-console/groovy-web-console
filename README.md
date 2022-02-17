@@ -9,6 +9,7 @@ The output will be in `functions/function-executor/target/deployment`.
 
 There are different profiles, one for each groovy version:
 
+* `groovy_4_0`
 * `groovy_3_0` (default)
 * `groovy_2_5`
 
