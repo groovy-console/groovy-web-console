@@ -34,3 +34,4 @@ node_modules/
 dist/
 /services/frontend/cypress/videos/
 /services/frontend/cypress/screenshots/
+!.mvn/wrapper/maven-wrapper.jar
