@@ -11,7 +11,7 @@
   <properties>
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
-    <groovy.version>3.0.9</groovy.version>
+    <groovy.version>3.0.10</groovy.version>
     <spock.version.major>2.2-M1</spock.version.major>
     <spock.version>${spock.version.major}-groovy-${spock.version.groovyVariant}</spock.version>
     <spock.version.groovyVariant>3.0</spock.version.groovyVariant>
@@ -25,7 +25,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <groovy.version>3.0.9</groovy.version>
+        <groovy.version>3.0.10</groovy.version>
         <spock.version.groovyVariant>3.0</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
@@ -58,7 +58,7 @@
     <profile>
       <id>groovy_2_5</id>
       <properties>
-        <groovy.version>2.5.15</groovy.version>
+        <groovy.version>2.5.16</groovy.version>
         <spock.version.groovyVariant>2.5</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
@@ -91,7 +91,7 @@
     <profile>
       <id>groovy_4_0</id>
       <properties>
-        <groovy.version>4.0.0</groovy.version>
+        <groovy.version>4.0.1</groovy.version>
         <spock.version.groovyVariant>4.0</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
