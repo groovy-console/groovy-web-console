@@ -29,7 +29,7 @@ jobs:
           pushd functions/function-executor
           ../../mvnw -B -V package -P ${{ matrix.variant }} "-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true"
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_CREDENTIALS }}

@@ -15,7 +15,7 @@ jobs:
       - run: cd services/frontend && npm ci
       - run: cd services/frontend && npm run build
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_CREDENTIALS }}
