@@ -91,7 +91,7 @@
     <profile>
       <id>groovy_4_0</id>
       <properties>
-        <groovy.version>4.0.1</groovy.version>
+        <groovy.version>4.0.2</groovy.version>
         <spock.version.groovyVariant>4.0</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
