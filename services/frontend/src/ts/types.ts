@@ -1,7 +1,14 @@
+export interface ExecutionInfo {
+  executionTime: number
+  groovyVersion: string
+  spockVersion: string
+}
+
 export interface ExecutionResult {
   out: string
   err: string
   result: string
+  info: ExecutionInfo
 }
 
 export interface GistFile {

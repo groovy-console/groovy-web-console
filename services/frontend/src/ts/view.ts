@@ -18,13 +18,15 @@ const shareLinkTooltip = document.getElementById('shareLinkTooltip')
 const tabOutput = document.getElementById('tabOutput')
 const tabResult = document.getElementById('tabResult')
 const tabError = document.getElementById('tabError')
-const tabs = [tabOutput, tabResult, tabError]
+const tabExecInfo = document.getElementById('tabExecInfo')
+const tabs = [tabOutput, tabResult, tabError, tabExecInfo]
 let activeTab: HTMLElement
 
 let executionResult: ExecutionResult = {
   out: '',
   err: '',
-  result: null
+  result: null,
+  info: null
 }
 
 const codeCM = new CodeEditor(codeArea)
@@ -40,6 +42,12 @@ function clearOutput () {
 function updateOutput () {
   if (activeTab === tabOutput) {
     outputCM.setContent(executionResult.out || '')
+  } else if (activeTab === tabExecInfo) {
+    if (executionResult.info === null) {
+      outputCM.setContent('No execution info available')
+    } else {
+      outputCM.setContent(JSON.stringify(executionResult.info, null, 2))
+    }
   } else if (activeTab === tabResult) {
     if (executionResult.result !== null && executionResult.result !== undefined) {
       console.log('Type of result: ', typeof executionResult.result)
@@ -69,8 +77,9 @@ function handleExecutionResult (result: ExecutionResult) {
 }
 
 function switchTab (active: HTMLElement) {
-  [tabOutput, tabResult, tabError].forEach(e =>
-    (e.parentNode as HTMLElement).classList.remove('is-active'));
+  tabs.forEach(e =>
+    (e.parentNode as HTMLElement).classList.remove('is-active')
+  );
   (active.parentNode as HTMLElement).classList.add('is-active')
   activeTab = active
 }
@@ -105,7 +114,8 @@ function scriptExecution (target: HTMLElement, action: () => Observable<Executio
         executionResult = {
           out: '',
           err: 'An error occurred while sending the Groovy script for execution',
-          result: null
+          result: null,
+          info: null
         }
         switchTab(tabError)
         updateOutput()
@@ -184,7 +194,8 @@ export function initView () {
       executionResult = {
         out: '',
         err: 'An error occurred while loading the remote script.\nThis can be caused by the NoScript browser extension.',
-        result: null
+        result: null,
+        info: null
       }
       switchTab(tabError)
       updateOutput()
