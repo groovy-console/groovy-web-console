@@ -1,0 +1,45 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache Maven wrapper and dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+          key: deploy-github-access-${{ runner.os }}-mvn--${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            deploy-github-access-${{ runner.os }}-
+      - name: 'Set up JDK'
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: build jar
+        run: |
+          pushd functions/github-access
+          ../../mvnw -B -V package
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_CREDENTIALS }}
+          export_default_credentials: true
+      - name: Prepare Env
+        run: |
+          echo "GITHUB_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}" >> secrets.env
+          echo "GITHUB_CLIENT_SECRET: ${{ secrets.APP_CLIENT_SECRET }}" >> secrets.env
+          echo "GITHUB_REDIRECT_URI: ${{ secrets.APP_REDIRECT_URI }}" >> secrets.env
+          echo "SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}" >> secrets.env
+      - id: Deploy
+        run: |
+          gcloud functions deploy github-access --entry-point gwc.github.GithubAccessExecutor \
+          --runtime java11 --trigger-http --memory 8192MB --allow-unauthenticated --source functions/github-access/target/deployment \
+          --region europe-west1 --service-account minimal-sa@gwc-experiment.iam.gserviceaccount.com \
+          --build-env-vars-file secrets.env
+

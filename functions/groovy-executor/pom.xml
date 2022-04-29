@@ -14,6 +14,10 @@
   <artifactId>groovy-executor</artifactId>
   <version>${parent.version}</version>
 
+  <properties>
+    <functionTargetClass>please_override_in_module</functionTargetClass>
+  </properties>
+
   <profiles>
     <profile>
       <id>groovy_3_0</id>

@@ -18,6 +18,7 @@
     <spock.version.groovyVariant>3.0</spock.version.groovyVariant>
     <spock.version>${spock.version.major}-groovy-${spock.version.groovyVariant}</spock.version>
     <junit.version>5.7.2</junit.version>
+    <functionTargetClass>gwc.GFunctionExecutor</functionTargetClass>
   </properties>
 
   <modules>
@@ -67,6 +68,11 @@
         <version>2.9.0</version>
       </dependency>
       <dependency>
+        <groupId>com.nimbusds</groupId>
+        <artifactId>nimbus-jose-jwt</artifactId>
+        <version>9.22</version>
+      </dependency>
+      <dependency>
         <groupId>org.jetbrains</groupId>
         <artifactId>annotations</artifactId>
         <version>23.0.0</version>
@@ -103,7 +109,7 @@
         <artifactId>function-maven-plugin</artifactId>
         <version>0.10.0</version>
         <configuration>
-          <functionTarget>gwc.GFunctionExecutor</functionTarget>
+          <functionTarget>${functionTargetClass}</functionTarget>
           <port>9080</port>
         </configuration>
       </plugin>
