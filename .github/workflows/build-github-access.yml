@@ -1,0 +1,32 @@
+name: Build and Test
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - gh-pages
+    paths:
+      - functions/pom.xml
+      - functions/github-access/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache Maven wrapper and dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+          key: test-github-access-${{ runner.os }}}-mvn-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            test-github-access-${{ runner.os }}-
+      - name: 'Set up JDK'
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: test
+        run: |
+          pushd functions/groovy-executor
+          ../../mvnw -B -V package -P ${{ matrix.variant }} "-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true"

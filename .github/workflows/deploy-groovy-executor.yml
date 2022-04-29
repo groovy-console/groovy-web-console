@@ -16,18 +16,18 @@ jobs:
         with:
           path: |
             ~/.m2/repository
-          key: deploy-${{ runner.os }}-variant-${{ matrix.variant }}-mvn--${{ hashFiles('**/pom.xml') }}
+          key: deploy-groovy-executor-${{ runner.os }}-variant-${{ matrix.variant }}-mvn--${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            deploy-${{ runner.os }}-variant-${{ matrix.variant }}-
-            deploy-${{ runner.os }}-
+            deploy-groovy-executor-${{ runner.os }}-variant-${{ matrix.variant }}-
+            deploy-groovy-executor-${{ runner.os }}-
       - name: 'Set up JDK'
         uses: actions/setup-java@v1
         with:
           java-version: 11
       - name: build jar
         run: |
-          pushd functions/function-executor
-          ../../mvnw -B -V package -P ${{ matrix.variant }} "-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true"
+          pushd functions/groovy-executor
+          ../../mvnw -B -V package -P ${{ matrix.variant }}
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
         with:
@@ -36,5 +36,5 @@ jobs:
           export_default_credentials: true
       - id: Deploy
         run: |
-          gcloud functions deploy ${{ matrix.variant }} --entry-point gwc.GFunctionExecutor --runtime java11 --trigger-http --memory 8192MB --allow-unauthenticated --source functions/function-executor/target/deployment --region europe-west1 --service-account minimal-sa@gwc-experiment.iam.gserviceaccount.com
+          gcloud functions deploy ${{ matrix.variant }} --entry-point gwc.GFunctionExecutor --runtime java11 --trigger-http --memory 8192MB --allow-unauthenticated --source functions/groovy-executor/target/deployment --region europe-west1 --service-account minimal-sa@gwc-experiment.iam.gserviceaccount.com
 

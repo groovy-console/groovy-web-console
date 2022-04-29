@@ -14,10 +14,22 @@
   <artifactId>github-access</artifactId>
   <version>${parent.version}</version>
 
+  <properties>
+    <functionTargetClass>gwc.github.GithubAccessExecutor</functionTargetClass>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.google.cloud.functions</groupId>
       <artifactId>functions-framework-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>nimbus-jose-jwt</artifactId>
     </dependency>
     <dependency>
       <groupId>org.spockframework</groupId>
