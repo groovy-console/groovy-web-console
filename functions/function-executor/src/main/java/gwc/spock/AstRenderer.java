@@ -10,7 +10,7 @@ public class AstRenderer {
   public String render(String script, String compilePhase, boolean isSpock) {
     CompilePhase phase = parseCompilePhase(compilePhase);
     TranspileResult transpileResult = isSpock ?
-      embeddedSpecCompiler.transpileWithImports(script, EnumSet.allOf(Show.class), phase) :
+      embeddedSpecCompiler.transpileWithImports(script, EnumSet.allOf(Show.class), phase, "") :
       embeddedSpecCompiler.transpile(script, EnumSet.allOf(Show.class), phase);
     return transpileResult.getSource();
   }
