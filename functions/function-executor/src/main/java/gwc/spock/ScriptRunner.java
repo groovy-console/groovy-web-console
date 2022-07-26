@@ -40,29 +40,34 @@ public class ScriptRunner {
 
   // import is added via ImportCustomizer in ScriptCompiler
   public String run(@Language(value = "Groovy", suffix = "\nimport spock.lang.*") String scriptText) {
-    ScriptCompiler compiler = new ScriptCompiler();
-    List<Class> classes = compiler.compile(scriptText);
-    List<Class> testClasses = findTestClasses(classes);
-    if (testClasses.isEmpty()) { return "No runnable specifications found"; }
-    ClassSelector[] selectors = testClasses.stream().map(DiscoverySelectors::selectClass).toArray(ClassSelector[]::new);
+    try (ScriptCompiler compiler = new ScriptCompiler()) {
+      List<Class> classes = compiler.compile(scriptText);
+      List<Class> testClasses = findTestClasses(classes);
+      if (testClasses.isEmpty()) {
+        return "No runnable specifications found";
+      }
+      ClassSelector[] selectors = testClasses.stream().map(DiscoverySelectors::selectClass).toArray(ClassSelector[]::new);
 
-    LauncherDiscoveryRequest discoveryRequest = LauncherDiscoveryRequestBuilder
+      LauncherDiscoveryRequest discoveryRequest = LauncherDiscoveryRequestBuilder
         .request()
         .selectors(selectors)
         .filters(EngineFilter.includeEngines("spock"))
         .build();
 
-    StringWriter stringWriter = new StringWriter();
-    try (PrintWriter pw = new PrintWriter(stringWriter)) {
+      StringWriter stringWriter = new StringWriter();
+      try (PrintWriter pw = new PrintWriter(stringWriter)) {
 
-      TreePrintingListener listener = new TreePrintingListener(pw, disableColors, Theme.UNICODE);
+        TreePrintingListener listener = new TreePrintingListener(pw, disableColors, Theme.UNICODE);
 
-      LauncherFactory.create()
+        LauncherFactory.create()
           .execute(discoveryRequest, listener);
 
-    }
+      }
 
-    return stringWriter.toString();
+      return stringWriter.toString();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private List<Class> findTestClasses(List<Class> classes) {
