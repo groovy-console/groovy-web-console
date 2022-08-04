@@ -6,7 +6,8 @@ on:
     branches-ignore:
       - gh-pages
     paths:
-      - functions/**
+      - functions/pom.xml
+      - functions/groovy-executor/**
 
 jobs:
   build:
@@ -21,15 +22,15 @@ jobs:
         with:
           path: |
             ~/.m2/repository
-          key: test-${{ runner.os }}}-variant-${{ matrix.variant }}-mvn-${{ hashFiles('**/pom.xml') }}
+          key: test-groovy-executor-${{ runner.os }}}-variant-${{ matrix.variant }}-mvn-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            test-${{ runner.os }}}-variant-${{ matrix.variant }}-
-            test-${{ runner.os }}-
+            test-groovy-executor-${{ runner.os }}}-variant-${{ matrix.variant }}-
+            test-groovy-executor-${{ runner.os }}-
       - name: 'Set up JDK'
         uses: actions/setup-java@v1
         with:
           java-version: 11
       - name: test
         run: |
-          pushd functions/function-executor
+          pushd functions/groovy-executor
           ../../mvnw -B -V package -P ${{ matrix.variant }} "-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true"

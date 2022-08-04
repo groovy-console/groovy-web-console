@@ -4,18 +4,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>gwc.cloudfunctions</groupId>
+    <artifactId>gwc-functions</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
   <groupId>cloudfunctions</groupId>
-  <artifactId>http-function</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <artifactId>groovy-executor</artifactId>
+  <version>${parent.version}</version>
 
   <properties>
-    <maven.compiler.target>11</maven.compiler.target>
-    <maven.compiler.source>11</maven.compiler.source>
-    <groovy.version>3.0.12</groovy.version>
-    <spock.version.major>2.2-M3</spock.version.major>
-    <spock.version>${spock.version.major}-groovy-${spock.version.groovyVariant}</spock.version>
-    <spock.version.groovyVariant>3.0</spock.version.groovyVariant>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <functionTargetClass>gwc.GFunctionExecutor</functionTargetClass>
   </properties>
 
   <profiles>
@@ -25,7 +25,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <groovy.version>3.0.12</groovy.version>
+        <groovy.version>${groovy.3.version}</groovy.version>
         <spock.version.groovyVariant>3.0</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
@@ -58,7 +58,7 @@
     <profile>
       <id>groovy_2_5</id>
       <properties>
-        <groovy.version>2.5.18</groovy.version>
+        <groovy.version>${groovy.2.version}</groovy.version>
         <spock.version.groovyVariant>2.5</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
@@ -91,7 +91,7 @@
     <profile>
       <id>groovy_4_0</id>
       <properties>
-        <groovy.version>4.0.4</groovy.version>
+        <groovy.version>${groovy.4.version}</groovy.version>
         <spock.version.groovyVariant>4.0</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
@@ -136,30 +136,10 @@
     </profile>
   </profiles>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.spockframework</groupId>
-        <artifactId>spock-bom</artifactId>
-        <version>${spock.version}</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>
-      <dependency>
-        <groupId>org.junit</groupId>
-        <artifactId>junit-bom</artifactId>
-        <version>5.7.2</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>com.google.cloud.functions</groupId>
       <artifactId>functions-framework-api</artifactId>
-      <version>1.0.4</version>
     </dependency>
     <dependency>
       <groupId>org.spockframework</groupId>
@@ -169,12 +149,10 @@
     <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
-      <version>1.12.7</version>
     </dependency>
     <dependency>
       <groupId>org.objenesis</groupId>
       <artifactId>objenesis</artifactId>
-      <version>3.2</version>
     </dependency>
     <dependency>
       <groupId>org.junit.platform</groupId>
@@ -183,120 +161,21 @@
     <dependency>
       <groupId>org.apache.ivy</groupId>
       <artifactId>ivy</artifactId>
-      <version>2.5.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.8.9</version>
     </dependency>
     <dependency>
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
-      <version>22.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock-jre8</artifactId>
-      <version>2.32.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-        <configuration>
-          <excludes>
-            <exclude>.google/</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M5</version>
-      </plugin>
-      <plugin>
-        <groupId>com.google.cloud.functions</groupId>
-        <artifactId>function-maven-plugin</artifactId>
-        <version>0.10.0</version>
-        <configuration>
-          <functionTarget>gwc.GFunctionExecutor</functionTarget>
-          <port>9080</port>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.gmavenplus</groupId>
-        <artifactId>gmavenplus-plugin</artifactId>
-        <version>1.13.1</version>
-        <executions>
-          <execution>
-            <id>default</id>
-            <goals>
-              <goal>compileTests</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <!--   https://cloud.google.com/functions/docs/concepts/java-deploy?hl=en#build_and_deploy_a_thin_jar_with_external_dependencies   -->
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.0</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <classpathPrefix>libs/</classpathPrefix>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.2.0</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <overWriteReleases>false</overWriteReleases>
-              <includeScope>runtime</includeScope>
-              <outputDirectory>${project.build.directory}/libs</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.2.0</version>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>package</phase>
-            <goals><goal>copy-resources</goal></goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/deployment</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${project.build.directory}</directory>
-                  <includes>
-                    <include>${project.build.finalName}.jar</include>
-                    <include>libs/**</include>
-                  </includes>
-                  <filtering>false</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>
