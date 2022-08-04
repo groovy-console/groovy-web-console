@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build and Test Groovy Executor
 
 on:
   pull_request:
@@ -33,4 +33,4 @@ jobs:
       - name: test
         run: |
           pushd functions/groovy-executor
-          ../../mvnw -B -V package -P ${{ matrix.variant }} "-Dspock.iKnowWhatImDoing.disableGroovyVersionCheck=true"
+          ../../mvnw -B -V package -P ${{ matrix.variant }}
