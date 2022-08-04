@@ -15,7 +15,7 @@
   <version>${parent.version}</version>
 
   <properties>
-    <functionTargetClass>please_override_in_module</functionTargetClass>
+    <functionTargetClass>gwc.GFunctionExecutor</functionTargetClass>
   </properties>
 
   <profiles>
@@ -25,7 +25,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <groovy.version>3.0.10</groovy.version>
+        <groovy.version>${groovy.3.version}</groovy.version>
         <spock.version.groovyVariant>3.0</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
@@ -58,7 +58,7 @@
     <profile>
       <id>groovy_2_5</id>
       <properties>
-        <groovy.version>2.5.16</groovy.version>
+        <groovy.version>${groovy.2.version}</groovy.version>
         <spock.version.groovyVariant>2.5</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
@@ -91,7 +91,7 @@
     <profile>
       <id>groovy_4_0</id>
       <properties>
-        <groovy.version>4.0.2</groovy.version>
+        <groovy.version>${groovy.4.version}</groovy.version>
         <spock.version.groovyVariant>4.0</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
