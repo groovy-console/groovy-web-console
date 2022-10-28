@@ -4,6 +4,11 @@ import { concatMap, delay, map, tap, throttleTime } from 'rxjs/operators'
 import { GroovyConsole } from './groovy-console'
 import { compressToBase64 } from './compression'
 import { CodeEditor, OutputEditor } from './codemirror'
+// @ts-ignore
+import { switchTheme } from 'themes-switch'
+
+// ...
+switchTheme({ theme: 'themes-dark' })
 
 const groovyConsole = new GroovyConsole()
 const codeArea = document.getElementById('code') as HTMLTextAreaElement

@@ -5,6 +5,7 @@ const CopyPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
+const ThemesGeneratorPlugin = require('themes-switch/ThemesGeneratorPlugin')
 
 module.exports = (env, options) => {
   const mode = options.mode || 'production'
@@ -106,14 +107,18 @@ module.exports = (env, options) => {
       new HtmlWebpackPlugin({
         template: './src/templates/index.html'
       }),
+      new ThemesGeneratorPlugin({
+        srcDir: 'src',
+        themesDir: 'src/assets/themes',
+        outputDir: 'static/css',
+        defaultStyleName: 'default.scss',
+        clearTemp: false // doesn't work when temp files are cleaned
+      }),
       // copy css
       new CopyPlugin({
         patterns: [
           { from: './src/static/', to: path.join(__dirname, 'dist') }
         ]
-      }),
-      new MiniCssExtractPlugin({
-        filename: '[name].[contenthash].css'
       })
     ]
   }
