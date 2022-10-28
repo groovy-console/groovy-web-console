@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Test Frontend (headless)" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/services/frontend/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="ci" />
+    </scripts>
+    <node-interpreter value="project" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>
