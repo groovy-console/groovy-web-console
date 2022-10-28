@@ -16,33 +16,38 @@
 
 package gwc.spock;
 
-import spock.lang.Specification;
-
-import java.util.List;
-
 import groovy.lang.GroovyClassLoader;
+import gwc.representations.compileserver.SourceFile;
 import org.codehaus.groovy.control.*;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.codehaus.groovy.control.io.StringReaderSource;
+import spock.lang.Specification;
+
+import java.util.List;
 
 // cannot use GCL as-is because we need a StringReaderSource
 // only reason why we inherit from GCL is that ClassCollector has protected constructor
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ScriptCompiler extends GroovyClassLoader {
-  public List<Class> compile(String scriptText) throws CompilationFailedException {
+  public List<Class> compile(List<SourceFile> files) throws CompilationFailedException {
     CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
     ImportCustomizer importCustomizer = new ImportCustomizer();
     importCustomizer.addStarImports(Specification.class.getPackageName());
     compilerConfiguration.addCompilationCustomizers(importCustomizer);
 
     CompilationUnit unit = new CompilationUnit(compilerConfiguration, null, this);
-    SourceUnit su = new SourceUnit("Script1.groovy", new StringReaderSource(scriptText, unit.getConfiguration()),
-      unit.getConfiguration(), unit.getClassLoader(), unit.getErrorCollector());
-    unit.addSource(su);
+    files.stream()
+      .map(sourceFile -> new SourceUnit(
+        sourceFile.getName(),
+        new StringReaderSource(sourceFile.getText(), unit.getConfiguration()),
+        unit.getConfiguration(),
+        unit.getClassLoader(),
+        unit.getErrorCollector()))
+      .forEach(unit::addSource);
 
-    ClassCollector collector = createCollector(unit, su);
+    ClassCollector collector = createCollector(unit, null);
     unit.setClassgenCallback(collector);
     unit.compile(Phases.CLASS_GENERATION);
-    return (List)collector.getLoadedClasses();
+    return (List) collector.getLoadedClasses();
   }
 }

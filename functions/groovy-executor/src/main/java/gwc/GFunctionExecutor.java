@@ -1,32 +1,37 @@
 package gwc;
 
-import java.io.*;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
-import com.google.cloud.functions.*;
-import com.google.gson.Gson;
-import groovy.lang.*;
+import com.google.cloud.functions.HttpFunction;
+import com.google.cloud.functions.HttpRequest;
+import com.google.cloud.functions.HttpResponse;
 import groovy.util.logging.Log;
-import gwc.representations.*;
-import gwc.spock.*;
-import gwc.util.*;
+import gwc.representations.ExecutionInfo;
+import gwc.representations.ExecutionResult;
+import gwc.util.MetaClassRegistryGuard;
+import gwc.util.OutputRedirector;
+import gwc.util.SystemPropertiesGuard;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
-import org.codehaus.groovy.control.messages.*;
+import org.codehaus.groovy.control.messages.ExceptionMessage;
+import org.codehaus.groovy.control.messages.SimpleMessage;
+import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
+
+import static gwc.Util.GSON;
 
 @Log
 public class GFunctionExecutor implements HttpFunction {
   private static final Logger LOG = Logger.getLogger(GFunctionExecutor.class.getName());
-
-  private static final Pattern SPOCK_SCRIPT = Pattern.compile("extends\\s+(?:spock\\.lang\\.)?Specification");
   private static final List<String> FILTER_STACKTRACE = List.of(
     "com.google.cloud.", "org.eclipse.jetty.",
     "java.", "javax.", "sun.", "jdk.",
     "groovy", "org.codehaus.groovy.", "org.apache.groovy",
     "gwc.");
-  private static final Gson GSON = new Gson();
 
 
   public GFunctionExecutor() {
@@ -42,6 +47,8 @@ public class GFunctionExecutor implements HttpFunction {
     } else if ("POST".equals(request.getMethod())) {
       if (!"application/json".equalsIgnoreCase((request.getContentType().orElse("")))) {
         response.setStatusCode(406);
+      } else if (request.getPath().startsWith("/api/compiler/")) {
+        CompilerServerApi.handleCompileRequest(request, response);
       } else {
         handleRealInvocation(request, response);
       }
@@ -57,9 +64,6 @@ public class GFunctionExecutor implements HttpFunction {
   }
 
   private void handleRealInvocation(HttpRequest request, HttpResponse response) throws IOException {
-    ScriptRequest scriptRequest = GSON.fromJson(request.getReader(), ScriptRequest.class);
-    String inputScriptOrClass = scriptRequest.getCode();
-    LOG.info("Input code:\n---\n" + inputScriptOrClass + "\n---\n");
 
     var errorOutput = new StringBuilder();
 
@@ -70,15 +74,10 @@ public class GFunctionExecutor implements HttpFunction {
          var ignore2 = outputRedirector.redirect();
          var igonre3 = new SystemPropertiesGuard()) {
       long executionStart = System.currentTimeMillis();
-      boolean isSpock = SPOCK_SCRIPT.matcher(inputScriptOrClass).find();
-      if ("ast".equalsIgnoreCase(scriptRequest.getAction())) {
-        result = transpileScript(inputScriptOrClass, scriptRequest.getAstPhase(), isSpock);
+      if (request.getPath().startsWith("/api/compiler/")) {
+        CompilerServerApi.handleCompileRequest(request, response);
       } else {
-        if (isSpock) {
-          result = executeSpock(inputScriptOrClass);
-        } else {
-          result = executeGroovyScript(inputScriptOrClass, outputRedirector);
-        }
+        result = GroovyExecutor.handleRequest(request, outputRedirector);
       }
       stats.setExecutionTime(System.currentTimeMillis() - executionStart);
     } catch (MultipleCompilationErrorsException e) {
@@ -118,32 +117,14 @@ public class GFunctionExecutor implements HttpFunction {
     }
   }
 
-  private Object executeGroovyScript(String inputScriptOrClass, OutputRedirector outputRedirector) {
-    var binding = new Binding();
-    binding.setVariable("out", outputRedirector.getOutPrintStream());
-    var shell = new GroovyShell(binding);
-    return shell.evaluate(inputScriptOrClass);
-  }
-
-  private Object executeSpock(String inputScriptOrClass) {
-    ScriptRunner scriptRunner = new ScriptRunner();
-    // TODO revisit colored output
-    scriptRunner.setDisableColors(true);
-    return scriptRunner.run(inputScriptOrClass);
-  }
-
-  private String transpileScript(String script, String astPhase, boolean isSpock) {
-    return new AstRenderer().render(script, astPhase, isSpock);
-  }
-
   private void handleCompilationErrors(StringBuilder errorOutput, MultipleCompilationErrorsException e) {
     e.getErrorCollector().getErrors().forEach(err -> {
       if (err instanceof SimpleMessage) {
-        errorOutput.append(((SimpleMessage)err).getMessage());
+        errorOutput.append(((SimpleMessage) err).getMessage());
       } else if (err instanceof ExceptionMessage) {
-        errorOutput.append(((ExceptionMessage)err).getCause().getMessage());
+        errorOutput.append(((ExceptionMessage) err).getCause().getMessage());
       } else if (err instanceof SyntaxErrorMessage) {
-        errorOutput.append(((SyntaxErrorMessage)err).getCause().getMessage());
+        errorOutput.append(((SyntaxErrorMessage) err).getCause().getMessage());
       }
     });
   }

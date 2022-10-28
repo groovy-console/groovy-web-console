@@ -16,10 +16,12 @@
 
 package gwc.spock;
 
+import gwc.representations.compileserver.SourceFile;
 import org.spockframework.runtime.*;
 
 import java.io.*;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,8 @@ import org.intellij.lang.annotations.Language;
 import org.junit.platform.engine.discovery.*;
 import org.junit.platform.launcher.*;
 import org.junit.platform.launcher.core.*;
+
+import static java.util.Collections.singletonList;
 
 /**
  * Runs a script containing one or more Spock specifications.
@@ -40,8 +44,11 @@ public class ScriptRunner {
 
   // import is added via ImportCustomizer in ScriptCompiler
   public String run(@Language(value = "Groovy", suffix = "\nimport spock.lang.*") String scriptText) {
+    return run(singletonList(new SourceFile("GroovyScript1.groovy",scriptText)));
+  }
+  public String run(List<SourceFile> files) {
     try (ScriptCompiler compiler = new ScriptCompiler()) {
-      List<Class> classes = compiler.compile(scriptText);
+      List<Class> classes = compiler.compile(files);
       List<Class> testClasses = findTestClasses(classes);
       if (testClasses.isEmpty()) {
         return "No runnable specifications found";
