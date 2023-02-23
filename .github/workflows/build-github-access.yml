@@ -13,19 +13,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Cache Maven wrapper and dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-          key: test-github-access-${{ runner.os }}}-mvn-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            test-github-access-${{ runner.os }}-
+      - uses: actions/checkout@v3
       - name: 'Set up JDK'
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
+          distribution: 'temurin'
           java-version: 11
+          cache: 'maven'
       - name: test
         run: |
           pushd functions/groovy-executor
