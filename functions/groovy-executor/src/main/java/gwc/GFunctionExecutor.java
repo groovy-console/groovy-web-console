@@ -31,6 +31,7 @@ public class GFunctionExecutor implements HttpFunction {
 
   public GFunctionExecutor() {
     LOG.info("Groovy function executor initialized");
+    System.setProperty("grape.root", "/tmp/.groovy/grapes/");
   }
 
   @Override
