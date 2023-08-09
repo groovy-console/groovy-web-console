@@ -11,6 +11,17 @@
       "matchManagers": ["regex"],
       "matchUpdateTypes": ["major"],
       "enabled": false
+    },
+    // Automerge non-major updates https://docs.renovatebot.com/key-concepts/automerge/#automerge-non-major-updates
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true
     }
-  ]
+  ],
+  // Automerge lock file maintenance  https://docs.renovatebot.com/key-concepts/automerge/#automerge-lock-file-maintenance
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true
+  },
 }
