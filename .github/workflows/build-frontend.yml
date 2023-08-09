@@ -2,6 +2,7 @@ name: Build Frontend
 
 on:
   pull_request:
+  merge_group:
   push:
     branches-ignore:
       - gh-pages

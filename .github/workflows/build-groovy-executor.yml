@@ -2,6 +2,7 @@ name: Build and Test Groovy Executor
 
 on:
   pull_request:
+  merge_group:
   push:
     branches-ignore:
       - gh-pages
