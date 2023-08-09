@@ -10,7 +10,7 @@ on:
       - functions/groovy-executor/**
 
 jobs:
-  build:
+  build-and-test-executors:
     runs-on: ubuntu-latest
     strategy:
       matrix:

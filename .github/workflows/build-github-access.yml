@@ -10,7 +10,7 @@ on:
       - functions/github-access/**
 
 jobs:
-  build:
+  build-and-test-github-access:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

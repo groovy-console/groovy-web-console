@@ -9,7 +9,7 @@ on:
       - services/frontend/**
 
 jobs:
-  build:
+  build-and-test-frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-function-list-runtimes:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -15,4 +15,3 @@ jobs:
           service_account_key: ${{ secrets.GCP_CREDENTIALS }}
           export_default_credentials: true
       - run: gcloud functions deploy list_runtimes --entry-point listRuntimes --trigger-http --runtime nodejs14 --allow-unauthenticated --memory 8192MB --region europe-west1 --source functions/list_runtimes --service-account list-function-groovy-runtimes@gwc-experiment.iam.gserviceaccount.com
-

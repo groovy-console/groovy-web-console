@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-groovy-executors:
     runs-on: ubuntu-latest
     strategy:
       matrix:
