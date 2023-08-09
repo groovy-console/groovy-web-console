@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "packageRules": [
+    // Disable major version upgrades for Groovy versions
+    // as we want to keep one for each major version
+    {
+      "matchPackagePrefixes": ["org.codehaus.groovy:", "org.apache.groovy:"],
+      "matchManagers": ["regex"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}
