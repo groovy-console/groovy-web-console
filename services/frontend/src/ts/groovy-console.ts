@@ -23,7 +23,7 @@ export class GroovyConsole {
     headers.append('Content-Type', 'application/json')
     return fromFetch(`${baseUrl}list_runtimes`, {
       method: 'GET',
-      headers: headers
+      headers
     }).pipe(
       concatMap(response => response.json()),
       map(response => response.map((version: string) => new GroovyVersion(version)))
@@ -53,8 +53,8 @@ export class GroovyConsole {
     const url = LOCAL_DEVELOPMENT ? baseUrl : `${baseUrl}${groovyVersion}`
     return fromFetch(url, {
       method: 'POST',
-      headers: headers,
-      body: body
+      headers,
+      body
     }).pipe(
       concatMap(response => response.json()),
       map(response => response as ExecutionResult)
