@@ -9,6 +9,8 @@ public class ExecutionInfo {
 
   private String spockVersion = SpockReleaseInfo.getVersion().toString();
 
+  private String javaVersion = System.getProperty("java.version");
+
   public long getExecutionTime() {
     return executionTime;
   }
@@ -31,5 +33,13 @@ public class ExecutionInfo {
 
   public void setSpockVersion(String spockVersion) {
     this.spockVersion = spockVersion;
+  }
+
+  public String getJavaVersion() {
+    return javaVersion;
+  }
+
+  public void setJavaVersion(String javaVersion) {
+    this.javaVersion = javaVersion;
   }
 }
