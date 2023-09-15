@@ -105,6 +105,8 @@ describe('groovy webconsole', () => {
     cy.get('#execute')
       .should('not.have.class', 'is-loading') // should not display loading initially
       .click()
+
+    cy.get('#execute')
       .should('have.class', 'is-loading') // should display loading after click on execute
       .then(() => {
         response.sendResponse() // let the network request complete
