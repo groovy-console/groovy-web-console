@@ -17,7 +17,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          # sync with deploy-frontend version
+          node-version: '18.x'
       - run: cd services/frontend && npm ci
       - run: cd services/frontend && npm run build
       - run: cd services/frontend && npm run lint
