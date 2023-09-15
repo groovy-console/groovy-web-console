@@ -17,7 +17,7 @@ jobs:
       matrix:
         variant: ['groovy_3_0', 'groovy_2_5', 'groovy_4_0']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: 'Set up JDK'
         uses: actions/setup-java@v3
         with:
