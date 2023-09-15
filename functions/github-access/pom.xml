@@ -12,7 +12,7 @@
 
   <groupId>cloudfunctions</groupId>
   <artifactId>github-access</artifactId>
-  <version>${parent.version}</version>
+  <version>${project.parent.version}</version>
 
   <properties>
     <functionTargetClass>gwc.github.GithubAccessExecutor</functionTargetClass>
