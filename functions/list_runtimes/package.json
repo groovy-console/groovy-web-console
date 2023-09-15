@@ -2,7 +2,7 @@
     "name": "list-groovy-runtimes",
     "version": "0.0.1",
     "dependencies": {
-        "node-fetch": "^2.6.1",
+        "node-fetch": "^3.0.0",
         "google-auth-library": "^7.1.1"
     }
 }
