@@ -25,7 +25,7 @@ describe('groovy webconsole', () => {
 
     cy.get('#shareAsCodeLink')
       .should('be.visible')
-      .should('have.value', 'http://localhost:9000/?g=groovy_2_5&codez=eJwrKMrMK8nJU1DKSM3JyVcozy_KSVECAFiSB8g')
+      .should('have.value', 'http://localhost:9000/?g=groovy_4_0&codez=eNorKMrMK8nJU1DKSM3JyVcozy_KSVECAFiSB8g')
   })
 
   it('can execute groovy script', () => {
@@ -34,15 +34,15 @@ describe('groovy webconsole', () => {
     cy.intercept(
       {
         method: 'POST',
-        url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/groovy_2_5'
+        url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/groovy_4_0'
       },
-      { fixture: 'execute_hello_world_2_5.json' }
-    ).as('execute_hello_world_2_5') // with this alias we can later refer to this mock
+      { fixture: 'execute_hello_world_4_0.json' }
+    ).as('execute_hello_world_4_0') // with this alias we can later refer to this mock
 
     cy.get('#execute')
       .click()
 
-    cy.wait('@execute_hello_world_2_5')
+    cy.wait('@execute_hello_world_4_0')
 
     cy.assertTabActive('tabOutput')
 
@@ -55,19 +55,19 @@ describe('groovy webconsole', () => {
     cy.intercept(
       {
         method: 'POST',
-        url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/groovy_2_5'
+        url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/groovy_4_0'
       },
-      { fixture: 'execute_hello_world_2_5_error.json' }
-    ).as('execute_hello_world_2_5') // with this alias we can later refer to this mock
+      { fixture: 'execute_hello_world_4_0_error.json' }
+    ).as('execute_hello_world_4_0') // with this alias we can later refer to this mock
 
     cy.get('#execute')
       .click()
 
-    cy.wait('@execute_hello_world_2_5')
+    cy.wait('@execute_hello_world_4_0')
 
     cy.assertTabActive('tabError')
 
-    cy.assertOutputEditorValue('unexpected char: 0xFFFF @ line 1, column 21.')
+    cy.assertOutputEditorValue('Unexpected character: \'"\' @ line 1, column 9.')
   })
 
   it('can execute spock test and render results', () => {
@@ -76,15 +76,15 @@ describe('groovy webconsole', () => {
     cy.intercept(
       {
         method: 'POST',
-        url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/groovy_2_5'
+        url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/groovy_4_0'
       },
-      { fixture: 'execute_hello_world_2_5_spock.json' }
-    ).as('execute_hello_world_2_5') // with this alias we can later refer to this mock
+      { fixture: 'execute_hello_world_4_0_spock.json' }
+    ).as('execute_hello_world_4_0') // with this alias we can later refer to this mock
 
     cy.get('#execute')
       .click()
 
-    cy.wait('@execute_hello_world_2_5')
+    cy.wait('@execute_hello_world_4_0')
 
     cy.assertTabActive('tabResult')
 
@@ -97,10 +97,10 @@ describe('groovy webconsole', () => {
     const response = interceptIndefinitely(
       {
         method: 'POST',
-        url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/groovy_2_5'
+        url: 'https://europe-west1-gwc-experiment.cloudfunctions.net/groovy_4_0'
       },
-      { fixture: 'execute_hello_world_2_5.json' },
-      'execute_hello_world_2_5')
+      { fixture: 'execute_hello_world_4_0.json' },
+      'execute_hello_world_4_0')
 
     cy.get('#execute')
       .should('not.have.class', 'is-loading') // should not display loading initially

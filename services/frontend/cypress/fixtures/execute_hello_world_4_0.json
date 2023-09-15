@@ -1,0 +1,9 @@
+{
+  "out": "hello world\n",
+  "err": "",
+  "info": {
+    "executionTime": 14,
+    "groovyVersion": "4.0.9",
+    "spockVersion": "2.3.0-groovy-4.0"
+  }
+}

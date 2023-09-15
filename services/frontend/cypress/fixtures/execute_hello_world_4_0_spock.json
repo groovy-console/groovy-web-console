@@ -1,0 +1,10 @@
+{
+  "out": "",
+  "err": "",
+  "result": "╷\n└─ Spock ✔\n   └─ ASpec ✔\n      └─ hello world ✔\n",
+  "info": {
+    "executionTime": 41,
+    "groovyVersion": "4.0.9",
+    "spockVersion": "2.3.0-groovy-4.0"
+  }
+}

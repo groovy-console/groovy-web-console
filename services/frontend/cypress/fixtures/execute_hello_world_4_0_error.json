@@ -1,0 +1,9 @@
+{
+  "out": "",
+  "err": "Unexpected character: \u0027\"\u0027 @ line 1, column 9.",
+  "info": {
+    "executionTime": -1,
+    "groovyVersion": "4.0.9",
+    "spockVersion": "2.3.0-groovy-4.0"
+  }
+}
