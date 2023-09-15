@@ -26,7 +26,11 @@ export class GroovyConsole {
       headers
     }).pipe(
       concatMap(response => response.json()),
-      map(response => response.map((version: string) => new GroovyVersion(version)))
+      map(response => response.map((version: string) => new GroovyVersion(version))),
+      map(versions => versions.sort((a:GroovyVersion, b:GroovyVersion) => {
+        // Use localeCompare to perform a string comparison in a way that handles numbers correctly
+        return b.name.localeCompare(a.name)
+      }))
     )
   }
 
