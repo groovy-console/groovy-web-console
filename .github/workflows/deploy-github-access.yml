@@ -26,12 +26,13 @@ jobs:
         run: |
           pushd functions/github-access
           ../../mvnw -B -V package
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_CREDENTIALS }}
-          export_default_credentials: true
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
       - id: Deploy
         run: |
           gcloud functions deploy github-access --entry-point gwc.github.GithubAccessExecutor \

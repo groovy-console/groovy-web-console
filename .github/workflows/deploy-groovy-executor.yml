@@ -27,12 +27,13 @@ jobs:
         run: |
           pushd functions/groovy-executor
           ../../mvnw -B -V package -P ${{ matrix.variant }}
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_CREDENTIALS }}
-          export_default_credentials: true
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
       - id: Deploy
         run: |
           gcloud functions deploy ${{ matrix.variant }} --entry-point gwc.GFunctionExecutor --runtime java${{ matrix.java }} --trigger-http --memory 8192MB --allow-unauthenticated --source functions/groovy-executor/target/deployment --region europe-west1 --service-account minimal-sa@gwc-experiment.iam.gserviceaccount.com
