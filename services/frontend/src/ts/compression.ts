@@ -21,13 +21,13 @@ function str2UInt8Array (str:string) {
   // Turn number array into byte-array
   return new Uint8Array(charData)
 }
-function uint8ArrayToString (u8:string) { // TODO check whether to:string works now with pako
+function uint8ArrayToString (u8:Uint8Array) {
   return String.fromCharCode.apply(null, u8)
 }
 
 export async function compressToBase64 (value:string) {
   const pako = await import(/* webpackChunkName: "pako" */ 'pako')
-  return encodeUrlSafe(uint8ArrayToString(pako.deflate(value, { to: 'string' })))
+  return encodeUrlSafe(uint8ArrayToString(pako.deflate(value, { level: 9 })))
 }
 
 export async function decompressFromBase64 (value:string) {
