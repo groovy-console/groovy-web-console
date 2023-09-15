@@ -34,7 +34,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.2.0",
     "@fortawesome/free-solid-svg-icons": "^6.2.0",
     "@types/codemirror": "^5.60.5",
-    "@types/pako": "^1.0.4",
+    "@types/pako": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@typescript-eslint/parser": "^5.41.0",
     "bulma": "^0.9.4",
