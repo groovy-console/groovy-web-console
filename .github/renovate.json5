@@ -17,6 +17,12 @@
       "matchUpdateTypes": ["minor", "patch"],
       "matchCurrentVersion": "!/^0/",
       "automerge": true
+    },
+    // The upgrade from codemirror 5 to 6 is highly complex and tracked with https://github.com/groovy-console/groovy-web-console/issues/82
+    {
+      "matchPackageNames": ["codemirror"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ],
   // Automerge lock file maintenance  https://docs.renovatebot.com/key-concepts/automerge/#automerge-lock-file-maintenance
