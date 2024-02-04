@@ -20,7 +20,7 @@
     <spock.version.major>2.3</spock.version.major>
     <spock.version.groovyVariant>3.0</spock.version.groovyVariant>
     <spock.version>${spock.version.major}-groovy-${spock.version.groovyVariant}</spock.version>
-    <junit.version>5.10.1</junit.version>
+    <junit.version>5.10.2</junit.version>
     <functionTargetClass>gwc.GFunctionExecutor</functionTargetClass>
   </properties>
 
