@@ -54,7 +54,7 @@
     "node-sass": "^9.0.0",
     "pako": "^2.0.4",
     "rxjs": "^7.5.7",
-    "sass-loader": "^13.1.0",
+    "sass-loader": "^14.0.0",
     "start-server-and-test": "^2.0.0",
     "style-loader": "^3.3.1",
     "ts-loader": "^9.3.1",
