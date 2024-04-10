@@ -39,6 +39,7 @@ export class CodeEditor {
 
   private createEditor (codeArea: HTMLTextAreaElement) {
     return CodeMirror.fromTextArea(<HTMLTextAreaElement>codeArea, <any>{ // need to cast to any, since generated types don't support extensions `matchBrackets`
+      height: '20em',
       lineNumbers: true,
       mode: 'groovy',
       tabSize: 4,
