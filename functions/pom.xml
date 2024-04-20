@@ -132,7 +132,7 @@
       <!--   https://cloud.google.com/functions/docs/concepts/java-deploy?hl=en#build_and_deploy_a_thin_jar_with_external_dependencies   -->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>3.4.1</version>
         <configuration>
           <archive>
             <manifest>
