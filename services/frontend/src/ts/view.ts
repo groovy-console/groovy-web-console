@@ -22,6 +22,7 @@ const tabError = document.getElementById('tabError')
 const tabExecInfo = document.getElementById('tabExecInfo')
 const tabs = [tabOutput, tabResult, tabError, tabExecInfo]
 const modeSwitchers = Array.from(document.querySelectorAll('.mode-switcher a')) as HTMLLinkElement[]
+const currentMode = document.getElementById('currentMode') as HTMLLinkElement
 let activeTab: HTMLElement
 
 let executionResult: ExecutionResult = {
@@ -142,6 +143,7 @@ function switchMode (mode:ColorMode) {
       htmlRoot.classList.remove('theme-dark')
       break
   }
+  currentMode.innerHTML = modeSwitchers.find(ms => ms.dataset.mode === mode).innerHTML
 }
 
 function setupModeSwitchersAndRestoreSavedColorMode () {
@@ -160,6 +162,8 @@ function setupModeSwitchersAndRestoreSavedColorMode () {
   const savedColorMode = localStorage.getItem('colorMode')
   if (savedColorMode !== null) {
     switchMode(savedColorMode as ColorMode)
+  } else {
+    switchMode('system')
   }
 }
 
