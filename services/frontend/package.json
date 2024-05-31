@@ -51,7 +51,7 @@
     "eslint-plugin-promise": "^6.0.1",
     "html-webpack-plugin": "^5.5.0",
     "mini-css-extract-plugin": "^2.6.1",
-    "node-sass": "^9.0.0",
+    "sass": "^1.77.4",
     "pako": "^2.0.4",
     "rxjs": "^7.5.7",
     "sass-loader": "^14.0.0",
