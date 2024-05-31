@@ -123,6 +123,24 @@ function scriptExecution (target: HTMLElement, action: () => Observable<Executio
     })
 }
 
+function setupNavbarBurgerClickHandlers () {
+  // Get all "navbar-burger" elements
+  const $navbarBurgers = Array.from(document.querySelectorAll('.navbar-burger')) as HTMLElement[]
+
+  // Add a click event on each of them
+  $navbarBurgers.forEach(el => {
+    el.addEventListener('click', () => {
+      // Get the target from the "data-target" attribute
+      const target = el.dataset.target
+      const $target = document.getElementById(target)
+
+      // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+      el.classList.toggle('is-active')
+      $target.classList.toggle('is-active')
+    })
+  })
+}
+
 export function initView () {
   scriptExecution(executeButton, () => groovyConsole.executeScript(version.value, codeCM.getCode()))
   scriptExecution(inspectAstButton, () => groovyConsole.inspectAst(version.value, codeCM.getCode(), astPhaseSelect.value))
@@ -201,4 +219,6 @@ export function initView () {
       updateOutput()
     }
   })
+
+  setupNavbarBurgerClickHandlers()
 }
