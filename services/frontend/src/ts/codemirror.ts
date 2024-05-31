@@ -13,13 +13,19 @@ import 'codemirror/addon/selection/active-line'
 import 'codemirror/mode/groovy/groovy'
 import { decodeUrlSafe, decompressFromBase64 } from './compression'
 import { loadGist, loadGithubFile } from './github'
-import { from, of } from 'rxjs'
+import { BehaviorSubject, debounceTime, distinctUntilChanged, from, fromEvent, mergeWith, Observable, of } from 'rxjs'
 import { concatMap, tap } from 'rxjs/operators'
 import { loadCodeFromQuestion } from './stackoverflow'
+import { HistoryService } from './history'
+
+export type EditorState = 'saved' | 'unsaved'
 
 export class CodeEditor {
   private codeMirror: CodeMirror.EditorFromTextArea
   private lintErrors: Annotation[] = []
+  private historyService = new HistoryService()
+  private editorState$ = new BehaviorSubject<EditorState>('saved')
+  private editorStateObservable = this.editorState$.pipe(distinctUntilChanged())
 
   constructor (codeArea: HTMLTextAreaElement) {
     this.codeMirror = this.createEditor(codeArea)
@@ -31,6 +37,29 @@ export class CodeEditor {
         this.clearErrors()
       }
     })
+    this.enablePersistence()
+    this.setCode(this.historyService.getEditorContent())
+  }
+
+  private enablePersistence () {
+    // Observable for editor changes
+    const editorChanges$ = fromEvent(this.codeMirror, 'change').pipe(
+      tap(() => {
+        this.editorState$.next('unsaved')
+      }),
+      debounceTime(3000) // Wait for 3 seconds of inactivity
+    )
+
+    // Observable for editor blur event
+    const editorBlur$ = fromEvent(this.codeMirror.getWrapperElement(), 'blur')
+
+    editorChanges$.pipe(
+      mergeWith(editorBlur$),
+      tap(() => {
+        this.historyService.storeEditorContent(this.getCode())
+        this.editorState$.next('saved')
+      })
+    ).subscribe()
   }
 
   private getCustomAnnotations (): Annotation[] {
@@ -65,6 +94,10 @@ export class CodeEditor {
     this.clearErrors()
     this.codeMirror.setValue(code)
     this.codeMirror.refresh()
+  }
+
+  public getEditorState () : Observable<EditorState> {
+    return this.editorStateObservable
   }
 
   public handleErrorResult (result: string) {

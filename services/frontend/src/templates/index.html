@@ -54,28 +54,45 @@
                         </select>
                     </div>
                     <div class="control">
-                        <button class="button is-white" id="execute">
-                    <span class="icon is-small">
-                        <i class="fas fa-play"></i>
-                      </span>
+                        <button class="button" id="execute">
+                            <span class="icon is-small">
+                                <i class="fas fa-play"></i>
+                            </span>
                             <span>Execute</span>
                         </button>
                     </div>
                     <div class="control is-hidden">
-                        <button class="button is-white" id="save">
-                        <span class="icon is-small">
-                            <i class="fas fa-save"></i>
-                          </span>
+                        <button class="button" id="save">
+                            <span class="icon is-small">
+                                <i class="fas fa-save"></i>
+                            </span>
                             <span>Save</span>
                         </button>
                     </div>
                     <div class="control">
-                        <button class="button is-white" id="shareAsCode">
-                        <span class="icon is-small">
-                            <i class="fas fa-share"></i>
-                          </span>
+                        <button class="button" id="shareAsCode">
+                            <span class="icon is-small">
+                                <i class="fas fa-share"></i>
+                            </span>
                             <span>Share as Link</span>
                         </button>
+                    </div>
+                    <div class="control">
+                        <div class="dropdown">
+                            <div class="dropdown-trigger">
+                                <button class="button" aria-haspopup="true" aria-controls="dropdown-history">
+                                    <span class="icon is-small">
+                                        <i class="fas fa-clock"></i>
+                                    </span>
+                                    <span>History</span>
+                                </button>
+                            </div>
+                            <div class="dropdown-menu" id="dropdown-history" role="menu">
+                                <div class="dropdown-content">
+                                    <a href="." class="dropdown-item">New Session</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
 
@@ -90,9 +107,9 @@
                     </div>
                     <div class="control">
                         <button class="button is-white" id="inspectAst">
-                    <span class="icon is-small">
-                        <i class="fas fa-search"></i>
-                      </span>
+                            <span class="icon is-small">
+                                <i class="fas fa-search"></i>
+                            </span>
                             <span>Inspect Ast</span>
                         </button>
                     </div>
@@ -102,7 +119,7 @@
                         <input class="input" type="text" name="shareAsCodeLink" id="shareAsCodeLink" readonly>
                         <span class="icon is-small is-right" data-tooltip="Copied to Clipboard" id="shareLinkTooltip">
                             <i class="fas fa-copy"></i>
-                          </span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -174,8 +191,8 @@
     <div class="column">
         <h3 class="title is-3">From a repository</h3>
         <p>
-            You can share a file from a github repository via its canonical url via this parameter <code>&amp;github=&lt;canonical-path-to-file&gt;</code>.
-            You can get the <code>canonical-path-to-file</code> by going to the file on the github frontend, then press
+            You can share a file from a Github repository via its canonical url via this parameter <code>&amp;github=&lt;canonical-path-to-file&gt;</code>.
+            You can get the <code>canonical-path-to-file</code> by going to the file on the Github frontend, then press
             <code>y</code> now your url should include the commit hash instead of the branch name in the url,
             then omit the <code>https://github.com/</code> and copy the rest.
         </p>
@@ -186,6 +203,15 @@
     </div>
 </section>
 
+<section class="section">
+    <h2 class="title is-2">History and Storage</h2>
+    <p>
+        The Groovy Web Console stores your scripts in the browser's local storage.
+    </p>
+    <p>
+        The history is stored per session which is identified by the <code>#sessionId</code> in the url.
+    </p>
+</section>
 
 </body>
 </html>
