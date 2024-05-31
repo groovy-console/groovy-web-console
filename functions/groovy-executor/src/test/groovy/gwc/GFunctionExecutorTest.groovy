@@ -112,7 +112,7 @@ class ASpec extends Specification {
     and:
     def response = new JsonSlurper().parseText(output.toString())
     response.out.normalize() == outErrorPrefix
-    response.err == '\nFailed to serialize result: Attempted to serialize java.lang.Class: groovy.lang.GroovySystem. Forgot to register a type adapter?'
+    response.err == '\nFailed to serialize result: Attempted to serialize java.lang.Class: groovy.lang.GroovySystem. Forgot to register a type adapter?\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#java-lang-class-unsupported'
     response.result == null
   }
 
