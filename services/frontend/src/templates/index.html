@@ -7,7 +7,7 @@
 </head>
 
 <body>
-<section class="hero is-info">
+<section class="hero is-groovy">
     <div class="hero-head">
         <nav class="navbar">
             <div class="container">
@@ -18,17 +18,43 @@
                         </h1>
                     </a>
                     <span class="navbar-burger burger" data-target="navbarMenuHeroB">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </span>
                 </div>
                 <div id="navbarMenuHeroB" class="navbar-menu">
                     <div class="navbar-end">
+                        <div class="navbar-item has-dropdown is-hoverable">
+                            <a class="navbar-link is-arrowless" id="currentMode">
+                                this should have been replaced
+                            </a>
+
+                            <div class="navbar-dropdown mode-switcher">
+                                <a class="navbar-item" data-mode="light">
+                                    <span class="icon">
+                                        <i class="fas fa-sun"></i>
+                                    </span>
+                                    <span>Light</span>
+                                </a>
+                                <a class="navbar-item" data-mode="dark">
+                                    <span class="icon">
+                                        <i class="fas fa-moon"></i>
+                                    </span>
+                                    <span>Dark</span>
+                                </a>
+                                <a class="navbar-item" data-mode="system">
+                                    <span class="icon">
+                                        <i class="fas fa-desktop"></i>
+                                    </span>
+                                    <span>System</span>
+                                </a>
+                            </div>
+                        </div>
                         <a class="navbar-item" target="_blank" href="https://github.com/groovy-console/groovy-web-console">
-                    <span class="icon">
-                        <i class="fab fa-github"></i>
-                    </span>
+                            <span class="icon">
+                                <i class="fab fa-github"></i>
+                            </span>
                             <span>Github</span>
                         </a>
                     </div>
@@ -106,7 +132,7 @@
                         </select>
                     </div>
                     <div class="control">
-                        <button class="button is-white" id="inspectAst">
+                        <button class="button" id="inspectAst">
                             <span class="icon is-small">
                                 <i class="fas fa-search"></i>
                             </span>

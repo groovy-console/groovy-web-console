@@ -1,6 +1,15 @@
 @charset "utf-8";
+$groovy: #4298B8;
+// groovy-dark: #286B86;
 
-@import '~bulma/css/bulma.css';
+// Add the custom color to Bulma's color map
+$custom-colors: (
+        'groovy': $groovy
+);
+@use "bulma/sass" with (
+  $custom-colors: $custom-colors,
+);
+
 @import '~@creativebulma/bulma-tooltip/dist/bulma-tooltip.css';
 // important bulma must be loaded before code mirror to not mess up the styles in the output editor
 @import '~codemirror/lib/codemirror.css';

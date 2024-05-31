@@ -6,6 +6,7 @@ import { compressToBase64 } from './compression'
 import { CodeEditor, OutputEditor } from './codemirror'
 
 const groovyConsole = new GroovyConsole()
+const htmlRoot = document.getElementsByTagName('html')[0]
 const codeArea = document.getElementById('code') as HTMLTextAreaElement
 const outputArea = document.getElementById('output') as HTMLTextAreaElement
 const version = document.getElementById('version') as HTMLSelectElement
@@ -20,6 +21,8 @@ const tabResult = document.getElementById('tabResult')
 const tabError = document.getElementById('tabError')
 const tabExecInfo = document.getElementById('tabExecInfo')
 const tabs = [tabOutput, tabResult, tabError, tabExecInfo]
+const modeSwitchers = Array.from(document.querySelectorAll('.mode-switcher a')) as HTMLLinkElement[]
+const currentMode = document.getElementById('currentMode') as HTMLLinkElement
 let activeTab: HTMLElement
 
 let executionResult: ExecutionResult = {
@@ -123,6 +126,65 @@ function scriptExecution (target: HTMLElement, action: () => Observable<Executio
     })
 }
 
+type ColorMode = 'light' | 'dark' | 'system'
+
+function switchMode (mode:ColorMode) {
+  switch (mode) {
+    case 'light':
+      htmlRoot.classList.remove('theme-dark')
+      htmlRoot.classList.add('theme-light')
+      break
+    case 'dark':
+      htmlRoot.classList.remove('theme-light')
+      htmlRoot.classList.add('theme-dark')
+      break
+    case 'system':
+      htmlRoot.classList.remove('theme-light')
+      htmlRoot.classList.remove('theme-dark')
+      break
+  }
+  currentMode.innerHTML = modeSwitchers.find(ms => ms.dataset.mode === mode).innerHTML
+}
+
+function setupModeSwitchersAndRestoreSavedColorMode () {
+  modeSwitchers.forEach(modeSwitcher => {
+    fromEvent(modeSwitcher, 'click')
+      .pipe(
+        tap(e => {
+          e.preventDefault()
+          const mode = modeSwitcher.dataset.mode as ColorMode
+          switchMode(mode)
+          localStorage.setItem('colorMode', mode)
+        })
+      ).subscribe()
+  })
+
+  const savedColorMode = localStorage.getItem('colorMode')
+  if (savedColorMode !== null) {
+    switchMode(savedColorMode as ColorMode)
+  } else {
+    switchMode('system')
+  }
+}
+
+function setupNavbarBurgerClickHandlers () {
+  // Get all "navbar-burger" elements
+  const $navbarBurgers = Array.from(document.querySelectorAll('.navbar-burger')) as HTMLElement[]
+
+  // Add a click event on each of them
+  $navbarBurgers.forEach(el => {
+    el.addEventListener('click', () => {
+      // Get the target from the "data-target" attribute
+      const target = el.dataset.target
+      const $target = document.getElementById(target)
+
+      // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+      el.classList.toggle('is-active')
+      $target.classList.toggle('is-active')
+    })
+  })
+}
+
 export function initView () {
   scriptExecution(executeButton, () => groovyConsole.executeScript(version.value, codeCM.getCode()))
   scriptExecution(inspectAstButton, () => groovyConsole.inspectAst(version.value, codeCM.getCode(), astPhaseSelect.value))
@@ -201,4 +263,7 @@ export function initView () {
       updateOutput()
     }
   })
+
+  setupNavbarBurgerClickHandlers()
+  setupModeSwitchersAndRestoreSavedColorMode()
 }
