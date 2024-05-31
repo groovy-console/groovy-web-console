@@ -6,6 +6,7 @@ import { compressToBase64 } from './compression'
 import { CodeEditor, OutputEditor } from './codemirror'
 
 const groovyConsole = new GroovyConsole()
+const htmlRoot = document.getElementsByTagName('html')[0]
 const codeArea = document.getElementById('code') as HTMLTextAreaElement
 const outputArea = document.getElementById('output') as HTMLTextAreaElement
 const version = document.getElementById('version') as HTMLSelectElement
@@ -20,6 +21,7 @@ const tabResult = document.getElementById('tabResult')
 const tabError = document.getElementById('tabError')
 const tabExecInfo = document.getElementById('tabExecInfo')
 const tabs = [tabOutput, tabResult, tabError, tabExecInfo]
+const modeSwitchers = Array.from(document.querySelectorAll('.mode-switcher a')) as HTMLLinkElement[]
 let activeTab: HTMLElement
 
 let executionResult: ExecutionResult = {
@@ -123,6 +125,44 @@ function scriptExecution (target: HTMLElement, action: () => Observable<Executio
     })
 }
 
+type ColorMode = 'light' | 'dark' | 'system'
+
+function switchMode (mode:ColorMode) {
+  switch (mode) {
+    case 'light':
+      htmlRoot.classList.remove('theme-dark')
+      htmlRoot.classList.add('theme-light')
+      break
+    case 'dark':
+      htmlRoot.classList.remove('theme-light')
+      htmlRoot.classList.add('theme-dark')
+      break
+    case 'system':
+      htmlRoot.classList.remove('theme-light')
+      htmlRoot.classList.remove('theme-dark')
+      break
+  }
+}
+
+function setupModeSwitchersAndRestoreSavedColorMode () {
+  modeSwitchers.forEach(modeSwitcher => {
+    fromEvent(modeSwitcher, 'click')
+      .pipe(
+        tap(e => {
+          e.preventDefault()
+          const mode = modeSwitcher.dataset.mode as ColorMode
+          switchMode(mode)
+          localStorage.setItem('colorMode', mode)
+        })
+      ).subscribe()
+  })
+
+  const savedColorMode = localStorage.getItem('colorMode')
+  if (savedColorMode !== null) {
+    switchMode(savedColorMode as ColorMode)
+  }
+}
+
 function setupNavbarBurgerClickHandlers () {
   // Get all "navbar-burger" elements
   const $navbarBurgers = Array.from(document.querySelectorAll('.navbar-burger')) as HTMLElement[]
@@ -221,4 +261,5 @@ export function initView () {
   })
 
   setupNavbarBurgerClickHandlers()
+  setupModeSwitchersAndRestoreSavedColorMode()
 }
