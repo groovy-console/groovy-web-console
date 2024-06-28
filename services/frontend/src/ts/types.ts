@@ -31,3 +31,6 @@ export interface StackOverflowQuestion {
 export interface StackOverflowResponse {
   items: StackOverflowQuestion[]
 }
+
+export type ThemeColor = 'light' | 'dark'
+export type ColorMode = ThemeColor | 'system'

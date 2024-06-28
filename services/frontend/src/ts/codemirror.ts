@@ -1,49 +1,100 @@
-import CodeMirror from 'codemirror'
-import 'codemirror/addon/display/autorefresh'
-import 'codemirror/addon/edit/closebrackets'
-import 'codemirror/addon/edit/matchbrackets'
-import 'codemirror/addon/fold/brace-fold'
-import 'codemirror/addon/fold/foldcode'
-import 'codemirror/addon/fold/foldgutter'
-// Since Codemirror 5 is not designed for Typescript usage, we have to import the whole lint file to work,
-// but to use the type we need to import it directly, ESLint will complain about that, so ignore the rules here
-import 'codemirror/addon/lint/lint' // eslint-disable-line import/no-duplicates
-import { Annotation } from 'codemirror/addon/lint/lint' // eslint-disable-line import/no-duplicates
-import 'codemirror/addon/selection/active-line'
-import 'codemirror/mode/groovy/groovy'
 import { decodeUrlSafe, decompressFromBase64 } from './compression'
 import { loadGist, loadGithubFile } from './github'
-import { BehaviorSubject, debounceTime, distinctUntilChanged, from, fromEvent, mergeWith, Observable, of } from 'rxjs'
+import {
+  BehaviorSubject,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  from, mergeWith,
+  Observable,
+  of,
+  Subject
+} from 'rxjs'
 import { concatMap, tap } from 'rxjs/operators'
 import { loadCodeFromQuestion } from './stackoverflow'
 import { HistoryService } from './history'
+import {
+  crosshairCursor,
+  drawSelection,
+  dropCursor,
+  EditorView,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  keymap,
+  lineNumbers,
+  rectangularSelection, ViewUpdate
+} from '@codemirror/view'
+import { Compartment, EditorState } from '@codemirror/state'
+import {
+  bracketMatching,
+  defaultHighlightStyle,
+  foldGutter,
+  foldKeymap,
+  indentOnInput,
+  StreamLanguage,
+  syntaxHighlighting
+} from '@codemirror/language'
+import { groovy } from '@codemirror/legacy-modes/mode/groovy'
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
+import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
+import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete'
+import { Diagnostic, linter, lintGutter, lintKeymap, setDiagnostics } from '@codemirror/lint'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { ThemeColor } from './types'
+import { tomorrow } from 'thememirror'
 
-export type EditorState = 'saved' | 'unsaved'
+export type EditorHistoryState = 'saved' | 'unsaved'
 
-export class CodeEditor {
-  private codeMirror: CodeMirror.EditorFromTextArea
-  private lintErrors: Annotation[] = []
+abstract class ThemeableEditor {
+  private currentThemeColor: ThemeColor
+  private themeCompartment = new Compartment()
+
+  protected constructor (initialThemeColor: ThemeColor) {
+    this.currentThemeColor = initialThemeColor
+  }
+
+  protected abstract get codeMirror (): EditorView
+
+  private getTheme (themeColor: ThemeColor) {
+    return (themeColor === 'light') ? tomorrow : oneDark
+  }
+
+  public switchTheme (themeColor: ThemeColor) {
+    if (this.currentThemeColor === themeColor) return
+    this.currentThemeColor = themeColor
+    this.codeMirror.dispatch({ effects: this.themeCompartment.reconfigure(this.getTheme(themeColor)) })
+  }
+
+  protected themeExtension () {
+    return this.themeCompartment.of(this.getTheme(this.currentThemeColor))
+  }
+}
+
+export class CodeEditor extends ThemeableEditor {
+  protected codeMirror: EditorView
+  private lintErrors: Diagnostic[] = []
   private historyService = new HistoryService()
-  private editorState$ = new BehaviorSubject<EditorState>('saved')
+  private editorChanges$ = new Subject<String>()
+  private editorFocusChanges$ = new Subject<boolean>()
+  private editorState$ = new BehaviorSubject<EditorHistoryState>('saved')
   private editorStateObservable = this.editorState$.pipe(distinctUntilChanged())
 
-  constructor (codeArea: HTMLTextAreaElement) {
+  constructor (codeArea: HTMLElement, theme: ThemeColor) {
+    super(theme)
     this.codeMirror = this.createEditor(codeArea)
-
-    this.codeMirror.on('change', () => {
-      // clear errors when the user changes the editor,
-      // as we don't have a way to check the correctness locally
-      if (this.lintErrors.length > 0) {
-        this.clearErrors()
-      }
-    })
     this.enablePersistence()
     this.setCode(this.historyService.getEditorContent())
+    this.editorChanges$.subscribe(() => {
+      // clear errors when the user changes the editor,
+      // as we don't have a way to check the correctness locally
+      this.clearErrors()
+    })
   }
 
   private enablePersistence () {
     // Observable for editor changes
-    const editorChanges$ = fromEvent(this.codeMirror, 'change').pipe(
+    const editorChanges$ = this.editorChanges$.pipe(
       tap(() => {
         this.editorState$.next('unsaved')
       }),
@@ -51,7 +102,9 @@ export class CodeEditor {
     )
 
     // Observable for editor blur event
-    const editorBlur$ = fromEvent(this.codeMirror.getWrapperElement(), 'blur')
+    const editorBlur$ = this.editorFocusChanges$.pipe(
+      filter(hasFocus => !hasFocus)
+    )
 
     editorChanges$.pipe(
       mergeWith(editorBlur$),
@@ -62,52 +115,81 @@ export class CodeEditor {
     ).subscribe()
   }
 
-  private getCustomAnnotations (): Annotation[] {
-    return this.lintErrors
+  private posToOffset (line: number, col: number) {
+    return this.codeMirror.state.doc.line(line + 1).from + col
   }
 
-  private createEditor (codeArea: HTMLTextAreaElement) {
-    return CodeMirror.fromTextArea(<HTMLTextAreaElement>codeArea, <any>{ // need to cast to any, since generated types don't support extensions `matchBrackets`
-      lineNumbers: true,
-      mode: 'groovy',
-      tabSize: 4,
-      indentUnit: 4,
-      matchBrackets: true,
-      autoCloseBrackets: true,
-      foldGutter: true,
-      gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers'],
-      styleActiveLine: true,
-      lint: {
-        // we need to disable automatic linting to be able to trigger it manually
-        lintOnChange: false,
-        // this allows us to add custom linting annotations, currently used only for error responses
-        getAnnotations: () => this.getCustomAnnotations()
-      }
+  private createEditor (parentContainer: HTMLElement) {
+    return new EditorView({
+      parent: parentContainer,
+      extensions: [
+        StreamLanguage.define(groovy),
+        lineNumbers(),
+        highlightActiveLineGutter(),
+        highlightSpecialChars(),
+        history(),
+        foldGutter(),
+        drawSelection(),
+        dropCursor(),
+        EditorState.allowMultipleSelections.of(true),
+        indentOnInput(),
+        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        bracketMatching(),
+        closeBrackets(),
+        autocompletion(),
+        rectangularSelection(),
+        crosshairCursor(),
+        highlightActiveLine(),
+        highlightSelectionMatches(),
+        linter(__ => this.lintErrors, { delay: 0 }),
+        lintGutter(),
+        keymap.of([
+          ...closeBracketsKeymap,
+          ...defaultKeymap,
+          ...searchKeymap,
+          ...historyKeymap,
+          ...foldKeymap,
+          ...completionKeymap,
+          ...lintKeymap
+        ]),
+        this.themeExtension(),
+        EditorView.updateListener.of(update => this.updateListener(update))
+      ]
     })
   }
 
+  private updateListener (update: ViewUpdate) {
+    console.debug('Editor update', update)
+    if (update.docChanged) {
+      this.editorChanges$.next('update')
+    }
+    if (update.focusChanged) {
+      this.editorFocusChanges$.next(update.view.hasFocus)
+    }
+  }
+
   public getCode () {
-    return this.codeMirror.getValue()
+    return this.codeMirror.state.doc.toString()
   }
 
   public setCode (code: string) {
     this.clearErrors()
-    this.codeMirror.setValue(code)
-    this.codeMirror.refresh()
+    this.codeMirror.dispatch({
+      changes: { from: 0, to: this.codeMirror.state.doc.length, insert: code }
+    })
   }
 
-  public getEditorState () : Observable<EditorState> {
+  public getEditorState (): Observable<EditorHistoryState> {
     return this.editorStateObservable
   }
 
   public handleErrorResult (result: string) {
+    this.lintErrors = []
     // check if it's a syntax error
     const lineColInfo = result.match(/.*@ line (\d+), column (\d+).$/)
     if (lineColInfo && lineColInfo.length >= 3) {
-      this.addErrorHint({
-        line: parseInt(lineColInfo[1]) - 1,
-        ch: parseInt(lineColInfo[2]) - 1
-      }, result)
+      const from = this.posToOffset(parseInt(lineColInfo[1]) - 1, parseInt(lineColInfo[2]) - 1)
+      this.addErrorHint(from, from + 1, result)
     } else { // check if it's an exception
       const exceptionLines = result.split('\n')
       const scriptLineFound = exceptionLines.find(line => line.match(/\tat Script1\.run\(Script1\.groovy:(\d+)\)$/))
@@ -115,31 +197,33 @@ export class CodeEditor {
         const lineNumber = scriptLineFound.slice(scriptLineFound.indexOf(':') + 1, scriptLineFound.length - 1)
 
         const exceptionMessage = exceptionLines.filter(line => line.indexOf('\t') === -1).join('\n')
-        this.addErrorHint({
-          line: parseInt(lineNumber) - 1,
-          ch: 0
-        }, exceptionMessage)
+        const from = this.posToOffset(parseInt(lineNumber) - 1, 0)
+        this.addErrorHint(from, from + 1, exceptionMessage)
       }
     }
   }
 
-  addErrorHint (position: CodeMirror.Position, errorText?: string) {
-    this.codeMirror.setCursor(position)
+  addErrorHint (from: number, to: number, errorText?: string) {
     this.codeMirror.focus()
     if (errorText) {
       this.lintErrors.push({
-        from: position,
-        to: CodeMirror.Pos(position.line, position.ch + 1),
+        from,
+        to,
         message: errorText,
         severity: 'error'
       })
-      this.codeMirror.performLint()
+      this.codeMirror.dispatch(
+        { selection: { anchor: from } },
+        setDiagnostics(this.codeMirror.state, this.lintErrors) // manually set the diagnostics, otherwise the gutter won't show immediately
+      )
     }
   }
 
   public clearErrors () {
-    this.lintErrors = []
-    this.codeMirror.performLint()
+    if (this.lintErrors.length > 0) {
+      this.lintErrors = []
+      this.codeMirror.dispatch(setDiagnostics(this.codeMirror.state, []))
+    }
   }
 
   public loadFromUrl (query:string) {
@@ -168,24 +252,31 @@ export class CodeEditor {
   }
 }
 
-export class OutputEditor {
-  private codeMirror: CodeMirror.EditorFromTextArea
+export class OutputEditor extends ThemeableEditor {
+  protected codeMirror: EditorView
 
-  constructor (codeArea: HTMLTextAreaElement) {
-    this.codeMirror = this.createOutput(codeArea)
+  constructor (parentContainer: HTMLElement, theme: ThemeColor) {
+    super(theme)
+    this.codeMirror = this.createOutput(parentContainer)
   }
 
-  createOutput (outputArea: HTMLTextAreaElement) {
-    return CodeMirror.fromTextArea(<HTMLTextAreaElement>outputArea, <any>{
-      readOnly: true,
-      foldGutter: true,
-      gutters: ['CodeMirror-foldgutter'],
-      lineWrapping: true
+  createOutput (parentContainer: HTMLElement) {
+    return new EditorView({
+      parent: parentContainer,
+      extensions: [
+        StreamLanguage.define(groovy),
+        lineNumbers(),
+        foldGutter(),
+        EditorState.readOnly.of(true),
+        EditorView.editable.of(false),
+        this.themeExtension()
+      ]
     })
   }
 
   public setContent (code: string) {
-    this.codeMirror.setValue(code)
-    this.codeMirror.refresh()
+    this.codeMirror.dispatch({
+      changes: { from: 0, to: this.codeMirror.state.doc.length, insert: code }
+    })
   }
 }

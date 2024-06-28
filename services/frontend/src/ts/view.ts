@@ -1,4 +1,4 @@
-import { ExecutionResult } from './types'
+import { ColorMode, ExecutionResult, ThemeColor } from './types'
 import { combineLatest, fromEvent, Observable, of, startWith } from 'rxjs'
 import { concatMap, delay, map, tap, throttleTime } from 'rxjs/operators'
 import { GroovyConsole } from './groovy-console'
@@ -32,8 +32,8 @@ let executionResult: ExecutionResult = {
   info: null
 }
 
-const codeCM = new CodeEditor(codeArea)
-const outputCM = new OutputEditor(outputArea)
+const codeCM = new CodeEditor(codeArea, getEffectiveColorMode())
+const outputCM = new OutputEditor(outputArea, getEffectiveColorMode())
 
 function clearOutput () {
   executionResult.out = ''
@@ -126,24 +126,30 @@ function scriptExecution (target: HTMLElement, action: () => Observable<Executio
     })
 }
 
-type ColorMode = 'light' | 'dark' | 'system'
-
 function switchMode (mode:ColorMode) {
   switch (mode) {
     case 'light':
       htmlRoot.classList.remove('theme-dark')
       htmlRoot.classList.add('theme-light')
+      switchEditorTheme('light')
       break
     case 'dark':
       htmlRoot.classList.remove('theme-light')
       htmlRoot.classList.add('theme-dark')
+      switchEditorTheme('dark')
       break
     case 'system':
       htmlRoot.classList.remove('theme-light')
       htmlRoot.classList.remove('theme-dark')
+      switchEditorTheme(getPreferredColorScheme())
       break
   }
   currentMode.innerHTML = modeSwitchers.find(ms => ms.dataset.mode === mode).innerHTML
+}
+
+function switchEditorTheme (theme:ThemeColor) {
+  codeCM.switchTheme(theme)
+  outputCM.switchTheme(theme)
 }
 
 function setupModeSwitchersAndRestoreSavedColorMode () {
@@ -164,6 +170,29 @@ function setupModeSwitchersAndRestoreSavedColorMode () {
     switchMode(savedColorMode as ColorMode)
   } else {
     switchMode('system')
+  }
+}
+
+function getPreferredColorScheme (): ThemeColor {
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark'
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    return 'light'
+  } else {
+    return 'light'
+  }
+}
+
+function getEffectiveColorMode (): ThemeColor {
+  const savedColorMode = localStorage.getItem('colorMode')
+  if (savedColorMode !== null) {
+    const color = (savedColorMode as ColorMode)
+    if (color === 'system') {
+      return getPreferredColorScheme()
+    }
+    return color as ThemeColor
+  } else {
+    return getPreferredColorScheme()
   }
 }
 
