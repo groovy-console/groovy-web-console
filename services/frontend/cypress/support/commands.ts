@@ -26,25 +26,31 @@
 
 // If you add a command here you also need to add the signature to ./index.ts so that typescript can verify it
 
+import { EditorView } from '@codemirror/view'
+
 Cypress.Commands.add('assertCodeEditorValue', (expectedValue) => {
-  cy.get('#code + .CodeMirror')
+  cy.get('#code .cm-content')
     .should((editor:any) => {
-      expect(editor[0].CodeMirror.getValue()).to.eq(expectedValue)
+      const cm = editor[0].cmView.view as EditorView
+      expect(cm.state.doc.toString()).to.eq(expectedValue)
     })
 })
 
 Cypress.Commands.add('setCodeEditorValue', (newValue) => {
-  cy.get('#code + .CodeMirror')
+  cy.get('#code .cm-content')
     .then((editor:any) => {
-      editor[0].CodeMirror.setValue(newValue)
-      editor[0].CodeMirror.refresh()
+      const cm = editor[0].cmView.view as EditorView
+      cm.dispatch({
+        changes: { from: 0, to: cm.state.doc.length, insert: newValue }
+      })
     })
 })
 
 Cypress.Commands.add('assertOutputEditorValue', (expectedValue) => {
-  cy.get('#output + .CodeMirror')
+  cy.get('#output .cm-content')
     .should((editor:any) => {
-      expect(editor[0].CodeMirror.getValue()).to.eq(expectedValue)
+      const cm = editor[0].cmView.view as EditorView
+      expect(cm.state.doc.toString()).to.eq(expectedValue)
     })
 })
 
