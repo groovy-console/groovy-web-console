@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        variant: ['groovy_3_0', 'groovy_2_5', 'groovy_4_0']
+        variant: ['groovy_3_0', 'groovy_2_5', 'groovy_4_0', 'groovy_5_0_alpha']
     steps:
       - uses: actions/checkout@v4
       - name: 'Set up JDK'

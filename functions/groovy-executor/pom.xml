@@ -134,6 +134,57 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <id>groovy_5_0_alpha</id>
+      <properties>
+        <groovy.version>${groovy.5.version}</groovy.version>
+        <spock.version.groovyVariant>4.0</spock.version.groovyVariant>
+        <!--
+        GMavenPlus can't set the property spock.iKnowWhatImDoing.disableGroovyVersionCheck=true
+        so we need to skip tests for now
+        -->
+        <maven.test.skip>true</maven.test.skip>
+      </properties>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-bom</artifactId>
+            <version>${groovy.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.groovy</groupId>
+          <artifactId>groovy-all</artifactId>
+          <version>${groovy.version}</version>
+          <type>pom</type>
+          <exclusions>
+            <exclusion>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-test-testng</artifactId>
+              <!-- Exclude testng for now, as this causes surefire to ignore junit5 platform tests -->
+            </exclusion>
+          </exclusions>
+        </dependency>
+
+        <dependency>
+          <groupId>org.spockframework</groupId>
+          <artifactId>spock-core</artifactId>
+          <scope>compile</scope>
+          <exclusions>
+            <exclusion>
+              <!-- need to exclude here as groovy changed their groupId-->
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
   <dependencies>

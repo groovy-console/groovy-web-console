@@ -32,6 +32,10 @@ public class GFunctionExecutor implements HttpFunction {
   public GFunctionExecutor() {
     LOG.info("Groovy function executor initialized");
     System.setProperty("grape.root", "/tmp/.groovy/grapes/");
+    // Disable Spock's version check for Groovy 5
+    if (GroovySystem.getVersion().startsWith("5.")) {
+      System.setProperty("spock.iKnowWhatImDoing.disableGroovyVersionCheck", "true");
+    }
   }
 
   @Override
