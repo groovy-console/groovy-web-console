@@ -62,7 +62,7 @@
     "sass": "^1.77.4",
     "pako": "^2.0.4",
     "rxjs": "^7.5.7",
-    "sass-loader": "^14.0.0",
+    "sass-loader": "^15.0.0",
     "start-server-and-test": "^2.0.0",
     "style-loader": "^4.0.0",
     "thememirror": "^2.0.1",
