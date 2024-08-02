@@ -5,12 +5,16 @@
   ],
   "packageRules": [
     // Disable major version upgrades for Groovy versions
-    // as we want to keep one for each major version
+    // as we want to keep one for each major version.
     {
-      "matchPackagePrefixes": ["org.codehaus.groovy:", "org.apache.groovy:"],
-      "matchManagers": ["regex"],
-      "matchUpdateTypes": ["major"],
-      "enabled": false
+      matchPackagePrefixes: ["org.codehaus.groovy:"],
+      matchCurrentValue: "/^2\\./",
+      allowedVersions: "(,3.0)"
+    },
+    {
+      matchPackagePrefixes: ["org.apache.groovy:"],
+      matchCurrentValue: "/^4\\./",
+      allowedVersions: "(,5.0)"
     },
     // Automerge non-major updates https://docs.renovatebot.com/key-concepts/automerge/#automerge-non-major-updates
     {
