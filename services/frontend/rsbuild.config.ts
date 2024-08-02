@@ -33,6 +33,7 @@ export default defineConfig(({ envMode }) => ({
     }
   },
   server: {
-    port: 9000
+    port: 9000,
+    host: 'localhost'
   }
 }))
