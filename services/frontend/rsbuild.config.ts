@@ -2,7 +2,7 @@ import { defineConfig, rspack } from '@rsbuild/core'
 import { pluginSass } from '@rsbuild/plugin-sass'
 import path from 'path'
 
-export default defineConfig(({ env, command, envMode }) => ({
+export default defineConfig(({ envMode }) => ({
   source: {
     entry: {
       index: './src/ts/index.ts'
@@ -10,6 +10,9 @@ export default defineConfig(({ env, command, envMode }) => ({
   },
   html: {
     template: './src/templates/index.html'
+  },
+  output: {
+    assetPrefix: './'
   },
   plugins: [
     pluginSass()
