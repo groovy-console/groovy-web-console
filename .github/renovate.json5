@@ -12,6 +12,11 @@
       allowedVersions: "(,3.0)"
     },
     {
+      matchPackagePrefixes: ["org.codehaus.groovy:"],
+      matchCurrentValue: "/^3\\./",
+      allowedVersions: "(,4.0)"
+    },
+    {
       matchPackagePrefixes: ["org.apache.groovy:"],
       matchCurrentValue: "/^4\\./",
       allowedVersions: "(,5.0)"
