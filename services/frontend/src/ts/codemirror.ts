@@ -42,7 +42,7 @@ import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } 
 import { Diagnostic, linter, lintGutter, lintKeymap, setDiagnostics } from '@codemirror/lint'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { ThemeColor } from './types'
-import { tomorrow } from 'thememirror'
+import { ayuLight } from 'thememirror'
 
 export type EditorHistoryState = 'saved' | 'unsaved'
 
@@ -57,7 +57,7 @@ abstract class ThemeableEditor {
   protected abstract get codeMirror (): EditorView
 
   private getTheme (themeColor: ThemeColor) {
-    return (themeColor === 'light') ? tomorrow : oneDark
+    return (themeColor === 'light') ? ayuLight : oneDark
   }
 
   public switchTheme (themeColor: ThemeColor) {
