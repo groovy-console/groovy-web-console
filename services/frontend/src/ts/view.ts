@@ -255,15 +255,21 @@ export function initView () {
     .pipe(
       tap(([versions, paramVersion]) => {
         version.innerHTML = '' // remove children
+        let selected = false
         versions.forEach(gv => {
           const optionElement = document.createElement('option')
           optionElement.value = gv.id
           optionElement.text = gv.name
           if (paramVersion !== '' && gv.id.startsWith(paramVersion)) {
             optionElement.selected = true
+            selected = true
           }
           version.add(optionElement)
         })
+        if (!selected) {
+          // select the first version that that is not a milestone/alpha/rc release
+          version.selectedIndex = versions.findIndex(v => !v.id.match(/alpha|beta|rc/i))
+        }
       })
     )
     .subscribe(() => groovyConsole.pingFunction(version.value).subscribe())
