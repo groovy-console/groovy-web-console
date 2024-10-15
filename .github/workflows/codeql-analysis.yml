@@ -20,6 +20,11 @@ on:
   schedule:
     - cron: '37 11 * * 5'
 
+# https://stackoverflow.com/a/72408109/16358266
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   codeql-analyze:
     name: Analyze
