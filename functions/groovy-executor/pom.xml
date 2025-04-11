@@ -21,9 +21,6 @@
   <profiles>
     <profile>
       <id>groovy_3_0</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <groovy.version>${groovy.3.version}</groovy.version>
         <spock.version.groovyVariant>3.0</spock.version.groovyVariant>
@@ -59,6 +56,9 @@
     </profile>
     <profile>
       <id>groovy_4_0</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <properties>
         <groovy.version>${groovy.4.version}</groovy.version>
         <spock.version.groovyVariant>4.0</spock.version.groovyVariant>
