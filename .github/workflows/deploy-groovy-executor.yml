@@ -9,14 +9,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - variant: 'groovy_2_5'
-            java: 11
           - variant: 'groovy_3_0'
             java: 17
           - variant: 'groovy_4_0'
-            java: 17
+            java: 21
           - variant: 'groovy_5_0_alpha'
-            java: 17
+            java: 21
     steps:
       - uses: actions/checkout@v4
       - name: 'Set up JDK'

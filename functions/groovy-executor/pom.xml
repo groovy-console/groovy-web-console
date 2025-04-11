@@ -27,39 +27,8 @@
       <properties>
         <groovy.version>${groovy.3.version}</groovy.version>
         <spock.version.groovyVariant>3.0</spock.version.groovyVariant>
-      </properties>
-      <dependencyManagement>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-bom</artifactId>
-            <version>${groovy.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-          </dependency>
-        </dependencies>
-      </dependencyManagement>
-      <dependencies>
-        <dependency>
-          <groupId>org.codehaus.groovy</groupId>
-          <artifactId>groovy-all</artifactId>
-          <version>${groovy.version}</version>
-          <type>pom</type>
-          <exclusions>
-            <exclusion>
-              <groupId>org.codehaus.groovy</groupId>
-              <artifactId>groovy-test-testng</artifactId>
-              <!-- Exclude testng for now, as this causes surefire to ignore junit5 platform tests -->
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>groovy_2_5</id>
-      <properties>
-        <groovy.version>${groovy.2.version}</groovy.version>
-        <spock.version.groovyVariant>2.5</spock.version.groovyVariant>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
       </properties>
       <dependencyManagement>
         <dependencies>

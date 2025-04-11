@@ -20,14 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        variant: ['groovy_3_0', 'groovy_2_5', 'groovy_4_0', 'groovy_5_0_alpha']
+        include:
+          - variant: 'groovy_3_0'
+            java: 17
+          - variant: 'groovy_4_0'
+            java: 21
+          - variant: 'groovy_5_0_alpha'
+            java: 21
     steps:
       - uses: actions/checkout@v4
       - name: 'Set up JDK'
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 11
+          java-version: ${{ matrix.java }}
           cache: 'maven'
       - name: test
         run: |
