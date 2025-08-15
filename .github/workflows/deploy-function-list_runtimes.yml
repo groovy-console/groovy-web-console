@@ -7,7 +7,7 @@ jobs:
   deploy-function-list-runtimes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
