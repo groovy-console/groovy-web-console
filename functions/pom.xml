@@ -14,7 +14,7 @@
     <maven.compiler.source>21</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <groovy.3.version>3.0.24</groovy.3.version>
-    <groovy.4.version>4.0.28</groovy.4.version>
+    <groovy.4.version>4.0.29</groovy.4.version>
     <groovy.5.version>5.0.2</groovy.5.version>
     <groovy.version>${groovy.4.version}</groovy.version>
     <spock.version.major>2.3</spock.version.major>
