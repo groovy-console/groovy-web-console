@@ -21,6 +21,11 @@
       matchCurrentValue: "/^4\\./",
       allowedVersions: "(,5.0)"
     },
+    {
+      matchPackagePrefixes: ["org.apache.groovy:"],
+      matchCurrentValue: "/^5\\./",
+      allowedVersions: "(,6.0)"
+    },
     // Automerge non-major updates https://docs.renovatebot.com/key-concepts/automerge/#automerge-non-major-updates
     {
       "matchUpdateTypes": ["minor", "patch"],

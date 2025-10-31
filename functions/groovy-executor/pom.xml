@@ -104,7 +104,7 @@
       </dependencies>
     </profile>
     <profile>
-      <id>groovy_5_0_alpha</id>
+      <id>groovy_5_0</id>
       <properties>
         <groovy.version>${groovy.5.version}</groovy.version>
         <spock.version.groovyVariant>4.0</spock.version.groovyVariant>

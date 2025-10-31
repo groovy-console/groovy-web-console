@@ -18,7 +18,7 @@
           <option name="pomFileName" value="pom.xml" />
           <option name="profilesMap">
             <map>
-              <entry key="groovy_5_0_alpha" value="true" />
+              <entry key="groovy_5_0" value="true" />
             </map>
           </option>
           <option name="projectsCmdOptionValues">
