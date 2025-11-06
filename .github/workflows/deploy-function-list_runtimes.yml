@@ -14,5 +14,5 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
       - run: gcloud functions deploy list_runtimes --entry-point listRuntimes --trigger-http --runtime nodejs22 --allow-unauthenticated --memory 8192MB --region europe-west1 --source functions/list_runtimes --service-account list-function-groovy-runtimes@gwc-experiment.iam.gserviceaccount.com
