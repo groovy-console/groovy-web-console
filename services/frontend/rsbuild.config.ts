@@ -1,6 +1,5 @@
 import { defineConfig, rspack } from '@rsbuild/core'
 import { pluginSass } from '@rsbuild/plugin-sass'
-import path from 'path'
 
 export default defineConfig(({ envMode }) => ({
   source: {
@@ -26,7 +25,7 @@ export default defineConfig(({ envMode }) => ({
         }),
         new rspack.CopyRspackPlugin({
           patterns: [
-            { from: './src/static/', to: path.join(__dirname, 'dist') }
+            { from: './src/static/', to: '.' }
           ]
         })
       ]
