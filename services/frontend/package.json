@@ -41,7 +41,7 @@
     "@fortawesome/free-brands-svg-icons": "^7.0.0",
     "@fortawesome/free-regular-svg-icons": "^7.0.0",
     "@fortawesome/free-solid-svg-icons": "^7.0.0",
-    "@rsbuild/core": "^1.0.1-beta.9",
+    "@rsbuild/core": "^1.6.14",
     "@rsbuild/plugin-sass": "^1.0.1-beta.9",
     "@types/pako": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
