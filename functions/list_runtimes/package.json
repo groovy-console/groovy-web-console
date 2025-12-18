@@ -1,8 +1,9 @@
 {
-    "name": "list-groovy-runtimes",
-    "version": "0.0.1",
-    "dependencies": {
-        "node-fetch": "^3.0.0",
-        "google-auth-library": "^10.0.0"
-    }
+  "name": "list-groovy-runtimes",
+  "version": "0.0.1",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^4.0.0",
+    "google-auth-library": "^10.5.0",
+    "node-fetch": "^3.3.2"
+  }
 }
