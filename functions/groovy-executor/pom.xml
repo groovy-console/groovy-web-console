@@ -107,12 +107,7 @@
       <id>groovy_5_0</id>
       <properties>
         <groovy.version>${groovy.5.version}</groovy.version>
-        <spock.version.groovyVariant>4.0</spock.version.groovyVariant>
-        <!--
-        GMavenPlus can't set the property spock.iKnowWhatImDoing.disableGroovyVersionCheck=true
-        so we need to skip tests for now
-        -->
-        <maven.test.skip>true</maven.test.skip>
+        <spock.version.groovyVariant>5.0</spock.version.groovyVariant>
       </properties>
       <dependencyManagement>
         <dependencies>
