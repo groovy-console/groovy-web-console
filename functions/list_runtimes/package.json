@@ -1,6 +1,8 @@
 {
   "name": "list-groovy-runtimes",
   "version": "0.0.1",
+  "type": "module",
+  "main": "index.mjs",
   "dependencies": {
     "@google-cloud/functions-framework": "^4.0.0",
     "google-auth-library": "^10.5.0",
