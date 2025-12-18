@@ -9,11 +9,11 @@ The output will be in `functions/groovy-executor/target/deployment`.
 
 There are different profiles, one for each groovy version:
 
-* `groovy_4_0`
-* `groovy_3_0` (default)
-* `groovy_2_5`
+* `groovy_5_0`
+* `groovy_4_0` (default)
+* `groovy_3_0`
 
-Use `../../mvnw package -P groovy_2_5`
+Use `../../mvnw package -P groovy_5_0`
 
 ### Deploying the backend
 
