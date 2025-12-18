@@ -1,6 +1,6 @@
-const { http } = require('@google-cloud/functions-framework');
-const { GoogleAuth } = require('google-auth-library');
-const fetch = require('node-fetch');
+import {http} from '@google-cloud/functions-framework';
+import {GoogleAuth} from 'google-auth-library';
+import fetch from 'node-fetch';
 
 http('listRuntimes', async (req, res) => {
   // --- CORS Configuration ---
