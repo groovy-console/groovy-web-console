@@ -144,6 +144,20 @@ export class CodeEditor extends ThemeableEditor {
         linter(__ => this.lintErrors, { delay: 0 }),
         lintGutter(),
         keymap.of([
+          {
+            key: 'Mod-Enter',
+            run: () => {
+              document.getElementById('execute')?.click()
+              return true
+            }
+          },
+          {
+            key: 'Shift-Enter',
+            run: () => {
+              document.getElementById('inspectAst')?.click()
+              return true
+            }
+          },
           ...closeBracketsKeymap,
           ...defaultKeymap,
           ...searchKeymap,
