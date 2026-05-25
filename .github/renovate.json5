@@ -5,27 +5,13 @@
     "security:minimumReleaseAgeNpm"
   ],
   "packageRules": [
-    // Disable major version upgrades for Groovy versions
-    // as we want to keep one for each major version.
+    // Pin Groovy upgrades to the same major version (we keep one entry per major).
+    // versionCompatibility extracts the major as the compatibility marker so Renovate
+    // only proposes updates within the same major, regardless of groupId migration
+    // (org.codehaus.groovy -> org.apache.groovy at 4.x).
     {
-      matchPackageNames: ["org.codehaus.groovy:**"],
-      matchCurrentValue: "/^2\\./",
-      allowedVersions: "(,3.0)"
-    },
-    {
-      matchPackageNames: ["org.codehaus.groovy:**"],
-      matchCurrentValue: "/^3\\./",
-      allowedVersions: "(,4.0)"
-    },
-    {
-      matchPackageNames: ["org.apache.groovy:**"],
-      matchCurrentValue: "/^4\\./",
-      allowedVersions: "(,5.0)"
-    },
-    {
-      matchPackageNames: ["org.apache.groovy:**"],
-      matchCurrentValue: "/^5\\./",
-      allowedVersions: "(,6.0)"
+      matchPackageNames: ["org.codehaus.groovy:**", "org.apache.groovy:**"],
+      versionCompatibility: "^(?<compatibility>\\d+)\\.(?<version>.+)$"
     },
     // Automerge non-major updates https://docs.renovatebot.com/key-concepts/automerge/#automerge-non-major-updates
     {
