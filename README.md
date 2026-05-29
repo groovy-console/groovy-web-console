@@ -16,6 +16,13 @@ There are different profiles, one for each groovy version:
 
 Use `../../mvnw package -P groovy_5_0`
 
+> **Switching profiles locally requires `clean`.** Each profile compiles a
+> different set of (test) sources, so run e.g. `../../mvnw clean package -P groovy_6_0_alpha`.
+> Without `clean`, stale classes from a previous profile linger in `target/` and
+> can cause a confusing `spock/lang/Specification` failure when building the
+> Spock-free `groovy_6_0_alpha` variant. (CI is unaffected — it builds from a
+> fresh checkout.)
+
 #### Groovy 6 (pre-release, no Spock)
 
 Spock has no release compatible with Groovy 6 yet, so the `groovy_6_0_alpha`
