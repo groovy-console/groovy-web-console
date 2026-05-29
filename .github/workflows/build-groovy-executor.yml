@@ -27,6 +27,8 @@ jobs:
             java: 21
           - variant: 'groovy_5_0'
             java: 21
+          - variant: 'groovy_6_0_alpha'
+            java: 17
     steps:
       - uses: actions/checkout@v6
       - name: 'Set up JDK'
