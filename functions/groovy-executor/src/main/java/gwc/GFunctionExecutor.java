@@ -143,9 +143,9 @@ public class GFunctionExecutor implements HttpFunction {
   }
 
   private static String featureUnavailable(String lead) {
-    return lead + " on Groovy " + GroovySystem.getVersion()
-      + " yet, because Spock has no release compatible with this Groovy version. "
-      + "Plain Groovy scripts work normally.";
+    return lead + " on the selected Groovy version (" + GroovySystem.getVersion()
+      + "), because Spock has no release compatible with this Groovy version yet. "
+      + "Select a different Groovy version to use Spock; plain Groovy scripts work on all versions.";
   }
 
   private void handleCompilationErrors(StringBuilder errorOutput, MultipleCompilationErrorsException e) {
