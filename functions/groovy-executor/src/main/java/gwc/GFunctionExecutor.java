@@ -30,8 +30,18 @@ public class GFunctionExecutor implements HttpFunction {
 
   // Resolved once: present on Spock-supporting builds (Groovy 3/4/5), absent on
   // builds without Spock (e.g. Groovy 6), where spec/AST requests are unsupported.
-  private static final Optional<SpecSupport> SPEC_SUPPORT =
-    ServiceLoader.load(SpecSupport.class).findFirst();
+  private static final Optional<SpecSupport> SPEC_SUPPORT = loadSpecSupport();
+
+  private static Optional<SpecSupport> loadSpecSupport() {
+    try {
+      return ServiceLoader.load(SpecSupport.class).findFirst();
+    } catch (ServiceConfigurationError e) {
+      // A malformed or failing SpecSupport provider must not prevent the function
+      // from starting; plain Groovy scripts work without it.
+      LOG.warning("Failed to load SpecSupport provider, spec/AST features disabled: " + e);
+      return Optional.empty();
+    }
+  }
 
 
   public GFunctionExecutor() {
@@ -79,7 +89,7 @@ public class GFunctionExecutor implements HttpFunction {
     SPEC_SUPPORT.map(SpecSupport::spockVersion).ifPresent(stats::setSpockVersion);
     try (var ignore = new MetaClassRegistryGuard();
          var ignore2 = outputRedirector.redirect();
-         var igonre3 = new SystemPropertiesGuard()) {
+         var ignore3 = new SystemPropertiesGuard()) {
       long executionStart = System.currentTimeMillis();
       boolean isSpock = SPOCK_SCRIPT.matcher(inputScriptOrClass).find();
       if ("ast".equalsIgnoreCase(scriptRequest.getAction())) {
