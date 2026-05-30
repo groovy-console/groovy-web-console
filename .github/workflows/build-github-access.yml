@@ -28,5 +28,5 @@ jobs:
           cache: 'maven'
       - name: test
         run: |
-          pushd functions/groovy-executor
+          pushd functions/github-access
           ../../mvnw -B -V package
