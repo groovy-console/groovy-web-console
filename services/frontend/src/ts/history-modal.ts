@@ -1,8 +1,10 @@
+import { fromEvent, Subscription, debounceTime, distinctUntilChanged, filter, map } from 'rxjs'
 import { HistoryService, SessionMeta, Snapshot } from './history'
 import { CodeEditor } from './codemirror'
 
 const UNDO_TIMEOUT_MS = 15_000
 const LABEL_MAX_LEN = 40
+const SEARCH_DEBOUNCE_MS = 150
 const PREVIEW_PLACEHOLDER = 'Hover a row to preview its content.'
 
 export function deriveLabel (content: string): string {
@@ -49,6 +51,7 @@ interface PendingDelete {
   meta: SessionMeta
   timeoutId: ReturnType<typeof setTimeout>
   toast: HTMLElement
+  undoSub: Subscription
 }
 
 export class HistoryModal {
@@ -64,7 +67,11 @@ export class HistoryModal {
   private searchInput: HTMLInputElement
 
   private pendingDeletes = new Map<string, PendingDelete>()
-  private storageListener?: (e: StorageEvent) => void
+  private storageSub?: Subscription
+  // Per-region Subscription containers — torn down and replaced on every
+  // re-render so each row's listeners are cleaned up cleanly.
+  private currentSnapshotsSubs = new Subscription()
+  private otherSessionsSubs = new Subscription()
   private previewSourceRow: HTMLElement | null = null
   private searchQuery = ''
 
@@ -83,19 +90,26 @@ export class HistoryModal {
     this.backgroundEl = this.modal.querySelector('.modal-background')!
     this.searchInput = document.getElementById('historySearch') as HTMLInputElement
 
-    this.closeBtn.addEventListener('click', () => this.close())
-    this.backgroundEl.addEventListener('click', () => this.close())
-    this.clearAllBtn.addEventListener('click', () => this.handleClearAll())
-    this.searchInput.addEventListener('input', () => {
-      this.searchQuery = this.searchInput.value.trim().toLowerCase()
+    fromEvent(this.closeBtn, 'click').subscribe(() => this.close())
+    fromEvent(this.backgroundEl, 'click').subscribe(() => this.close())
+    fromEvent(this.clearAllBtn, 'click').subscribe(() => this.handleClearAll())
+
+    fromEvent(this.searchInput, 'input').pipe(
+      map(() => this.searchInput.value.trim().toLowerCase()),
+      distinctUntilChanged(),
+      debounceTime(SEARCH_DEBOUNCE_MS)
+    ).subscribe(q => {
+      this.searchQuery = q
       this.renderCurrentSnapshots()
       this.renderOtherSessions()
     })
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.isOpen()) this.close()
-    })
-    window.addEventListener('beforeunload', () => this.flushPendingDeletes())
+    fromEvent<KeyboardEvent>(document, 'keydown').pipe(
+      filter(e => e.key === 'Escape'),
+      filter(() => this.isOpen())
+    ).subscribe(() => this.close())
+
+    fromEvent(window, 'beforeunload').subscribe(() => this.flushPendingDeletes())
   }
 
   public open (): void {
@@ -104,19 +118,17 @@ export class HistoryModal {
     this.resetPreview()
     this.render()
     this.modal.classList.add('is-active')
-    this.storageListener = (e) => {
-      if (e.key === 'history-sessions') this.render()
-    }
-    window.addEventListener('storage', this.storageListener)
+
+    this.storageSub = fromEvent<StorageEvent>(window, 'storage').pipe(
+      filter(e => e.key === 'history-sessions')
+    ).subscribe(() => this.render())
   }
 
   public close (): void {
     this.flushPendingDeletes()
     this.modal.classList.remove('is-active')
-    if (this.storageListener) {
-      window.removeEventListener('storage', this.storageListener)
-      this.storageListener = undefined
-    }
+    this.storageSub?.unsubscribe()
+    this.storageSub = undefined
   }
 
   private isOpen (): boolean {
@@ -160,7 +172,10 @@ export class HistoryModal {
   }
 
   private renderCurrentSnapshots (): void {
+    this.currentSnapshotsSubs.unsubscribe()
+    this.currentSnapshotsSubs = new Subscription()
     this.currentSnapshotsEl.replaceChildren()
+
     const all = this.historyService.getSnapshots()
     const snapshots = this.searchQuery
       ? all.filter(s => this.matchesSearch(s.content))
@@ -188,7 +203,9 @@ export class HistoryModal {
   private buildSnapshotRow (snapshot: Snapshot): HTMLElement {
     const row = document.createElement('div')
     row.className = 'history-row'
-    row.addEventListener('mouseenter', () => this.setPreview(snapshot.content, row))
+    this.currentSnapshotsSubs.add(
+      fromEvent(row, 'mouseenter').subscribe(() => this.setPreview(snapshot.content, row))
+    )
 
     const time = document.createElement('span')
     time.className = 'history-row-time'
@@ -201,7 +218,9 @@ export class HistoryModal {
     const btn = document.createElement('button')
     btn.className = 'button is-small is-light'
     btn.textContent = 'Restore'
-    btn.addEventListener('click', () => this.handleRestore(snapshot))
+    this.currentSnapshotsSubs.add(
+      fromEvent(btn, 'click').subscribe(() => this.handleRestore(snapshot))
+    )
 
     row.appendChild(time)
     row.appendChild(label)
@@ -210,7 +229,10 @@ export class HistoryModal {
   }
 
   private renderOtherSessions (): void {
+    this.otherSessionsSubs.unsubscribe()
+    this.otherSessionsSubs = new Subscription()
     this.otherSessionsEl.replaceChildren()
+
     const sessions = this.historyService.getOtherSessions()
       .filter(s => !this.pendingDeletes.has(s.id))
       .filter(s => this.matchesSearch(this.historyService.getSessionContent(s.id)))
@@ -237,7 +259,9 @@ export class HistoryModal {
     const row = document.createElement('div')
     row.className = 'history-row'
     row.dataset.sessionId = meta.id
-    row.addEventListener('mouseenter', () => this.setPreview(content, row))
+    this.otherSessionsSubs.add(
+      fromEvent(row, 'mouseenter').subscribe(() => this.setPreview(content, row))
+    )
 
     const label = document.createElement('span')
     label.className = 'history-row-label'
@@ -250,7 +274,9 @@ export class HistoryModal {
     const switchBtn = document.createElement('button')
     switchBtn.className = 'button is-small is-light'
     switchBtn.textContent = 'Switch'
-    switchBtn.addEventListener('click', () => this.handleSwitch(meta.id))
+    this.otherSessionsSubs.add(
+      fromEvent(switchBtn, 'click').subscribe(() => this.handleSwitch(meta.id))
+    )
 
     const deleteBtn = document.createElement('button')
     deleteBtn.className = 'button is-small is-light is-danger delete-session'
@@ -261,7 +287,9 @@ export class HistoryModal {
     deleteIconI.className = 'fas fa-trash'
     deleteIcon.appendChild(deleteIconI)
     deleteBtn.appendChild(deleteIcon)
-    deleteBtn.addEventListener('click', () => this.handleDelete(meta))
+    this.otherSessionsSubs.add(
+      fromEvent(deleteBtn, 'click').subscribe(() => this.handleDelete(meta))
+    )
 
     row.appendChild(label)
     row.appendChild(time)
@@ -284,15 +312,15 @@ export class HistoryModal {
   private handleDelete (meta: SessionMeta): void {
     if (this.pendingDeletes.has(meta.id)) return
 
-    const toast = this.buildToast(meta)
+    const { toast, undoSub } = this.buildToast(meta)
     this.toastsEl.appendChild(toast)
 
     const timeoutId = setTimeout(() => this.commitDelete(meta.id), UNDO_TIMEOUT_MS)
-    this.pendingDeletes.set(meta.id, { sessionId: meta.id, meta, timeoutId, toast })
+    this.pendingDeletes.set(meta.id, { sessionId: meta.id, meta, timeoutId, toast, undoSub })
     this.renderOtherSessions()
   }
 
-  private buildToast (meta: SessionMeta): HTMLElement {
+  private buildToast (meta: SessionMeta): { toast: HTMLElement, undoSub: Subscription } {
     const toast = document.createElement('div')
     toast.className = 'notification is-warning is-light history-toast'
     toast.dataset.sessionId = meta.id
@@ -301,15 +329,17 @@ export class HistoryModal {
     const undo = document.createElement('button')
     undo.className = 'button is-small is-text history-toast-undo'
     undo.textContent = 'Undo'
-    undo.addEventListener('click', () => this.undoDelete(meta.id))
     toast.appendChild(undo)
-    return toast
+
+    const undoSub = fromEvent(undo, 'click').subscribe(() => this.undoDelete(meta.id))
+    return { toast, undoSub }
   }
 
   private undoDelete (sessionId: string): void {
     const pending = this.pendingDeletes.get(sessionId)
     if (!pending) return
     clearTimeout(pending.timeoutId)
+    pending.undoSub.unsubscribe()
     pending.toast.remove()
     this.pendingDeletes.delete(sessionId)
     this.renderOtherSessions()
@@ -319,6 +349,7 @@ export class HistoryModal {
     const pending = this.pendingDeletes.get(sessionId)
     if (!pending) return
     clearTimeout(pending.timeoutId)
+    pending.undoSub.unsubscribe()
     pending.toast.remove()
     this.pendingDeletes.delete(sessionId)
     this.historyService.deleteSession(sessionId)
