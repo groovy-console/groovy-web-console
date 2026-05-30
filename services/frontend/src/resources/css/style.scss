@@ -11,3 +11,55 @@ $custom-colors: (
 );
 
 @import '~@creativebulma/bulma-tooltip/dist/bulma-tooltip.css';
+
+.history-region {
+  max-height: 35vh;
+  overflow-y: auto;
+  border: 1px solid hsl(0, 0%, 86%);
+  border-radius: 4px;
+  padding: 0.25rem;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  cursor: default;
+
+  &:hover {
+    background-color: hsla(210, 14%, 89%, 0.5);
+  }
+
+  .history-row-label {
+    font-family: monospace;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .history-row-time {
+    color: hsl(0, 0%, 48%);
+    font-size: 0.85em;
+    flex: 0 0 auto;
+    min-width: 6rem;
+  }
+}
+
+.history-toasts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.history-toast {
+  padding: 0.5rem 1rem;
+  margin: 0;
+
+  .history-toast-undo {
+    margin-left: 0.5rem;
+  }
+}

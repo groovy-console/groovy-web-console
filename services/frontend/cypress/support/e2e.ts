@@ -52,6 +52,24 @@ declare global {
        * @param tabId the id of the tab
        */
       assertTabActive(tabId: 'tabOutput' | 'tabResult' | 'tabError'): void
+
+      /**
+       * Seeds a history session in localStorage.
+       */
+      seedHistorySession(
+        id: string,
+        content: string,
+        opts?: {
+          lastModified?: number,
+          snapshots?: Array<{ content: string, timestamp: string }>,
+          currentSession?: boolean
+        }
+      ): void
+
+      /**
+       * Opens the History dropdown and then the History modal.
+       */
+      openHistoryModal(): void
       }
   }
 }

@@ -78,3 +78,32 @@ Cypress.Commands.add('stubListRuntimes', () => {
     ''
   ).as('warmup_request')
 })
+
+Cypress.Commands.add('seedHistorySession', (id, content, opts = {}) => {
+  const lastModified = opts.lastModified ?? Date.now()
+  const snapshots = opts.snapshots ?? []
+
+  cy.window().then((win) => {
+    const raw = win.localStorage.getItem('history-sessions')
+    const sessions: Array<{ id: string, lastModified: number }> = raw ? JSON.parse(raw) : []
+    if (!sessions.some(s => s.id === id)) {
+      sessions.push({ id, lastModified })
+    } else {
+      sessions.forEach(s => { if (s.id === id) s.lastModified = lastModified })
+    }
+    win.localStorage.setItem('history-sessions', JSON.stringify(sessions))
+    win.localStorage.setItem(`history-editorContent-${id}`, content)
+    if (snapshots.length > 0) {
+      win.localStorage.setItem(`history-snapshots-${id}`, JSON.stringify(snapshots))
+    }
+    if (opts.currentSession) {
+      win.location.hash = id
+    }
+  })
+})
+
+Cypress.Commands.add('openHistoryModal', () => {
+  cy.get('#dropdown-history').parent().find('.dropdown-trigger button').click()
+  cy.get('#openHistory').click()
+  cy.get('#historyModal').should('have.class', 'is-active')
+})
