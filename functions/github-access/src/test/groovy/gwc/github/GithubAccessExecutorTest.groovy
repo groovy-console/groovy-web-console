@@ -165,6 +165,87 @@ class GithubAccessExecutorTest extends Specification {
     _ * httpResponse.getWriter() >> new BufferedWriter(output)
   }
 
+  def "GET ?action=me without session cookie returns 401"() {
+    given:
+    httpRequest.method >> "GET"
+    httpRequest.queryParameters >> ["action": ["me"]]
+    httpRequest.headers >> ["Origin": [FRONTEND]]
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(401)
+  }
+
+  def "GET ?action=me with malformed session cookie returns 401"() {
+    given:
+    httpRequest.method >> "GET"
+    httpRequest.queryParameters >> ["action": ["me"]]
+    httpRequest.headers >> [
+      "Origin": [FRONTEND],
+      "Cookie": ["gwc_session=not-a-real-jwe"]
+    ]
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(401)
+  }
+
+  def "GET ?action=me returns login and avatar from GitHub"() {
+    given:
+    def jwe = new SessionTokenCodec(config.secretKey()).encrypt(token("ghs_test", "gist"))
+    wiremock.stubFor(get(urlEqualTo("/user"))
+      .withHeader("Authorization", equalTo("Bearer ghs_test"))
+      .willReturn(okJson('{"login":"alice","avatar_url":"https://avatars/alice.png","name":"Alice"}')))
+    httpRequest.method >> "GET"
+    httpRequest.queryParameters >> ["action": ["me"]]
+    httpRequest.headers >> [
+      "Origin": [FRONTEND],
+      "Cookie": ["gwc_session=${jwe}".toString()]
+    ]
+    def output = new StringWriter()
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(200)
+    1 * httpResponse.setContentType("application/json")
+    _ * httpResponse.getWriter() >> new BufferedWriter(output)
+
+    and:
+    def body = new groovy.json.JsonSlurper().parseText(output.toString())
+    body.login == "alice"
+    body.avatar_url == "https://avatars/alice.png"
+    body.size() == 2 // no extra fields leaked
+  }
+
+  def "GET ?action=me returns 401 if GitHub rejects the token"() {
+    given:
+    def jwe = new SessionTokenCodec(config.secretKey()).encrypt(token("ghs_revoked", "gist"))
+    wiremock.stubFor(get(urlEqualTo("/user"))
+      .willReturn(status(401)))
+    httpRequest.method >> "GET"
+    httpRequest.queryParameters >> ["action": ["me"]]
+    httpRequest.headers >> [
+      "Origin": [FRONTEND],
+      "Cookie": ["gwc_session=${jwe}".toString()]
+    ]
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(401)
+  }
+
+  private TokenResponse token(String accessToken, String scope) {
+    new TokenResponse(access_token: accessToken, scope: scope, token_type: "bearer")
+  }
+
   def "OPTIONS preflight from disallowed origin omits Allow-Origin"() {
     given:
     httpRequest.method >> "OPTIONS"

@@ -4,16 +4,10 @@ import com.google.cloud.functions.HttpFunction;
 import com.google.cloud.functions.HttpRequest;
 import com.google.cloud.functions.HttpResponse;
 import com.google.gson.Gson;
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.DirectDecrypter;
-import com.nimbusds.jose.crypto.DirectEncrypter;
-import com.nimbusds.jose.crypto.RSAEncrypter;
 
-import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.text.ParseException;
 import java.time.Duration;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -33,13 +27,17 @@ public class GithubAccessExecutor implements HttpFunction {
   public static final Pattern COOKIE_PATTERN = Pattern.compile("state=([\\w-]{36})");
   private static final String GITHUB_AUTHORIZE = "https://github.com/login/oauth/authorize";
 
+  public static final Pattern SESSION_COOKIE_PATTERN = Pattern.compile("gwc_session=([\\w.\\-]+)");
+
   private final String clientId;
   private final String clientSecret;
   private final String redirectUri;
-  // Generate with KeyGen in src/test/groovy. Never log this value or any token derived from it.
-  private final SecretKey secretKey;
   private final String frontendOrigin;
   private final URI tokenExchangeUrl;
+  private final String githubApiBaseUrl;
+  // Generate the SecretKey with KeyGen in src/test/groovy.
+  // Never log the codec's input tokens or its output blobs.
+  private final SessionTokenCodec sessionCodec;
 
   public GithubAccessExecutor() {
     this(Config.fromEnv());
@@ -49,9 +47,10 @@ public class GithubAccessExecutor implements HttpFunction {
     this.clientId = config.clientId();
     this.clientSecret = config.clientSecret();
     this.redirectUri = config.redirectUri();
-    this.secretKey = config.secretKey();
     this.frontendOrigin = config.frontendOrigin();
     this.tokenExchangeUrl = URI.create(config.tokenExchangeUrl());
+    this.githubApiBaseUrl = config.githubApiBaseUrl();
+    this.sessionCodec = new SessionTokenCodec(config.secretKey());
   }
 
   // Create a client with some reasonable defaults. This client can be reused for multiple requests.
@@ -94,10 +93,60 @@ public class GithubAccessExecutor implements HttpFunction {
         handleErrorResponse(httpResponse, parameters);
       } else if (parameters.containsKey("action") && getFirstHeaderValue(parameters, "action").equals("login")) {
         handleAuthRequest(httpResponse);
+      } else if (parameters.containsKey("action") && getFirstHeaderValue(parameters, "action").equals("me")) {
+        handleMe(httpRequest, httpResponse);
       } else if (parameters.containsKey("code") && parameters.containsKey("state")) {
         handleAuthResponse(httpRequest, httpResponse);
       }
     }
+  }
+
+  private void handleMe(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
+    var token = decryptSessionCookie(httpRequest);
+    if (token.isEmpty()) {
+      httpResponse.setStatusCode(HTTP_UNAUTHORIZED);
+      return;
+    }
+    var userRequest = newBuilder().uri(URI.create(githubApiBaseUrl + "/user"))
+      .GET()
+      .header("Accept", "application/json")
+      .header("Authorization", "Bearer " + token.get().getAccess_token())
+      .build();
+    var userResponse = client.send(userRequest, ofString());
+    if (userResponse.statusCode() == HTTP_UNAUTHORIZED) {
+      httpResponse.setStatusCode(HTTP_UNAUTHORIZED);
+      return;
+    }
+    if (userResponse.statusCode() != HTTP_OK) {
+      httpResponse.setStatusCode(userResponse.statusCode());
+      return;
+    }
+    var fromGithub = GSON.fromJson(userResponse.body(), Map.class);
+    Map<String, Object> out = new LinkedHashMap<>();
+    out.put("login", fromGithub.get("login"));
+    out.put("avatar_url", fromGithub.get("avatar_url"));
+    httpResponse.setStatusCode(HTTP_OK);
+    httpResponse.setContentType("application/json");
+    try (var writer = httpResponse.getWriter()) {
+      writer.write(GSON.toJson(out));
+    }
+  }
+
+  private Optional<TokenResponse> decryptSessionCookie(HttpRequest httpRequest) {
+    var cookies = httpRequest.getHeaders().get("Cookie");
+    if (cookies == null) return Optional.empty();
+    return cookies.stream()
+      .map(SESSION_COOKIE_PATTERN::matcher)
+      .filter(Matcher::find)
+      .map(matcher -> {
+        try {
+          return sessionCodec.decrypt(matcher.group(1));
+        } catch (Exception ignored) {
+          return null;
+        }
+      })
+      .filter(Objects::nonNull)
+      .findFirst();
   }
 
   private boolean isStateChanging(String method) {
@@ -176,7 +225,7 @@ public class GithubAccessExecutor implements HttpFunction {
       return;
     }
 
-    var jwe = encryptToken(accessTokenResponse);
+    var jwe = sessionCodec.encrypt(accessTokenResponse);
     httpResponse.appendHeader("Set-Cookie", sessionCookie(jwe, SESSION_MAX_AGE_SECONDS));
     httpResponse.setStatusCode(HTTP_OK);
     httpResponse.setContentType("text/html");
@@ -192,21 +241,6 @@ public class GithubAccessExecutor implements HttpFunction {
       + "window.opener?.postMessage({type:'gwc:login-success'},'" + frontendOrigin + "');"
       + "window.close();"
       + "</script>";
-  }
-
-  private String encryptToken(TokenResponse accessTokenResponse) throws JOSEException {
-    JWEHeader header = new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM);
-    JWEObject jwe = new JWEObject(
-      header,
-      new Payload(GSON.toJson(accessTokenResponse)));
-    jwe.encrypt(new DirectEncrypter(secretKey));
-    return jwe.serialize();
-  }
-
-  private TokenResponse decryptToken(String token) throws JOSEException, ParseException {
-    JWEObject jwe = JWEObject.parse(token);
-    jwe.decrypt(new DirectDecrypter(secretKey));
-    return GSON.fromJson(jwe.getPayload().toString(), TokenResponse.class);
   }
 
   private void handleAuthRequest(HttpResponse httpResponse) {

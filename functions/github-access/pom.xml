@@ -62,6 +62,12 @@
       <version>${groovy.4.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.groovy</groupId>
+      <artifactId>groovy-json</artifactId>
+      <version>${groovy.4.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>
