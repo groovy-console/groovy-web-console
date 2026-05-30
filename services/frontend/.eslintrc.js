@@ -19,6 +19,7 @@ module.exports = {
   globals: {
     // also define in src/@types/globals.d.ts
     GROOVY_CONSOLE_SERVICE_URL: 'readonly',
+    GITHUB_ACCESS_SERVICE_URL: 'readonly',
     LOCAL_DEVELOPMENT: 'readonly'
   }
 }

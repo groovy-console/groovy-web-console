@@ -1,9 +1,37 @@
-import { GistResponse } from './types'
-import { Observable } from 'rxjs'
+import {
+  GistMetadata,
+  GistResponse,
+  ProxiedGistResponse,
+  SaveGistRequest,
+  SavedGistResponse,
+  UpdateGistRequest
+} from './types'
+import { Observable, from } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
-import { concatMap, map } from 'rxjs/operators'
+import { concatMap } from 'rxjs/operators'
+import { loadedGist$ } from './auth'
 
-export function loadGist (gistId: string): Observable<string> {
+interface AnonymousGistFile {
+  filename: string
+  truncated: boolean
+  language: string
+  content: string
+}
+
+interface AnonymousGistResponse extends GistResponse {
+  id: string
+  public: boolean
+  owner?: { login: string }
+}
+
+export interface LoadedGist {
+  code: string
+  metadata: GistMetadata
+}
+
+const accessUrl = (path: string) => `${GITHUB_ACCESS_SERVICE_URL}${path}`
+
+export function loadGist (gistId: string): Observable<LoadedGist> {
   if (gistId.indexOf('/') >= 0) {
     gistId = gistId.split('/')[1]
   }
@@ -13,17 +41,96 @@ export function loadGist (gistId: string): Observable<string> {
   return fromFetch(`https://api.github.com/gists/${gistId}`, {
     headers
   }).pipe(
-    concatMap(response => response.json()),
-    map(json => {
-      for (const [key, value] of Object.entries((json as GistResponse).files)) {
-        console.log('Found file', key, value)
-        if (value.truncated === false && value.language === 'Groovy') {
-          return value.content
-        }
+    concatMap(response => {
+      if (response.status === 404 || response.status === 403) {
+        return loadGistAuthenticated(gistId).then(result => {
+          if (!result) {
+            throw new Error('Could not load gist (private gist or rate-limited; sign in to retry).')
+          }
+          return result
+        })
       }
-      throw new Error('Could not find a non-truncated groovy script')
+      return response.json().then(json => extractFromAnonymousResponse(json as AnonymousGistResponse))
     })
   )
+}
+
+function extractFromAnonymousResponse (json: AnonymousGistResponse): LoadedGist {
+  for (const [, file] of Object.entries(json.files as unknown as Record<string, AnonymousGistFile>)) {
+    if (file.truncated === false && file.language === 'Groovy') {
+      return {
+        code: file.content,
+        metadata: {
+          id: json.id,
+          filename: file.filename,
+          public: json.public === true,
+          ownerLogin: json.owner?.login ?? null
+        }
+      }
+    }
+  }
+  throw new Error('Could not find a non-truncated groovy script')
+}
+
+async function loadGistAuthenticated (gistId: string): Promise<LoadedGist | null> {
+  const response = await fetch(accessUrl(`/?action=gist&id=${encodeURIComponent(gistId)}`), {
+    credentials: 'include'
+  })
+  if (!response.ok) return null
+  const data = await response.json() as ProxiedGistResponse
+  return {
+    code: data.code,
+    metadata: {
+      id: data.id,
+      filename: data.filename,
+      public: data.public,
+      ownerLogin: data.ownerLogin
+    }
+  }
+}
+
+export function createGist (payload: SaveGistRequest): Observable<SavedGistResponse> {
+  return from(
+    fetch(accessUrl('/?action=gist'), {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(async response => {
+      if (!response.ok) throw new Error(`Could not save gist (${response.status})`)
+      const saved = await response.json() as SavedGistResponse
+      loadedGist$.next({
+        id: saved.id,
+        filename: `${slugify(payload.name)}.groovy`,
+        public: saved.public,
+        ownerLogin: null
+      })
+      return saved
+    })
+  )
+}
+
+export function updateGist (gistId: string, payload: UpdateGistRequest): Observable<SavedGistResponse> {
+  return from(
+    fetch(accessUrl(`/?action=gist&id=${encodeURIComponent(gistId)}`), {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(async response => {
+      if (!response.ok) throw new Error(`Could not update gist (${response.status})`)
+      return await response.json() as SavedGistResponse
+    })
+  )
+}
+
+function slugify (name: string): string {
+  const ascii = name.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 64)
+    .replace(/-+$/g, '')
+  return ascii === '' ? 'script' : ascii
 }
 
 export function loadGithubFile (githubFile: string): Observable<string> {

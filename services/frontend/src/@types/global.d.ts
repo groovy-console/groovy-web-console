@@ -2,4 +2,5 @@
 // You also need to add them to the .eslintrc.js file
 /* eslint-disable no-unused-vars */
 declare const GROOVY_CONSOLE_SERVICE_URL: string
+declare const GITHUB_ACCESS_SERVICE_URL: string
 declare const LOCAL_DEVELOPMENT: boolean

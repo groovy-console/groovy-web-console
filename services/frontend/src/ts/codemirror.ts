@@ -1,5 +1,6 @@
 import { decodeUrlSafe, decompressFromBase64 } from './compression'
 import { loadGist, loadGithubFile } from './github'
+import { loadedGist$ } from './auth'
 import {
   BehaviorSubject,
   debounceTime,
@@ -10,7 +11,7 @@ import {
   of,
   Subject
 } from 'rxjs'
-import { concatMap, tap } from 'rxjs/operators'
+import { concatMap, map, tap } from 'rxjs/operators'
 import { loadCodeFromQuestion } from './stackoverflow'
 import { HistoryService } from './history'
 import {
@@ -235,7 +236,10 @@ export class CodeEditor extends ThemeableEditor {
           } else if (queryParams.has('codez')) {
             return from(decompressFromBase64(queryParams.get('codez')))
           } else if (queryParams.has('gist')) {
-            return loadGist(queryParams.get('gist'))
+            return loadGist(queryParams.get('gist')).pipe(
+              tap(result => loadedGist$.next(result.metadata)),
+              map(result => result.code)
+            )
           } else if (queryParams.has('github')) {
             return loadGithubFile(queryParams.get('github'))
           } else if (queryParams.has('stackoverflow')) {

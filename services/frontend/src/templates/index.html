@@ -51,11 +51,31 @@
                                 </a>
                             </div>
                         </div>
+                        <a class="navbar-item" id="signInItem">
+                            <span class="icon">
+                                <i class="fab fa-github"></i>
+                            </span>
+                            <span>Sign in with GitHub</span>
+                        </a>
+                        <div class="navbar-item has-dropdown is-hoverable is-hidden" id="accountItem">
+                            <a class="navbar-link is-arrowless">
+                                <span class="icon">
+                                    <img id="accountAvatar" alt="" class="image is-24x24" style="border-radius:50%"/>
+                                </span>
+                                <span id="accountLogin"></span>
+                            </a>
+                            <div class="navbar-dropdown">
+                                <a class="navbar-item" id="signOutItem">
+                                    <span class="icon"><i class="fas fa-right-from-bracket"></i></span>
+                                    <span>Sign out</span>
+                                </a>
+                            </div>
+                        </div>
                         <a class="navbar-item" target="_blank" href="https://github.com/groovy-console/groovy-web-console">
                             <span class="icon">
                                 <i class="fab fa-github"></i>
                             </span>
-                            <span>Github</span>
+                            <span>Repo</span>
                         </a>
                     </div>
                 </div>
@@ -97,6 +117,30 @@
                                 <i class="fas fa-share"></i>
                             </span>
                             <span>Share as Link</span>
+                        </button>
+                    </div>
+                    <div class="control is-hidden" id="saveAsPublicGistControl">
+                        <button class="button" id="saveAsPublicGist">
+                            <span class="icon is-small"><i class="fab fa-github"></i></span>
+                            <span>Save as public gist</span>
+                        </button>
+                    </div>
+                    <div class="control is-hidden" id="saveAsSecretGistControl">
+                        <button class="button" id="saveAsSecretGist">
+                            <span class="icon is-small"><i class="fas fa-lock"></i></span>
+                            <span>Save as secret gist</span>
+                        </button>
+                    </div>
+                    <div class="control is-hidden" id="updateGistControl">
+                        <button class="button is-primary" id="updateGist">
+                            <span class="icon is-small"><i class="fas fa-floppy-disk"></i></span>
+                            <span>Update gist</span>
+                        </button>
+                    </div>
+                    <div class="control is-hidden" id="saveAsNewGistControl">
+                        <button class="button" id="saveAsNewGist">
+                            <span class="icon is-small"><i class="fab fa-github"></i></span>
+                            <span>Save as new gist</span>
                         </button>
                     </div>
                     <div class="control">
@@ -234,6 +278,43 @@
         The history is stored per session which is identified by the <code>#sessionId</code> in the url.
     </p>
 </section>
+
+<div class="modal" id="saveGistModal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="saveGistModalTitle">Save as gist</p>
+            <button class="delete" aria-label="close" id="saveGistModalClose"></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="field">
+                <label class="label" for="saveGistName">Name</label>
+                <div class="control">
+                    <input class="input" type="text" id="saveGistName" placeholder="My script">
+                </div>
+                <p class="help is-danger is-hidden" id="saveGistNameError">Name is required</p>
+            </div>
+            <div class="field is-hidden" id="saveGistIncludeOutputField">
+                <label class="checkbox">
+                    <input type="checkbox" id="saveGistIncludeOutput">
+                    Include output
+                </label>
+            </div>
+            <p class="help is-danger is-hidden" id="saveGistError"></p>
+        </section>
+        <footer class="modal-card-foot">
+            <div class="buttons">
+                <button class="button is-primary" id="saveGistConfirm">Save</button>
+                <button class="button" id="saveGistCancel">Cancel</button>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<div class="notification is-warning is-light is-hidden" id="sessionNotification" style="position:fixed; bottom:1rem; right:1rem; max-width:24rem;">
+    <button class="delete" id="sessionNotificationClose"></button>
+    <span id="sessionNotificationText"></span>
+</div>
 
 </body>
 </html>
