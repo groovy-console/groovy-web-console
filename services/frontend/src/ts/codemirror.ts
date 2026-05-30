@@ -183,6 +183,10 @@ export class CodeEditor extends ThemeableEditor {
     return this.editorStateObservable
   }
 
+  public getHistoryService (): HistoryService {
+    return this.historyService
+  }
+
   public handleErrorResult (result: string) {
     this.lintErrors = []
     // check if it's a syntax error

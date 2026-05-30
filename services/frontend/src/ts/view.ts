@@ -4,6 +4,7 @@ import { concatMap, delay, map, tap, throttleTime } from 'rxjs/operators'
 import { GroovyConsole } from './groovy-console'
 import { compressToBase64 } from './compression'
 import { CodeEditor, OutputEditor } from './codemirror'
+import { HistoryModal } from './history-modal'
 
 const groovyConsole = new GroovyConsole()
 const htmlRoot = document.getElementsByTagName('html')[0]
@@ -301,4 +302,15 @@ export function initView () {
 
   setupNavbarBurgerClickHandlers()
   setupModeSwitchersAndRestoreSavedColorMode()
+
+  const historyModal = new HistoryModal(codeCM.getHistoryService(), codeCM)
+  fromEvent(document.getElementById('openHistory'), 'click')
+    .subscribe((event) => {
+      event.preventDefault()
+      // Collapse the dropdown explicitly — otherwise it stays open after the
+      // menu item is clicked, and the next click on the History button
+      // toggles it closed instead of reopening.
+      document.querySelector('#dropdown-history')?.parentElement?.classList.remove('is-active')
+      historyModal.open()
+    })
 }

@@ -11,3 +11,141 @@ $custom-colors: (
 );
 
 @import '~@creativebulma/bulma-tooltip/dist/bulma-tooltip.css';
+
+#historyModal .history-modal-card {
+  width: min(1200px, 95vw);
+  max-width: none;
+  // Anchor the modal at a fixed height. Without this, the modal sizes to its
+  // content, which means hovering a different row (= different preview
+  // content) resizes the modal, shifts the rows on the left, and changes what
+  // the cursor is over — easy to get into a bouncing-resize loop.
+  height: min(720px, 90vh);
+}
+
+.history-modal-body {
+  // Flex column so the search field is a fixed-height row and the grid below
+  // takes the remaining space (and its inner regions can scroll).
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.history-cols {
+  display: grid;
+  // minmax(0, 1fr) — not plain "1fr" — so a long line in the preview can't
+  // push its column wider than its share of the available space.
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.history-col-left,
+.history-col-right {
+  display: flex;
+  flex-direction: column;
+  // min-width: 0 lets the column shrink below its flex children's intrinsic
+  // width. overflow: hidden additionally clips any child that still tries to
+  // grow past its share (an unwrapped 2000-char pre in the preview, say) so
+  // overflow:auto on .history-preview can actually scroll horizontally.
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.history-region {
+  max-height: 30vh;
+  overflow-y: auto;
+  border: 1px solid var(--bulma-border);
+  border-radius: 4px;
+  padding: 0.25rem;
+
+  // When the region only contains an empty-state placeholder, center it in
+  // the available space instead of leaving it pinned to the top-left.
+  &.is-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+.history-preview {
+  // flex-basis 0 (not auto) so the pane fills its column regardless of
+  // content. With "auto", the basis is content size and small/large previews
+  // produce different layouts, which interacts badly with the modal's
+  // fixed height and would still cause minor row jumps.
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  // Bulma's scheme-main-bis is the "slightly off the main background" shade
+  // that adapts to light/dark theme automatically (whitesmoke in light,
+  // near-black in dark).
+  background: var(--bulma-scheme-main-bis);
+  border: 1px solid var(--bulma-border);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85em;
+  line-height: 1.4;
+  white-space: pre;
+  word-break: normal;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  cursor: default;
+
+  &:hover {
+    // Translucent overlay of the current text colour: shows as light-grey in
+    // light mode and dark-grey in dark mode without two separate rules.
+    background-color: color-mix(in srgb, var(--bulma-text) 12%, transparent);
+  }
+
+  &.is-preview-source {
+    // Stronger overlay than mere hover so the preview-source row is clearly
+    // the "selected" one. Plus a left-edge accent for an extra cue.
+    background-color: color-mix(in srgb, var(--bulma-text) 18%, transparent);
+    box-shadow: inset 3px 0 0 0 hsl(202, 47%, 49%);
+  }
+
+  .history-row-label {
+    font-family: monospace;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .history-row-time {
+    // Same monospace stack as the label so digit columns line up exactly —
+    // proportional fonts give "20:06" and "20:46" different widths, which
+    // shifts the label start position between adjacent rows.
+    font-family: monospace;
+    font-size: 0.85em;
+    color: var(--bulma-text);
+    opacity: 0.7;
+    flex: 0 0 auto;
+    min-width: 6rem;
+  }
+}
+
+.history-toasts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.history-toast {
+  padding: 0.5rem 1rem;
+  margin: 0;
+
+  .history-toast-undo {
+    margin-left: 0.5rem;
+  }
+}

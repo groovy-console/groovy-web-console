@@ -111,6 +111,7 @@
                             </div>
                             <div class="dropdown-menu" id="dropdown-history" role="menu">
                                 <div class="dropdown-content">
+                                    <a id="openHistory" href="#" class="dropdown-item">Open History…</a>
                                     <a href="." class="dropdown-item">New Session</a>
                                 </div>
                             </div>
@@ -224,6 +225,46 @@
     </div>
     </div>
 </section>
+
+<div class="modal" id="historyModal">
+    <div class="modal-background"></div>
+    <div class="modal-card history-modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">History</p>
+            <button class="delete" aria-label="close" id="historyModalClose"></button>
+        </header>
+        <section class="modal-card-body history-modal-body">
+            <div class="field mb-3">
+                <p class="control has-icons-left">
+                    <input class="input" id="historySearch" type="search" placeholder="Search history (matches snapshot and session content)" autocomplete="off">
+                    <span class="icon is-small is-left">
+                        <i class="fas fa-search"></i>
+                    </span>
+                </p>
+            </div>
+            <div class="history-cols">
+                <div class="history-col-left">
+                    <h3 class="subtitle is-6 mb-2">
+                        Current session
+                        <span id="historyCurrentLabel" class="has-text-grey ml-2"></span>
+                    </h3>
+                    <div class="history-region" id="historyCurrentSnapshots"></div>
+
+                    <h3 class="subtitle is-6 mt-4 mb-2">Other sessions</h3>
+                    <div class="history-region" id="historyOtherSessions"></div>
+                </div>
+                <div class="history-col-right">
+                    <h3 class="subtitle is-6 mb-2">Preview</h3>
+                    <pre class="history-preview"><code id="historyPreview" class="has-text-grey-light">Hover a row to preview its content.</code></pre>
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot is-justify-content-space-between">
+            <button class="button is-danger is-outlined" id="historyClearAll">Clear all sessions</button>
+            <div id="historyToasts" class="history-toasts"></div>
+        </footer>
+    </div>
+</div>
 
 <section class="section">
     <h2 class="title is-2">History and Storage</h2>
