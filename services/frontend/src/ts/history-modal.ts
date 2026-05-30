@@ -37,10 +37,11 @@ export function formatTimestamp (ts: number, now: number = Date.now()): string {
   if (sameDay) return `Today ${hhmm}`
   if (isYesterday) return `Yesterday ${hhmm}`
   const month = date.toLocaleString('en-US', { month: 'short' })
+  const day = pad2(date.getDate())
   if (date.getFullYear() === nowDate.getFullYear()) {
-    return `${month} ${date.getDate()}, ${hhmm}`
+    return `${month} ${day}, ${hhmm}`
   }
-  return `${month} ${date.getDate()} ${date.getFullYear()}, ${hhmm}`
+  return `${month} ${day} ${date.getFullYear()}, ${hhmm}`
 }
 
 interface PendingDelete {
