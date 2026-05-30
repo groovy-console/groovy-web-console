@@ -95,6 +95,8 @@ public class GithubAccessExecutor implements HttpFunction {
         handleAuthRequest(httpResponse);
       } else if (parameters.containsKey("action") && getFirstHeaderValue(parameters, "action").equals("me")) {
         handleMe(httpRequest, httpResponse);
+      } else if (parameters.containsKey("action") && getFirstHeaderValue(parameters, "action").equals("gist")) {
+        handleGistGet(httpRequest, httpResponse);
       } else if (parameters.containsKey("code") && parameters.containsKey("state")) {
         handleAuthResponse(httpRequest, httpResponse);
       }
@@ -132,6 +134,64 @@ public class GithubAccessExecutor implements HttpFunction {
     }
   }
 
+  private void handleGistGet(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
+    var token = decryptSessionCookie(httpRequest);
+    if (token.isEmpty()) {
+      httpResponse.setStatusCode(HTTP_UNAUTHORIZED);
+      return;
+    }
+    var parameters = httpRequest.getQueryParameters();
+    if (!parameters.containsKey("id")) {
+      httpResponse.setStatusCode(HTTP_BAD_REQUEST);
+      return;
+    }
+    var id = getFirstHeaderValue(parameters, "id");
+    var gistRequest = newBuilder().uri(URI.create(githubApiBaseUrl + "/gists/" + id))
+      .GET()
+      .header("Accept", "application/vnd.github+json")
+      .header("Authorization", "Bearer " + token.get().getAccess_token())
+      .build();
+    var gistResponse = client.send(gistRequest, ofString());
+    if (gistResponse.statusCode() != HTTP_OK) {
+      httpResponse.setStatusCode(gistResponse.statusCode());
+      return;
+    }
+    var gist = GSON.fromJson(gistResponse.body(), Map.class);
+    var groovyFile = pickGroovyFile(gist);
+    if (groovyFile == null) {
+      httpResponse.setStatusCode(HTTP_BAD_REQUEST);
+      try (var writer = httpResponse.getWriter()) {
+        writer.write("No non-truncated Groovy file in this gist.");
+      }
+      return;
+    }
+    var owner = (Map<?, ?>) gist.get("owner");
+    Map<String, Object> out = new LinkedHashMap<>();
+    out.put("id", gist.get("id"));
+    out.put("filename", groovyFile.get("filename"));
+    out.put("code", groovyFile.get("content"));
+    out.put("ownerLogin", owner == null ? null : owner.get("login"));
+    out.put("public", gist.get("public"));
+    httpResponse.setStatusCode(HTTP_OK);
+    httpResponse.setContentType("application/json");
+    try (var writer = httpResponse.getWriter()) {
+      writer.write(GSON.toJson(out));
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> pickGroovyFile(Map<?, ?> gist) {
+    var files = (Map<String, Map<String, Object>>) gist.get("files");
+    if (files == null) return null;
+    for (var entry : files.entrySet()) {
+      var file = entry.getValue();
+      if (Boolean.FALSE.equals(file.get("truncated")) && "Groovy".equals(file.get("language"))) {
+        return file;
+      }
+    }
+    return null;
+  }
+
   private Optional<TokenResponse> decryptSessionCookie(HttpRequest httpRequest) {
     var cookies = httpRequest.getHeaders().get("Cookie");
     if (cookies == null) return Optional.empty();
@@ -161,9 +221,132 @@ public class GithubAccessExecutor implements HttpFunction {
   private void handleStateChangingRequest(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
     var parameters = httpRequest.getQueryParameters();
     var action = parameters.containsKey("action") ? getFirstHeaderValue(parameters, "action") : "";
-    if (httpRequest.getMethod().equals("POST") && action.equals("logout")) {
+    var method = httpRequest.getMethod();
+    if (method.equals("POST") && action.equals("logout")) {
       handleLogout(httpResponse);
+    } else if (method.equals("POST") && action.equals("gist")) {
+      handleGistCreate(httpRequest, httpResponse);
+    } else if (method.equals("PATCH") && action.equals("gist")) {
+      handleGistUpdate(httpRequest, httpResponse);
     }
+  }
+
+  private void handleGistUpdate(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
+    var token = decryptSessionCookie(httpRequest);
+    if (token.isEmpty()) {
+      httpResponse.setStatusCode(HTTP_UNAUTHORIZED);
+      return;
+    }
+    var parameters = httpRequest.getQueryParameters();
+    if (!parameters.containsKey("id")) {
+      httpResponse.setStatusCode(HTTP_BAD_REQUEST);
+      return;
+    }
+    var id = getFirstHeaderValue(parameters, "id");
+    var body = readJsonBody(httpRequest);
+    var filename = body.get("filename") instanceof String f ? f.trim() : "";
+    var code = body.get("code") instanceof String c ? c : null;
+    if (filename.isEmpty() || code == null) {
+      httpResponse.setStatusCode(HTTP_BAD_REQUEST);
+      return;
+    }
+    var output = body.get("output") instanceof String o ? o : null;
+
+    var files = new LinkedHashMap<String, Map<String, String>>();
+    files.put(filename, Map.of("content", code));
+    if (output != null) {
+      files.put("output.txt", Map.of("content", output));
+    }
+    Map<String, Object> updateBody = Map.of("files", files);
+
+    var gistRequest = newBuilder().uri(URI.create(githubApiBaseUrl + "/gists/" + id))
+      .method("PATCH", java.net.http.HttpRequest.BodyPublishers.ofString(GSON.toJson(updateBody)))
+      .header("Accept", "application/vnd.github+json")
+      .header("Content-Type", "application/json")
+      .header("Authorization", "Bearer " + token.get().getAccess_token())
+      .build();
+    var gistResponse = client.send(gistRequest, ofString());
+    if (gistResponse.statusCode() != HTTP_OK) {
+      httpResponse.setStatusCode(gistResponse.statusCode());
+      return;
+    }
+    var updated = GSON.fromJson(gistResponse.body(), Map.class);
+    Map<String, Object> out = Map.of("id", updated.get("id"));
+    httpResponse.setStatusCode(HTTP_OK);
+    httpResponse.setContentType("application/json");
+    try (var writer = httpResponse.getWriter()) {
+      writer.write(GSON.toJson(out));
+    }
+  }
+
+  private void handleGistCreate(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
+    var token = decryptSessionCookie(httpRequest);
+    if (token.isEmpty()) {
+      httpResponse.setStatusCode(HTTP_UNAUTHORIZED);
+      return;
+    }
+    var body = readJsonBody(httpRequest);
+    var name = body.get("name") instanceof String s ? s.trim() : "";
+    if (name.isEmpty()) {
+      httpResponse.setStatusCode(HTTP_BAD_REQUEST);
+      return;
+    }
+    var isPublic = Boolean.TRUE.equals(body.get("public"));
+    var code = body.get("code") instanceof String c ? c : null;
+    if (code == null) {
+      httpResponse.setStatusCode(HTTP_BAD_REQUEST);
+      return;
+    }
+    var output = body.get("output") instanceof String o ? o : null;
+
+    var files = new LinkedHashMap<String, Map<String, String>>();
+    files.put(slug(name) + ".groovy", Map.of("content", code));
+    if (output != null) {
+      files.put("output.txt", Map.of("content", output));
+    }
+    Map<String, Object> createBody = new LinkedHashMap<>();
+    createBody.put("description", name);
+    createBody.put("public", isPublic);
+    createBody.put("files", files);
+
+    var gistRequest = newBuilder().uri(URI.create(githubApiBaseUrl + "/gists"))
+      .POST(java.net.http.HttpRequest.BodyPublishers.ofString(GSON.toJson(createBody)))
+      .header("Accept", "application/vnd.github+json")
+      .header("Content-Type", "application/json")
+      .header("Authorization", "Bearer " + token.get().getAccess_token())
+      .build();
+    var gistResponse = client.send(gistRequest, ofString());
+    if (gistResponse.statusCode() != HTTP_CREATED && gistResponse.statusCode() != HTTP_OK) {
+      httpResponse.setStatusCode(gistResponse.statusCode());
+      return;
+    }
+    var created = GSON.fromJson(gistResponse.body(), Map.class);
+    Map<String, Object> out = new LinkedHashMap<>();
+    out.put("id", created.get("id"));
+    out.put("public", created.get("public"));
+    httpResponse.setStatusCode(HTTP_OK);
+    httpResponse.setContentType("application/json");
+    try (var writer = httpResponse.getWriter()) {
+      writer.write(GSON.toJson(out));
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> readJsonBody(HttpRequest httpRequest) throws IOException {
+    try (var reader = httpRequest.getReader()) {
+      Map<String, Object> parsed = GSON.fromJson(reader, Map.class);
+      return parsed == null ? Map.of() : parsed;
+    }
+  }
+
+  static String slug(String name) {
+    var ascii = name.toLowerCase(Locale.ROOT)
+      .replaceAll("[^a-z0-9]+", "-")
+      .replaceAll("^-+|-+$", "");
+    if (ascii.length() > 64) {
+      ascii = ascii.substring(0, 64).replaceAll("-+$", "");
+    }
+    return ascii.isEmpty() ? "script" : ascii;
   }
 
   private void handleLogout(HttpResponse httpResponse) {
