@@ -469,6 +469,24 @@ class GithubAccessExecutorTest extends Specification {
     1 * httpResponse.setStatusCode(401)
   }
 
+  def "POST ?action=gist with malformed JSON body returns 400"() {
+    given:
+    def jwe = new SessionTokenCodec(config.secretKey()).encrypt(token("ghs_test", "gist"))
+    httpRequest.method >> "POST"
+    httpRequest.queryParameters >> ["action": ["gist"]]
+    httpRequest.headers >> [
+      "Origin": [FRONTEND],
+      "Cookie": ["gwc_session=${jwe}".toString()]
+    ]
+    httpRequest.reader >> new BufferedReader(new StringReader('{not-json'))
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(400)
+  }
+
   def "POST ?action=gist with missing code returns 400"() {
     given:
     def jwe = new SessionTokenCodec(config.secretKey()).encrypt(token("ghs_test", "gist"))
@@ -585,6 +603,35 @@ class GithubAccessExecutorTest extends Specification {
 
     then:
     1 * httpResponse.setStatusCode(401)
+  }
+
+  def "unsupported HTTP method returns 405"() {
+    given:
+    httpRequest.method >> "HEAD"
+    httpRequest.headers >> [:]
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(405)
+  }
+
+  def "state-changing request with unknown action returns 400"() {
+    given:
+    def jwe = new SessionTokenCodec(config.secretKey()).encrypt(token("ghs_test", "gist"))
+    httpRequest.method >> "POST"
+    httpRequest.queryParameters >> ["action": ["bogus"]]
+    httpRequest.headers >> [
+      "Origin": [FRONTEND],
+      "Cookie": ["gwc_session=${jwe}".toString()]
+    ]
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(400)
   }
 
   def "OPTIONS preflight from disallowed origin omits Allow-Origin"() {

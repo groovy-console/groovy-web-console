@@ -32,7 +32,13 @@ public record Config(
     );
   }
 
-  private static SecretKey parseSecretKey(String secretKey) {
-    return new SecretKeySpec(Base64.getUrlDecoder().decode(secretKey), "AES");
+  static SecretKey parseSecretKey(String secretKey) {
+    byte[] decoded = Base64.getUrlDecoder().decode(secretKey);
+    if (decoded.length != 16) {
+      throw new IllegalArgumentException(
+        "SECRET_KEY must decode to 16 bytes for AES-128 (got " + decoded.length + " bytes). "
+          + "Regenerate via functions/github-access/src/test/groovy/KeyGen.groovy.");
+    }
+    return new SecretKeySpec(decoded, "AES");
   }
 }

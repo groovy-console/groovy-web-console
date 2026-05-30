@@ -145,7 +145,7 @@ Lowercase, ASCII-only, non-alphanumerics replaced with `-`, runs of `-` collapse
 
 ### Navbar (`services/frontend/src/templates/index.html`)
 
-Replace the existing static "Github" navbar item (the one currently linking to the repo) with an account item that renders by state:
+Replace the existing static "GitHub" navbar item (the one currently linking to the repo) with an account item that renders by state:
 
 - **Logged out:** `<a class="navbar-item" data-action="sign-in">Sign in with GitHub</a>`.
 - **Logged in:** a navbar dropdown showing `[avatar 24px] @login` and a `Sign out` item. Same dropdown pattern as the existing color-mode menu.

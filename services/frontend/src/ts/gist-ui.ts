@@ -41,10 +41,11 @@ export function setupGistUi (codeCM: CodeEditor) {
   const outputText = () => (document.getElementById('output') as HTMLElement).textContent ?? ''
   const hasOutput = () => outputText().trim().length > 0
 
-  function notifySessionExpired () {
-    sessionNotificationText.textContent = 'Your GitHub session expired. Please sign in again.'
+  function notify (text: string) {
+    sessionNotificationText.textContent = text
     show(sessionNotification)
   }
+  const notifySessionExpired = () => notify('Your GitHub session expired. Please sign in again.')
   sessionNotificationClose.addEventListener('click', () => hide(sessionNotification))
 
   function refreshButtons (user: User | null, gist: GistMetadata | null) {
@@ -138,7 +139,11 @@ export function setupGistUi (codeCM: CodeEditor) {
       output: hasOutput() ? outputText() : undefined
     }).subscribe({
       error: err => {
-        if (isAuthError(err)) notifySessionExpired()
+        if (isAuthError(err)) {
+          notifySessionExpired()
+        } else {
+          notify((err as Error)?.message ?? 'Could not update gist.')
+        }
       }
     })
   })

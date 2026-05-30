@@ -4,6 +4,7 @@ import com.google.cloud.functions.HttpFunction;
 import com.google.cloud.functions.HttpRequest;
 import com.google.cloud.functions.HttpResponse;
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -105,7 +106,9 @@ public class GithubAccessExecutor implements HttpFunction {
         httpResponse.setStatusCode(HTTP_MOVED_TEMP);
         httpResponse.appendHeader("Location", frontendOrigin + "/");
       }
+      return;
     }
+    httpResponse.setStatusCode(HTTP_BAD_METHOD);
   }
 
   private void handleMe(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
@@ -235,6 +238,8 @@ public class GithubAccessExecutor implements HttpFunction {
       handleGistCreate(httpRequest, httpResponse);
     } else if (method.equals("PATCH") && action.equals("gist")) {
       handleGistUpdate(httpRequest, httpResponse);
+    } else {
+      httpResponse.setStatusCode(HTTP_BAD_REQUEST);
     }
   }
 
@@ -345,6 +350,11 @@ public class GithubAccessExecutor implements HttpFunction {
     try (var reader = httpRequest.getReader()) {
       Map<String, Object> parsed = GSON.fromJson(reader, Map.class);
       return parsed == null ? Map.of() : parsed;
+    } catch (JsonParseException e) {
+      // Malformed JSON is a client error. Return an empty map so the calling
+      // handler's required-field check produces a 400 instead of bubbling to
+      // the generic 500 path.
+      return Map.of();
     }
   }
 

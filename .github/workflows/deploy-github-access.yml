@@ -33,6 +33,18 @@ jobs:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
+      - name: Validate SECRET_KEY length
+        env:
+          SECRET_KEY: ${{ secrets.GH_ACCESS_SECRET_KEY }}
+        run: |
+          # SECRET_KEY must decode (URL-safe base64, no padding) to exactly 16 bytes
+          # for AES-128. Catch a wrong-length secret here so the deploy never
+          # reaches GCP with a key that would crash the function at startup.
+          decoded_len=$(printf '%s' "$SECRET_KEY" | tr '_-' '/+' | base64 --decode 2>/dev/null | wc -c | tr -d ' ')
+          if [ "$decoded_len" != "16" ]; then
+            echo "::error::SECRET_KEY decoded to $decoded_len bytes, must be 16 (AES-128). Regenerate via functions/github-access/src/test/groovy/KeyGen.groovy."
+            exit 1
+          fi
       - id: Deploy
         env:
           GITHUB_CLIENT_ID: ${{ secrets.GH_OAUTH_CLIENT_ID }}

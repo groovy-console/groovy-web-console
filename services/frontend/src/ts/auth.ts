@@ -2,6 +2,9 @@ import { BehaviorSubject } from 'rxjs'
 import { GistMetadata, User } from './types'
 
 const accessUrl = (path: string) => `${GITHUB_ACCESS_SERVICE_URL}${path}`
+// The popup loads from the github-access function origin, so postMessage will
+// carry event.origin = <access origin>, not location.origin (the main app).
+const accessOrigin = new URL(GITHUB_ACCESS_SERVICE_URL).origin
 
 export const currentUser$ = new BehaviorSubject<User | null>(null)
 export const loadedGist$ = new BehaviorSubject<GistMetadata | null>(null)
@@ -27,10 +30,10 @@ export function signIn (onComplete: () => void): void {
   let popup: Window | null = null
 
   const messageListener = (event: MessageEvent) => {
-    // event.source check prevents any other same-origin tab / iframe / worker
-    // from spoofing a login-success message into the main window.
+    // event.source pins the message to our specific popup; event.origin pins it
+    // to the access function's origin (where the inline postMessage script ran).
     if (event.source !== popup) return
-    if (event.origin !== location.origin) return
+    if (event.origin !== accessOrigin) return
     if (!event.data || event.data.type !== 'gwc:login-success') return
     window.removeEventListener('message', messageListener)
     onComplete()
