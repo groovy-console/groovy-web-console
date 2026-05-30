@@ -56,7 +56,7 @@ $custom-colors: (
 .history-region {
   max-height: 30vh;
   overflow-y: auto;
-  border: 1px solid hsl(0, 0%, 86%);
+  border: 1px solid var(--bulma-border);
   border-radius: 4px;
   padding: 0.25rem;
 
@@ -79,8 +79,11 @@ $custom-colors: (
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  background: hsl(0, 0%, 96%);
-  border: 1px solid hsl(0, 0%, 86%);
+  // Bulma's scheme-main-bis is the "slightly off the main background" shade
+  // that adapts to light/dark theme automatically (whitesmoke in light,
+  // near-black in dark).
+  background: var(--bulma-scheme-main-bis);
+  border: 1px solid var(--bulma-border);
   border-radius: 4px;
   padding: 0.5rem 0.75rem;
   font-size: 0.85em;
@@ -99,7 +102,9 @@ $custom-colors: (
 
   &:hover,
   &.is-preview-source {
-    background-color: hsla(210, 14%, 89%, 0.5);
+    // Translucent overlay of the current text colour: shows as light-grey in
+    // light mode and dark-grey in dark mode without two separate rules.
+    background-color: color-mix(in srgb, var(--bulma-text) 10%, transparent);
   }
 
   &.is-preview-source {
@@ -117,7 +122,7 @@ $custom-colors: (
   }
 
   .history-row-time {
-    color: hsl(0, 0%, 48%);
+    color: var(--bulma-text-soft);
     font-size: 0.85em;
     flex: 0 0 auto;
     min-width: 6rem;
