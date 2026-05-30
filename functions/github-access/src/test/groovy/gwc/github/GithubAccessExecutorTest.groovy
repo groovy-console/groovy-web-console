@@ -1,30 +1,46 @@
 package gwc.github
 
+import com.github.tomakehurst.wiremock.WireMockServer
 import com.google.cloud.functions.HttpRequest
 import com.google.cloud.functions.HttpResponse
+import spock.lang.AutoCleanup
 import spock.lang.Specification
 import spock.lang.Subject
 
 import javax.crypto.spec.SecretKeySpec
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 
 class GithubAccessExecutorTest extends Specification {
 
   static final String FRONTEND = "https://groovyconsole.dev"
   static final byte[] KEY_BYTES = new byte[16] // all-zero key, fine for tests
 
-  Config config = new Config(
-    "test-client-id",
-    "test-client-secret",
-    "https://access.groovyconsole.dev/",
-    new SecretKeySpec(KEY_BYTES, "AES"),
-    FRONTEND
-  )
+  @AutoCleanup("stop")
+  WireMockServer wiremock = new WireMockServer(wireMockConfig().dynamicPort())
+
+  Config config
 
   @Subject
-  GithubAccessExecutor executor = new GithubAccessExecutor(config)
+  GithubAccessExecutor executor
 
   HttpRequest httpRequest = Stub()
   HttpResponse httpResponse = Mock()
+
+  def setup() {
+    wiremock.start()
+    config = new Config(
+      "test-client-id",
+      "test-client-secret",
+      "https://access.groovyconsole.dev/",
+      new SecretKeySpec(KEY_BYTES, "AES"),
+      FRONTEND,
+      "http://localhost:${wiremock.port()}/login/oauth/access_token",
+      "http://localhost:${wiremock.port()}"
+    )
+    executor = new GithubAccessExecutor(config)
+  }
 
   def "OPTIONS preflight from allowed origin returns 204 with CORS headers"() {
     given:
@@ -79,6 +95,74 @@ class GithubAccessExecutorTest extends Specification {
     then:
     1 * httpResponse.setStatusCode(403)
     0 * httpResponse.appendHeader("Set-Cookie", _)
+  }
+
+  def "OAuth callback sets gwc_session cookie and returns inline postMessage HTML"() {
+    given:
+    def state = "11111111-2222-3333-4444-555555555555"
+    wiremock.stubFor(post(urlEqualTo("/login/oauth/access_token"))
+      .willReturn(okJson('{"access_token":"ghs_test_token","scope":"gist","token_type":"bearer"}')))
+    httpRequest.method >> "GET"
+    httpRequest.queryParameters >> ["code": ["the-code"], "state": [state]]
+    httpRequest.headers >> ["Cookie": ["state=${state}".toString()]]
+    def output = new StringWriter()
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(200)
+    1 * httpResponse.setContentType("text/html")
+    _ * httpResponse.getWriter() >> new BufferedWriter(output)
+    1 * httpResponse.appendHeader("Set-Cookie", { String it ->
+      it.startsWith("gwc_session=") &&
+        !it.startsWith("gwc_session=;") &&
+        it.contains("Domain=groovyconsole.dev") &&
+        it.contains("HttpOnly") &&
+        it.contains("Secure") &&
+        it.contains("SameSite=Lax") &&
+        it.contains("Path=/")
+    })
+
+    and:
+    def body = output.toString()
+    body.contains("postMessage")
+    body.contains("gwc:login-success")
+    body.contains(FRONTEND)
+    body.contains("window.close()")
+  }
+
+  def "OAuth callback rejects state cookie mismatch"() {
+    given:
+    httpRequest.method >> "GET"
+    httpRequest.queryParameters >> ["code": ["the-code"], "state": ["11111111-2222-3333-4444-555555555555"]]
+    httpRequest.headers >> ["Cookie": ["state=99999999-8888-7777-6666-555555555555"]]
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(403)
+    0 * httpResponse.appendHeader("Set-Cookie", { String it -> it.startsWith("gwc_session=") && !it.startsWith("gwc_session=;") })
+  }
+
+  def "OAuth callback without gist scope returns 403"() {
+    given:
+    def state = "11111111-2222-3333-4444-555555555555"
+    wiremock.stubFor(post(urlEqualTo("/login/oauth/access_token"))
+      .willReturn(okJson('{"access_token":"ghs_test_token","scope":"","token_type":"bearer"}')))
+    httpRequest.method >> "GET"
+    httpRequest.queryParameters >> ["code": ["the-code"], "state": [state]]
+    httpRequest.headers >> ["Cookie": ["state=${state}".toString()]]
+    def output = new StringWriter()
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(403)
+    0 * httpResponse.appendHeader("Set-Cookie", { String it -> it.startsWith("gwc_session=") && !it.startsWith("gwc_session=;") })
+    _ * httpResponse.getWriter() >> new BufferedWriter(output)
   }
 
   def "OPTIONS preflight from disallowed origin omits Allow-Origin"() {

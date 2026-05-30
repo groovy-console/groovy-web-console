@@ -31,7 +31,6 @@ import static java.util.stream.Collectors.joining;
 public class GithubAccessExecutor implements HttpFunction {
 
   public static final Pattern COOKIE_PATTERN = Pattern.compile("state=([\\w-]{36})");
-  private static final URI GITHUB_ACCESS_TOKEN_URL = URI.create("https://github.com/login/oauth/access_token");
   private static final String GITHUB_AUTHORIZE = "https://github.com/login/oauth/authorize";
 
   private final String clientId;
@@ -40,6 +39,7 @@ public class GithubAccessExecutor implements HttpFunction {
   // Generate with KeyGen in src/test/groovy. Never log this value or any token derived from it.
   private final SecretKey secretKey;
   private final String frontendOrigin;
+  private final URI tokenExchangeUrl;
 
   public GithubAccessExecutor() {
     this(Config.fromEnv());
@@ -51,6 +51,7 @@ public class GithubAccessExecutor implements HttpFunction {
     this.redirectUri = config.redirectUri();
     this.secretKey = config.secretKey();
     this.frontendOrigin = config.frontendOrigin();
+    this.tokenExchangeUrl = URI.create(config.tokenExchangeUrl());
   }
 
   // Create a client with some reasonable defaults. This client can be reused for multiple requests.
@@ -172,16 +173,25 @@ public class GithubAccessExecutor implements HttpFunction {
       httpResponse.setContentType("text/plain");
       var writer = httpResponse.getWriter();
       writer.write("This application requires the gist scope.");
-    } else {
-      httpResponse.setStatusCode(HTTP_OK);
-      var writer = httpResponse.getWriter();
-      httpResponse.setContentType("text/plain");
-      if (redirectUri.startsWith("http://localhost")) {
-        writer.write(GSON.toJson(accessTokenResponse));
-        writer.newLine();
-      }
-      writer.write(encryptToken(accessTokenResponse));
+      return;
     }
+
+    var jwe = encryptToken(accessTokenResponse);
+    httpResponse.appendHeader("Set-Cookie", sessionCookie(jwe, SESSION_MAX_AGE_SECONDS));
+    httpResponse.setStatusCode(HTTP_OK);
+    httpResponse.setContentType("text/html");
+    try (var writer = httpResponse.getWriter()) {
+      writer.write(loginCompleteHtml());
+    }
+  }
+
+  private static final long SESSION_MAX_AGE_SECONDS = 60L * 60L * 24L * 30L; // 30 days
+
+  private String loginCompleteHtml() {
+    return "<!doctype html><script>"
+      + "window.opener?.postMessage({type:'gwc:login-success'},'" + frontendOrigin + "');"
+      + "window.close();"
+      + "</script>";
   }
 
   private String encryptToken(TokenResponse accessTokenResponse) throws JOSEException {
@@ -237,7 +247,7 @@ public class GithubAccessExecutor implements HttpFunction {
   private TokenResponse exchangeCodeForAccessToken(String code) throws IOException, InterruptedException, UnauthorizedException {
     String tokenRequestBody = urlEncodeParams(Map.of("client_id", clientId, "client_secret", clientSecret, "code", code));
 
-    var tokenRequest = newBuilder().uri(GITHUB_ACCESS_TOKEN_URL)
+    var tokenRequest = newBuilder().uri(tokenExchangeUrl)
       .POST(java.net.http.HttpRequest.BodyPublishers.ofString(tokenRequestBody))
       .header("Accept", "application/json")
       .header("Content-Type", "application/x-www-form-urlencoded")

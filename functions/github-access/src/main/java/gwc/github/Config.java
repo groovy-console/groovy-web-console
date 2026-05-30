@@ -11,8 +11,17 @@ public record Config(
   String clientSecret,
   String redirectUri,
   SecretKey secretKey,
-  String frontendOrigin
+  String frontendOrigin,
+  String tokenExchangeUrl,
+  String githubApiBaseUrl
 ) {
+  public static final String DEFAULT_TOKEN_EXCHANGE_URL = "https://github.com/login/oauth/access_token";
+  public static final String DEFAULT_GITHUB_API_BASE_URL = "https://api.github.com";
+
+  public Config(String clientId, String clientSecret, String redirectUri, SecretKey secretKey, String frontendOrigin) {
+    this(clientId, clientSecret, redirectUri, secretKey, frontendOrigin, DEFAULT_TOKEN_EXCHANGE_URL, DEFAULT_GITHUB_API_BASE_URL);
+  }
+
   public static Config fromEnv() {
     return new Config(
       requireNonNull(System.getenv("GITHUB_CLIENT_ID"), "GITHUB_CLIENT_ID is not set"),
