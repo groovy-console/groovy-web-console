@@ -3,6 +3,7 @@ package gwc.github
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.google.cloud.functions.HttpRequest
 import com.google.cloud.functions.HttpResponse
+import groovy.json.JsonSlurper
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 import spock.lang.Subject
@@ -71,13 +72,13 @@ class GithubAccessExecutorTest extends Specification {
     then:
     1 * httpResponse.setStatusCode(204)
     1 * httpResponse.appendHeader("Set-Cookie", { String it ->
-      it.startsWith("gwc_session=;") &&
-        it.contains("Domain=.groovyconsole.dev") &&
-        it.contains("HttpOnly") &&
-        it.contains("Secure") &&
-        it.contains("SameSite=Lax") &&
-        it.contains("Path=/") &&
-        it.contains("Max-Age=0")
+      it.startsWith("gwc_session=;")
+      it.contains("Domain=.groovyconsole.dev")
+      it.contains("HttpOnly")
+      it.contains("Secure")
+      it.contains("SameSite=Lax")
+      it.contains("Path=/")
+      it.contains("Max-Age=0")
     })
     1 * httpResponse.appendHeader("Access-Control-Allow-Origin", FRONTEND)
     1 * httpResponse.appendHeader("Access-Control-Allow-Credentials", "true")
@@ -115,13 +116,13 @@ class GithubAccessExecutorTest extends Specification {
     1 * httpResponse.setContentType("text/html")
     _ * httpResponse.getWriter() >> new BufferedWriter(output)
     1 * httpResponse.appendHeader("Set-Cookie", { String it ->
-      it.startsWith("gwc_session=") &&
-        !it.startsWith("gwc_session=;") &&
-        it.contains("Domain=.groovyconsole.dev") &&
-        it.contains("HttpOnly") &&
-        it.contains("Secure") &&
-        it.contains("SameSite=Lax") &&
-        it.contains("Path=/")
+      it.startsWith("gwc_session=")
+      !it.startsWith("gwc_session=;")
+      it.contains("Domain=.groovyconsole.dev")
+      it.contains("HttpOnly")
+      it.contains("Secure")
+      it.contains("SameSite=Lax")
+      it.contains("Path=/")
     })
 
     and:
@@ -143,7 +144,10 @@ class GithubAccessExecutorTest extends Specification {
 
     then:
     1 * httpResponse.setStatusCode(401)
-    0 * httpResponse.appendHeader("Set-Cookie", { String it -> it.startsWith("gwc_session=") && !it.startsWith("gwc_session=;") })
+    0 * httpResponse.appendHeader("Set-Cookie", { String it ->
+      it.startsWith("gwc_session=")
+      !it.startsWith("gwc_session=;")
+    })
   }
 
   def "OAuth callback returns 401 when no Cookie header is present"() {
@@ -157,7 +161,10 @@ class GithubAccessExecutorTest extends Specification {
 
     then:
     1 * httpResponse.setStatusCode(401)
-    0 * httpResponse.appendHeader("Set-Cookie", { String it -> it.startsWith("gwc_session=") && !it.startsWith("gwc_session=;") })
+    0 * httpResponse.appendHeader("Set-Cookie", { String it ->
+      it.startsWith("gwc_session=")
+      !it.startsWith("gwc_session=;")
+    })
   }
 
   def "GET with no recognised action redirects to the console"() {
@@ -187,11 +194,11 @@ class GithubAccessExecutorTest extends Specification {
     1 * httpResponse.setStatusCode(302)
     1 * httpResponse.appendHeader("Location", { String it -> it.startsWith("https://github.com/login/oauth/authorize?") })
     1 * httpResponse.appendHeader("Set-Cookie", { String it ->
-      it.startsWith("state=") &&
-        it.contains("HttpOnly") &&
-        it.contains("Secure") &&
-        it.contains("SameSite=Lax") &&
-        it.contains("Path=/")
+      it.startsWith("state=")
+      it.contains("HttpOnly")
+      it.contains("Secure")
+      it.contains("SameSite=Lax")
+      it.contains("Path=/")
     })
   }
 
@@ -210,7 +217,10 @@ class GithubAccessExecutorTest extends Specification {
 
     then:
     1 * httpResponse.setStatusCode(403)
-    0 * httpResponse.appendHeader("Set-Cookie", { String it -> it.startsWith("gwc_session=") && !it.startsWith("gwc_session=;") })
+    0 * httpResponse.appendHeader("Set-Cookie", { String it ->
+      it.startsWith("gwc_session=")
+      !it.startsWith("gwc_session=;")
+    })
     _ * httpResponse.getWriter() >> new BufferedWriter(output)
   }
 
@@ -266,7 +276,7 @@ class GithubAccessExecutorTest extends Specification {
     _ * httpResponse.getWriter() >> new BufferedWriter(output)
 
     and:
-    def body = new groovy.json.JsonSlurper().parseText(output.toString())
+    def body = new JsonSlurper().parseText(output.toString())
     body.login == "alice"
     body.avatar_url == "https://avatars/alice.png"
     body.size() == 2 // no extra fields leaked
@@ -293,6 +303,10 @@ class GithubAccessExecutorTest extends Specification {
 
   private TokenResponse token(String accessToken, String scope) {
     new TokenResponse(access_token: accessToken, scope: scope, token_type: "bearer")
+  }
+
+  private static BufferedReader bodyReader(String json) {
+    new BufferedReader(new StringReader(json))
   }
 
   def "GET ?action=gist returns code, ownerLogin, public, filename"() {
@@ -331,7 +345,7 @@ class GithubAccessExecutorTest extends Specification {
     _ * httpResponse.getWriter() >> new BufferedWriter(output)
 
     and:
-    def body = new groovy.json.JsonSlurper().parseText(output.toString())
+    def body = new JsonSlurper().parseText(output.toString())
     body.id == "abc123"
     body.filename == "hello.groovy"
     body.code == "println 'hi'"
@@ -413,7 +427,7 @@ class GithubAccessExecutorTest extends Specification {
       "Origin": [FRONTEND],
       "Cookie": ["gwc_session=${jwe}".toString()]
     ]
-    httpRequest.reader >> new BufferedReader(new StringReader('{"name":"Hello World","public":true,"code":"println 42"}'))
+    httpRequest.reader >> bodyReader('{"name":"Hello World","public":true,"code":"println 42"}')
     def output = new StringWriter()
 
     when:
@@ -425,7 +439,7 @@ class GithubAccessExecutorTest extends Specification {
     _ * httpResponse.getWriter() >> new BufferedWriter(output)
 
     and:
-    def body = new groovy.json.JsonSlurper().parseText(output.toString())
+    def body = new JsonSlurper().parseText(output.toString())
     body.id == "new123"
     body.public == true
   }
@@ -443,7 +457,7 @@ class GithubAccessExecutorTest extends Specification {
       "Origin": [FRONTEND],
       "Cookie": ["gwc_session=${jwe}".toString()]
     ]
-    httpRequest.reader >> new BufferedReader(new StringReader('{"name":"my-script","public":false,"code":"println 42","output":"hi"}'))
+    httpRequest.reader >> bodyReader('{"name":"my-script","public":false,"code":"println 42","output":"hi"}')
     def output = new StringWriter()
 
     when:
@@ -452,7 +466,7 @@ class GithubAccessExecutorTest extends Specification {
     then:
     1 * httpResponse.setStatusCode(200)
     _ * httpResponse.getWriter() >> new BufferedWriter(output)
-    new groovy.json.JsonSlurper().parseText(output.toString()).id == "new456"
+    new JsonSlurper().parseText(output.toString()).id == "new456"
   }
 
   def "POST ?action=gist without auth returns 401"() {
@@ -460,7 +474,7 @@ class GithubAccessExecutorTest extends Specification {
     httpRequest.method >> "POST"
     httpRequest.queryParameters >> ["action": ["gist"]]
     httpRequest.headers >> ["Origin": [FRONTEND]]
-    httpRequest.reader >> new BufferedReader(new StringReader('{"name":"x","public":true,"code":"x"}'))
+    httpRequest.reader >> bodyReader('{"name":"x","public":true,"code":"x"}')
 
     when:
     executor.service(httpRequest, httpResponse)
@@ -478,7 +492,7 @@ class GithubAccessExecutorTest extends Specification {
       "Origin": [FRONTEND],
       "Cookie": ["gwc_session=${jwe}".toString()]
     ]
-    httpRequest.reader >> new BufferedReader(new StringReader('{not-json'))
+    httpRequest.reader >> bodyReader('{not-json')
 
     when:
     executor.service(httpRequest, httpResponse)
@@ -496,7 +510,7 @@ class GithubAccessExecutorTest extends Specification {
       "Origin": [FRONTEND],
       "Cookie": ["gwc_session=${jwe}".toString()]
     ]
-    httpRequest.reader >> new BufferedReader(new StringReader('{"name":"x","public":true}'))
+    httpRequest.reader >> bodyReader('{"name":"x","public":true}')
 
     when:
     executor.service(httpRequest, httpResponse)
@@ -514,7 +528,7 @@ class GithubAccessExecutorTest extends Specification {
       "Origin": [FRONTEND],
       "Cookie": ["gwc_session=${jwe}".toString()]
     ]
-    httpRequest.reader >> new BufferedReader(new StringReader('{"name":"  ","public":true,"code":"x"}'))
+    httpRequest.reader >> bodyReader('{"name":"  ","public":true,"code":"x"}')
 
     when:
     executor.service(httpRequest, httpResponse)
@@ -536,7 +550,7 @@ class GithubAccessExecutorTest extends Specification {
       "Origin": [FRONTEND],
       "Cookie": ["gwc_session=${jwe}".toString()]
     ]
-    httpRequest.reader >> new BufferedReader(new StringReader('{"filename":"hello.groovy","code":"println 99"}'))
+    httpRequest.reader >> bodyReader('{"filename":"hello.groovy","code":"println 99"}')
     def output = new StringWriter()
 
     when:
@@ -545,7 +559,7 @@ class GithubAccessExecutorTest extends Specification {
     then:
     1 * httpResponse.setStatusCode(200)
     _ * httpResponse.getWriter() >> new BufferedWriter(output)
-    new groovy.json.JsonSlurper().parseText(output.toString()).id == "abc123"
+    new JsonSlurper().parseText(output.toString()).id == "abc123"
   }
 
   def "PATCH ?action=gist with output updates output.txt"() {
@@ -561,7 +575,7 @@ class GithubAccessExecutorTest extends Specification {
       "Origin": [FRONTEND],
       "Cookie": ["gwc_session=${jwe}".toString()]
     ]
-    httpRequest.reader >> new BufferedReader(new StringReader('{"filename":"hello.groovy","code":"println 99","output":"99"}'))
+    httpRequest.reader >> bodyReader('{"filename":"hello.groovy","code":"println 99","output":"99"}')
 
     when:
     executor.service(httpRequest, httpResponse)
@@ -582,7 +596,7 @@ class GithubAccessExecutorTest extends Specification {
       "Origin": [FRONTEND],
       "Cookie": ["gwc_session=${jwe}".toString()]
     ]
-    httpRequest.reader >> new BufferedReader(new StringReader('{"filename":"hello.groovy","code":"println 99"}'))
+    httpRequest.reader >> bodyReader('{"filename":"hello.groovy","code":"println 99"}')
 
     when:
     executor.service(httpRequest, httpResponse)
@@ -596,7 +610,7 @@ class GithubAccessExecutorTest extends Specification {
     httpRequest.method >> "PATCH"
     httpRequest.queryParameters >> ["action": ["gist"], "id": ["abc123"]]
     httpRequest.headers >> ["Origin": [FRONTEND]]
-    httpRequest.reader >> new BufferedReader(new StringReader('{"filename":"hello.groovy","code":"x"}'))
+    httpRequest.reader >> bodyReader('{"filename":"hello.groovy","code":"x"}')
 
     when:
     executor.service(httpRequest, httpResponse)

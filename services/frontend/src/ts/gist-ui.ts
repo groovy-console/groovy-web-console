@@ -2,6 +2,10 @@ import { CodeEditor } from './codemirror'
 import { currentUser$, loadedGist$, refreshMe, signIn, signOut } from './auth'
 import { createGist, updateGist } from './github'
 import { GistMetadata, User } from './types'
+import { EMPTY, fromEvent, Observable } from 'rxjs'
+import { catchError, exhaustMap, filter, finalize, map, tap, throttleTime } from 'rxjs/operators'
+
+const CLICK_THROTTLE_MS = 500
 
 export function setupGistUi (codeCM: CodeEditor) {
   const signInItem = document.getElementById('signInItem')
@@ -72,11 +76,13 @@ export function setupGistUi (codeCM: CodeEditor) {
   currentUser$.subscribe(user => refreshButtons(user, loadedGist$.value))
   loadedGist$.subscribe(gist => refreshButtons(currentUser$.value, gist))
 
-  signInItem.addEventListener('click', () => signIn(() => { refreshMe() }))
-  signOutItem.addEventListener('click', e => {
-    e.preventDefault()
-    signOut()
-  })
+  const throttledClick$ = (el: HTMLElement): Observable<Event> =>
+    fromEvent(el, 'click').pipe(throttleTime(CLICK_THROTTLE_MS))
+
+  throttledClick$(signInItem).subscribe(() => signIn(() => { refreshMe() }))
+  throttledClick$(signOutItem).pipe(
+    tap(e => e.preventDefault())
+  ).subscribe(() => signOut())
 
   function openSaveModal (mode: 'public' | 'secret' | 'new') {
     pendingVisibility = mode === 'public' ? true : mode === 'secret' ? false : loadedGist$.value?.public ?? true
@@ -95,9 +101,9 @@ export function setupGistUi (codeCM: CodeEditor) {
     pendingVisibility = null
   }
 
-  saveAsPublicGistBtn.addEventListener('click', () => openSaveModal('public'))
-  saveAsSecretGistBtn.addEventListener('click', () => openSaveModal('secret'))
-  saveAsNewGistBtn.addEventListener('click', () => openSaveModal('new'))
+  throttledClick$(saveAsPublicGistBtn).subscribe(() => openSaveModal('public'))
+  throttledClick$(saveAsSecretGistBtn).subscribe(() => openSaveModal('secret'))
+  throttledClick$(saveAsNewGistBtn).subscribe(() => openSaveModal('new'))
   saveGistModalClose.addEventListener('click', closeSaveModal)
   saveGistCancel.addEventListener('click', closeSaveModal)
   saveGistModal.querySelector('.modal-background').addEventListener('click', closeSaveModal)
@@ -106,47 +112,61 @@ export function setupGistUi (codeCM: CodeEditor) {
     return typeof (err as Error)?.message === 'string' && (err as Error).message.includes('401')
   }
 
-  saveGistConfirm.addEventListener('click', () => {
-    const name = saveGistName.value.trim()
-    if (name === '') { show(saveGistNameError); return }
-    hide(saveGistNameError); hide(saveGistError)
-    createGist({
+  // exhaustMap: ignore clicks while an in-flight save is running so the modal
+  // can't issue a second POST before the first resolves. throttleTime alone
+  // can't do that — its window is fixed and unrelated to request duration.
+  throttledClick$(saveGistConfirm).pipe(
+    map(() => saveGistName.value.trim()),
+    tap(name => {
+      if (name === '') show(saveGistNameError)
+    }),
+    filter(name => name !== ''),
+    tap(() => {
+      hide(saveGistNameError); hide(saveGistError)
+      saveGistConfirm.classList.add('is-loading')
+    }),
+    exhaustMap(name => createGist({
       name,
       public: pendingVisibility ?? true,
       code: codeCM.getCode(),
       output: saveGistIncludeOutput.checked ? outputText() : undefined
-    }).subscribe({
-      next: saved => {
+    }).pipe(
+      tap(saved => {
         const params = new URLSearchParams(location.search)
         params.set('gist', saved.id)
         history.replaceState(null, '', `${location.pathname}?${params.toString()}${location.hash}`)
         closeSaveModal()
-      },
-      error: err => {
+      }),
+      catchError(err => {
         saveGistError.textContent = (err as Error)?.message ?? 'Could not save gist.'
         show(saveGistError)
         if (isAuthError(err)) notifySessionExpired()
-      }
-    })
-  })
+        return EMPTY
+      }),
+      finalize(() => saveGistConfirm.classList.remove('is-loading'))
+    ))
+  ).subscribe()
 
-  updateGistBtn.addEventListener('click', () => {
-    const gist = loadedGist$.value
-    if (gist === null) return
-    updateGist(gist.id, {
+  throttledClick$(updateGistBtn).pipe(
+    map(() => loadedGist$.value),
+    filter((gist): gist is GistMetadata => gist !== null),
+    tap(() => updateGistBtn.classList.add('is-loading')),
+    exhaustMap(gist => updateGist(gist.id, {
       filename: gist.filename,
       code: codeCM.getCode(),
       output: hasOutput() ? outputText() : undefined
-    }).subscribe({
-      error: err => {
+    }).pipe(
+      catchError(err => {
         if (isAuthError(err)) {
           notifySessionExpired()
         } else {
           notify((err as Error)?.message ?? 'Could not update gist.')
         }
-      }
-    })
-  })
+        return EMPTY
+      }),
+      finalize(() => updateGistBtn.classList.remove('is-loading'))
+    ))
+  ).subscribe()
 
   refreshMe()
 }
