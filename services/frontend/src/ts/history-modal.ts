@@ -3,8 +3,7 @@ import { CodeEditor } from './codemirror'
 
 const UNDO_TIMEOUT_MS = 15_000
 const LABEL_MAX_LEN = 40
-const PREVIEW_MAX_LINES = 15
-const PREVIEW_MAX_LINE_LEN = 80
+const PREVIEW_PLACEHOLDER = 'Hover a row to preview its content.'
 
 export function deriveLabel (content: string): string {
   const lines = content.split('\n')
@@ -20,17 +19,8 @@ export function deriveLabel (content: string): string {
   return 'Untitled session'
 }
 
-export function derivePreview (content: string): string {
-  const lines = content.split('\n').filter(l => l.trim() !== '')
-  const head = lines.slice(0, PREVIEW_MAX_LINES).map(l =>
-    l.length > PREVIEW_MAX_LINE_LEN ? l.slice(0, PREVIEW_MAX_LINE_LEN) + '…' : l
-  )
-  const more = lines.length > PREVIEW_MAX_LINES
-  return head.join('\n') + (more ? '\n…' : '')
-}
-
 export function formatTimestamp (ts: number, now: number = Date.now()): string {
-  if (ts <= 0) return 'unknown'
+  if (ts <= 0) return '—'
   const diffMs = now - ts
   if (diffMs < 60_000) return 'just now'
   if (diffMs < 60 * 60_000) {
@@ -65,6 +55,7 @@ export class HistoryModal {
   private currentLabel: HTMLElement
   private currentSnapshotsEl: HTMLElement
   private otherSessionsEl: HTMLElement
+  private previewEl: HTMLElement
   private toastsEl: HTMLElement
   private clearAllBtn: HTMLElement
   private closeBtn: HTMLElement
@@ -81,6 +72,7 @@ export class HistoryModal {
     this.currentLabel = document.getElementById('historyCurrentLabel')!
     this.currentSnapshotsEl = document.getElementById('historyCurrentSnapshots')!
     this.otherSessionsEl = document.getElementById('historyOtherSessions')!
+    this.previewEl = document.getElementById('historyPreview')!
     this.toastsEl = document.getElementById('historyToasts')!
     this.clearAllBtn = document.getElementById('historyClearAll')!
     this.closeBtn = document.getElementById('historyModalClose')!
@@ -97,6 +89,7 @@ export class HistoryModal {
   }
 
   public open (): void {
+    this.resetPreview()
     this.render()
     this.modal.classList.add('is-active')
     this.storageListener = (e) => {
@@ -124,6 +117,16 @@ export class HistoryModal {
     this.renderOtherSessions()
   }
 
+  private resetPreview (): void {
+    this.previewEl.textContent = PREVIEW_PLACEHOLDER
+    this.previewEl.classList.add('has-text-grey-light')
+  }
+
+  private setPreview (content: string): void {
+    this.previewEl.textContent = content === '' ? '(empty)' : content
+    this.previewEl.classList.toggle('has-text-grey-light', content === '')
+  }
+
   private renderCurrentLabel (): void {
     const content = this.historyService.getEditorContent()
     const label = deriveLabel(content)
@@ -147,8 +150,8 @@ export class HistoryModal {
 
   private buildSnapshotRow (snapshot: Snapshot): HTMLElement {
     const row = document.createElement('div')
-    row.className = 'history-row has-tooltip-multiline has-tooltip-right'
-    row.dataset.tooltip = derivePreview(snapshot.content)
+    row.className = 'history-row'
+    row.addEventListener('mouseenter', () => this.setPreview(snapshot.content))
 
     const time = document.createElement('span')
     time.className = 'history-row-time'
@@ -191,9 +194,9 @@ export class HistoryModal {
     const content = this.historyService.getSessionContent(meta.id)
 
     const row = document.createElement('div')
-    row.className = 'history-row has-tooltip-multiline has-tooltip-right'
-    row.dataset.tooltip = derivePreview(content)
+    row.className = 'history-row'
     row.dataset.sessionId = meta.id
+    row.addEventListener('mouseenter', () => this.setPreview(content))
 
     const label = document.createElement('span')
     label.className = 'history-row-label'
@@ -291,6 +294,7 @@ export class HistoryModal {
     }
     this.flushPendingDeletes()
     this.historyService.clearAllSessions()
+    this.resetPreview()
     this.render()
   }
 }

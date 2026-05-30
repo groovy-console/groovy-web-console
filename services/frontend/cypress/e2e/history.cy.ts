@@ -273,8 +273,27 @@ describe('groovy webconsole history', () => {
     })
   })
 
-  describe('hover preview', () => {
-    it('exposes the preview via the data-tooltip attribute without HTML injection', () => {
+  describe('preview pane', () => {
+    it('shows a placeholder until a row is hovered, then the row content, and keeps it after mouseleave', () => {
+      cy.seedHistorySession(CURRENT, 'current', { currentSession: true })
+      cy.seedHistorySession(OTHER_A, 'def hello = "world"\nprintln hello', { lastModified: Date.now() - 5 * 60_000 })
+      cy.reload()
+      cy.wait('@warmup_request')
+
+      cy.openHistoryModal()
+      cy.get('#historyPreview').should('contain.text', 'Hover a row to preview')
+
+      cy.get('#historyOtherSessions .history-row').first().trigger('mouseenter')
+      cy.get('#historyPreview')
+        .should('contain.text', 'def hello = "world"')
+        .and('contain.text', 'println hello')
+
+      // After mouseleave, preview stays
+      cy.get('#historyOtherSessions .history-row').first().trigger('mouseleave')
+      cy.get('#historyPreview').should('contain.text', 'def hello = "world"')
+    })
+
+    it('renders untrusted content as text, not HTML', () => {
       const script = 'def evil = "<script>x</script>"\nprintln evil'
       cy.seedHistorySession(OTHER_A, script, { lastModified: Date.now() - 5 * 60_000 })
       cy.seedHistorySession(CURRENT, 'current', { currentSession: true })
@@ -282,10 +301,24 @@ describe('groovy webconsole history', () => {
       cy.wait('@warmup_request')
 
       cy.openHistoryModal()
-      cy.get('#historyOtherSessions .history-row')
-        .first()
-        .should('have.attr', 'data-tooltip')
-        .and('include', '<script>x</script>')
+      cy.get('#historyOtherSessions .history-row').first().trigger('mouseenter')
+      // textContent shows the literal characters; no real <script> element gets injected
+      cy.get('#historyPreview').should('contain.text', '<script>x</script>')
+      cy.get('#historyPreview script').should('not.exist')
+    })
+  })
+
+  describe('formatting', () => {
+    it('renders unknown timestamps as an em dash', () => {
+      cy.seedHistorySession(CURRENT, 'current', { currentSession: true })
+      cy.seedHistorySession(OTHER_A, 'older content', { lastModified: 0 })
+      cy.reload()
+      cy.wait('@warmup_request')
+
+      cy.openHistoryModal()
+      cy.get('#historyOtherSessions .history-row').first()
+        .find('.history-row-time')
+        .should('have.text', '—')
     })
   })
 })

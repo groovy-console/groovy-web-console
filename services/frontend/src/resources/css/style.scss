@@ -12,12 +12,47 @@ $custom-colors: (
 
 @import '~@creativebulma/bulma-tooltip/dist/bulma-tooltip.css';
 
+#historyModal .history-modal-card {
+  width: min(1200px, 95vw);
+  max-width: none;
+}
+
+.history-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  min-height: 0;
+  height: 100%;
+}
+
+.history-col-left,
+.history-col-right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .history-region {
-  max-height: 35vh;
+  max-height: 30vh;
   overflow-y: auto;
   border: 1px solid hsl(0, 0%, 86%);
   border-radius: 4px;
   padding: 0.25rem;
+}
+
+.history-preview {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 65vh;
+  overflow: auto;
+  background: hsl(0, 0%, 96%);
+  border: 1px solid hsl(0, 0%, 86%);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85em;
+  line-height: 1.4;
+  white-space: pre;
+  word-break: normal;
 }
 
 .history-row {
