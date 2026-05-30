@@ -216,7 +216,7 @@ export class HistoryModal {
     label.textContent = deriveLabel(snapshot.content)
 
     const btn = document.createElement('button')
-    btn.className = 'button is-small is-light'
+    btn.className = 'button is-small'
     btn.textContent = 'Restore'
     this.currentSnapshotsSubs.add(
       fromEvent(btn, 'click').subscribe(() => this.handleRestore(snapshot))
@@ -272,17 +272,20 @@ export class HistoryModal {
     time.textContent = formatTimestamp(meta.lastModified)
 
     const switchBtn = document.createElement('button')
-    switchBtn.className = 'button is-small is-light'
+    switchBtn.className = 'button is-small'
     switchBtn.textContent = 'Switch'
     this.otherSessionsSubs.add(
       fromEvent(switchBtn, 'click').subscribe(() => this.handleSwitch(meta.id))
     )
 
     const deleteBtn = document.createElement('button')
-    deleteBtn.className = 'button is-small is-light is-danger delete-session'
+    deleteBtn.className = 'button is-small delete-session'
     deleteBtn.setAttribute('aria-label', 'delete session')
     const deleteIcon = document.createElement('span')
-    deleteIcon.className = 'icon is-small'
+    // has-text-danger keeps the trash icon red (recognizable as a destructive
+    // action) while the button itself stays neutral so it adapts to dark mode
+    // instead of being permanently pale-red via `is-light is-danger`.
+    deleteIcon.className = 'icon is-small has-text-danger'
     const deleteIconI = document.createElement('i')
     deleteIconI.className = 'fas fa-trash'
     deleteIcon.appendChild(deleteIconI)
@@ -322,7 +325,7 @@ export class HistoryModal {
 
   private buildToast (meta: SessionMeta): { toast: HTMLElement, undoSub: Subscription } {
     const toast = document.createElement('div')
-    toast.className = 'notification is-warning is-light history-toast'
+    toast.className = 'notification is-warning history-toast'
     toast.dataset.sessionId = meta.id
     toast.textContent = 'Session deleted. '
 
