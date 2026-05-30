@@ -99,6 +99,11 @@ public class GithubAccessExecutor implements HttpFunction {
         handleGistGet(httpRequest, httpResponse);
       } else if (parameters.containsKey("code") && parameters.containsKey("state")) {
         handleAuthResponse(httpRequest, httpResponse);
+      } else {
+        // Someone (a human, a crawler) browsed to the function origin directly.
+        // The function has no UI of its own — bounce them to the actual console.
+        httpResponse.setStatusCode(HTTP_MOVED_TEMP);
+        httpResponse.appendHeader("Location", frontendOrigin + "/");
       }
     }
   }

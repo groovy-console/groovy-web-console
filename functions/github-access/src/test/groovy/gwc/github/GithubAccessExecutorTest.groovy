@@ -160,6 +160,20 @@ class GithubAccessExecutorTest extends Specification {
     0 * httpResponse.appendHeader("Set-Cookie", { String it -> it.startsWith("gwc_session=") && !it.startsWith("gwc_session=;") })
   }
 
+  def "GET with no recognised action redirects to the console"() {
+    given:
+    httpRequest.method >> "GET"
+    httpRequest.queryParameters >> [:]
+    httpRequest.headers >> [:]
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(302)
+    1 * httpResponse.appendHeader("Location", FRONTEND + "/")
+  }
+
   def "GET ?action=login sets a hardened state cookie"() {
     given:
     httpRequest.method >> "GET"
