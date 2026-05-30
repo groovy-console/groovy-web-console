@@ -29,9 +29,13 @@ function writeSessions (sessions: SessionMeta[]): void {
   localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions))
 }
 
+function isBlank (s: string): boolean {
+  return s.trim() === ''
+}
+
 function readSnapshots (id: string): Snapshot[] {
   return safeParse<Snapshot[]>(localStorage.getItem(snapshotsKey(id)), [])
-    .filter(s => s && s.content !== '')
+    .filter(s => s && !isBlank(s.content))
 }
 
 /**
@@ -119,7 +123,8 @@ export class HistoryService {
 
         const content = localStorage.getItem(contentKey(id)) || ''
         const snapshots = readSnapshots(id)
-        if (content === '' && snapshots.length === 0) {
+        // Blank-only content with no non-blank snapshots = nothing worth keeping.
+        if (isBlank(content) && snapshots.length === 0) {
           localStorage.removeItem(contentKey(id))
           localStorage.removeItem(snapshotsKey(id))
           continue
@@ -149,7 +154,7 @@ export class HistoryService {
       this.lastSnapshotTimestamp = Date.parse(last.timestamp) || 0
     }
     const editor = localStorage.getItem(contentKey(this.sessionId))
-    if (editor !== null && editor !== '') {
+    if (editor !== null && !isBlank(editor)) {
       this.lastSavedContent = editor
     }
   }
@@ -169,7 +174,11 @@ export class HistoryService {
   public storeEditorContent (content: string): void {
     const currentTime = Date.now()
 
-    if (this.lastSavedContent !== '' && (currentTime - this.lastSnapshotTimestamp >= 60_000)) {
+    // Snapshot only the previous *meaningful* content. Whitespace-only edits
+    // (e.g. someone typing then deleting back to blank) are never snapshotted
+    // and never count toward "last modified" — they wouldn't be useful to
+    // restore and they'd clutter the session list with Untitled entries.
+    if (!isBlank(this.lastSavedContent) && (currentTime - this.lastSnapshotTimestamp >= 60_000)) {
       this.appendSnapshot(this.lastSavedContent, new Date().toISOString())
       this.lastSnapshotTimestamp = currentTime
     }
@@ -181,10 +190,8 @@ export class HistoryService {
       console.warn('Failed to persist editor content', e)
     }
 
-    if (content !== '') {
+    if (!isBlank(content)) {
       this.touchSession(currentTime)
-    } else if (!this.registered) {
-      // never registered, still empty — nothing to do
     }
   }
 
@@ -244,11 +251,12 @@ export class HistoryService {
   }
 
   /**
-   * Forces a snapshot of the last persisted content, bypassing the 60-second guard.
-   * No-op when nothing has been saved yet.
+   * Forces a snapshot of the last persisted content, bypassing the 60-second
+   * guard. No-op when there's nothing meaningful to capture (empty or
+   * whitespace-only).
    */
   public snapshotNow (): void {
-    if (this.lastSavedContent === '') return
+    if (isBlank(this.lastSavedContent)) return
     this.appendSnapshot(this.lastSavedContent, new Date().toISOString())
     this.lastSnapshotTimestamp = Date.now()
   }

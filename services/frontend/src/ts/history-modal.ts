@@ -63,6 +63,7 @@ export class HistoryModal {
 
   private pendingDeletes = new Map<string, PendingDelete>()
   private storageListener?: (e: StorageEvent) => void
+  private previewSourceRow: HTMLElement | null = null
 
   constructor (
     private historyService: HistoryService,
@@ -120,11 +121,25 @@ export class HistoryModal {
   private resetPreview (): void {
     this.previewEl.textContent = PREVIEW_PLACEHOLDER
     this.previewEl.classList.add('has-text-grey-light')
+    this.clearPreviewSource()
   }
 
-  private setPreview (content: string): void {
+  private setPreview (content: string, sourceRow: HTMLElement): void {
     this.previewEl.textContent = content === '' ? '(empty)' : content
     this.previewEl.classList.toggle('has-text-grey-light', content === '')
+    this.setPreviewSource(sourceRow)
+  }
+
+  private setPreviewSource (row: HTMLElement): void {
+    if (this.previewSourceRow === row) return
+    this.previewSourceRow?.classList.remove('is-preview-source')
+    this.previewSourceRow = row
+    row.classList.add('is-preview-source')
+  }
+
+  private clearPreviewSource (): void {
+    this.previewSourceRow?.classList.remove('is-preview-source')
+    this.previewSourceRow = null
   }
 
   private renderCurrentLabel (): void {
@@ -151,7 +166,7 @@ export class HistoryModal {
   private buildSnapshotRow (snapshot: Snapshot): HTMLElement {
     const row = document.createElement('div')
     row.className = 'history-row'
-    row.addEventListener('mouseenter', () => this.setPreview(snapshot.content))
+    row.addEventListener('mouseenter', () => this.setPreview(snapshot.content, row))
 
     const time = document.createElement('span')
     time.className = 'history-row-time'
@@ -196,7 +211,7 @@ export class HistoryModal {
     const row = document.createElement('div')
     row.className = 'history-row'
     row.dataset.sessionId = meta.id
-    row.addEventListener('mouseenter', () => this.setPreview(content))
+    row.addEventListener('mouseenter', () => this.setPreview(content, row))
 
     const label = document.createElement('span')
     label.className = 'history-row-label'

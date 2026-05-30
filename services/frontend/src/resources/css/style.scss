@@ -19,7 +19,9 @@ $custom-colors: (
 
 .history-cols {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  // minmax(0, 1fr) — not plain "1fr" — so a long line in the preview can't
+  // push its column wider than its share of the available space.
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
   min-height: 0;
   height: 100%;
@@ -29,7 +31,13 @@ $custom-colors: (
 .history-col-right {
   display: flex;
   flex-direction: column;
+  // min-width: 0 lets the column shrink below its flex children's intrinsic
+  // width. overflow: hidden additionally clips any child that still tries to
+  // grow past its share (an unwrapped 2000-char pre in the preview, say) so
+  // overflow:auto on .history-preview can actually scroll horizontally.
+  min-width: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 .history-region {
@@ -42,6 +50,7 @@ $custom-colors: (
 
 .history-preview {
   flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
   max-height: 65vh;
   overflow: auto;
@@ -63,8 +72,15 @@ $custom-colors: (
   border-radius: 3px;
   cursor: default;
 
-  &:hover {
+  &:hover,
+  &.is-preview-source {
     background-color: hsla(210, 14%, 89%, 0.5);
+  }
+
+  &.is-preview-source {
+    // Subtle left-edge accent so you can tell the sticky-highlighted row
+    // (the one whose preview is showing) apart from one your cursor is over.
+    box-shadow: inset 3px 0 0 0 hsl(202, 47%, 49%);
   }
 
   .history-row-label {

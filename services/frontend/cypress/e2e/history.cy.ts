@@ -271,6 +271,53 @@ describe('groovy webconsole history', () => {
         expect(sessions).to.have.length(0)
       })
     })
+
+    it('does not register a session that only contains whitespace', () => {
+      cy.visit('/', {
+        onBeforeLoad (win) {
+          clearHistoryStorage(win)
+        }
+      })
+      cy.wait('@warmup_request')
+
+      // Drive storeEditorContent directly so we don't depend on the editor's
+      // 3-second debounce. The service is what owns the registration policy.
+      cy.window().then((win) => {
+        const editor = (win.document.getElementById('code')!.querySelector('.cm-content') as any)
+        const cm = editor.cmView.view
+        cm.dispatch({ changes: { from: 0, to: cm.state.doc.length, insert: '   \n\n\t  ' } })
+        // Force a blur so the rxjs blur path persists immediately, no debounce.
+        cm.contentDOM.blur()
+      })
+
+      cy.window().should((win) => {
+        const raw = win.localStorage.getItem('history-sessions')
+        const sessions = raw ? JSON.parse(raw) : []
+        expect(sessions).to.have.length(0)
+      })
+    })
+
+    it('migration purges sessions whose content is whitespace-only', () => {
+      cy.window().then(win => {
+        clearHistoryStorage(win)
+        win.localStorage.setItem('history-sessions', JSON.stringify([
+          { id: CURRENT, lastModified: Date.now() },
+          { id: OTHER_A, lastModified: Date.now() - 60_000 }
+        ]))
+        win.localStorage.setItem(`history-editorContent-${CURRENT}`, 'real content')
+        win.localStorage.setItem(`history-editorContent-${OTHER_A}`, '   \n\t\n   ')
+      })
+      cy.reload()
+      cy.wait('@warmup_request')
+
+      cy.window().then(win => {
+        const sessions = JSON.parse(win.localStorage.getItem('history-sessions') || '[]')
+        const ids = sessions.map((s: any) => s.id)
+        expect(ids).to.include(CURRENT)
+        expect(ids).to.not.include(OTHER_A)
+        expect(win.localStorage.getItem(`history-editorContent-${OTHER_A}`)).to.equal(null)
+      })
+    })
   })
 
   describe('preview pane', () => {
@@ -291,6 +338,58 @@ describe('groovy webconsole history', () => {
       // After mouseleave, preview stays
       cy.get('#historyOtherSessions .history-row').first().trigger('mouseleave')
       cy.get('#historyPreview').should('contain.text', 'def hello = "world"')
+    })
+
+    it('highlights the row whose preview is currently showing, even after the pointer leaves', () => {
+      cy.seedHistorySession(CURRENT, 'current', { currentSession: true })
+      cy.seedHistorySession(OTHER_A, 'session A content', { lastModified: Date.now() - 5 * 60_000 })
+      cy.seedHistorySession(OTHER_B, 'session B content', { lastModified: Date.now() - 10 * 60_000 })
+      cy.reload()
+      cy.wait('@warmup_request')
+
+      cy.openHistoryModal()
+      cy.get('#historyOtherSessions .history-row').eq(0).trigger('mouseenter')
+
+      // First row is now the preview source.
+      cy.get('#historyOtherSessions .history-row').eq(0).should('have.class', 'is-preview-source')
+
+      // Moving the pointer away (e.g. toward the preview scrollbar) keeps the highlight.
+      cy.get('#historyOtherSessions .history-row').eq(0).trigger('mouseleave')
+      cy.get('#historyOtherSessions .history-row').eq(0).should('have.class', 'is-preview-source')
+
+      // Hovering a different row transfers the highlight.
+      cy.get('#historyOtherSessions .history-row').eq(1).trigger('mouseenter')
+      cy.get('#historyOtherSessions .history-row').eq(1).should('have.class', 'is-preview-source')
+      cy.get('#historyOtherSessions .history-row').eq(0).should('not.have.class', 'is-preview-source')
+    })
+
+    it('a long unwrapped line does not widen the modal or the preview pane', () => {
+      const longLine = 'x'.repeat(2000)
+      cy.seedHistorySession(CURRENT, 'current', { currentSession: true })
+      cy.seedHistorySession(OTHER_A, longLine, { lastModified: Date.now() - 5 * 60_000 })
+      cy.reload()
+      cy.wait('@warmup_request')
+
+      cy.openHistoryModal()
+
+      // Snapshot the layout widths before hovering the long-content row.
+      let bodyBefore = 0
+      let paneBefore = 0
+      cy.get('#historyModal .modal-card-body').then(($b) => { bodyBefore = $b[0].getBoundingClientRect().width })
+      cy.get('.history-preview').then(($p) => { paneBefore = $p[0].getBoundingClientRect().width })
+
+      cy.get('#historyOtherSessions .history-row').first().trigger('mouseenter')
+
+      // After hovering the long-content row, the modal body and the preview pane must NOT have grown.
+      cy.get('#historyModal .modal-card-body').then(($b) => {
+        expect($b[0].getBoundingClientRect().width).to.equal(bodyBefore)
+      })
+      cy.get('.history-preview').then(($p) => {
+        const pane = $p[0]
+        expect(pane.getBoundingClientRect().width).to.equal(paneBefore)
+        // Pane scrolls horizontally to reveal the long line.
+        expect(pane.scrollWidth).to.be.greaterThan(pane.clientWidth)
+      })
     })
 
     it('renders untrusted content as text, not HTML', () => {
