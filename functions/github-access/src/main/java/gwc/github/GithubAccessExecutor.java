@@ -10,7 +10,6 @@ import com.nimbusds.jose.crypto.DirectEncrypter;
 import com.nimbusds.jose.crypto.RSAEncrypter;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -35,15 +34,23 @@ public class GithubAccessExecutor implements HttpFunction {
   private static final URI GITHUB_ACCESS_TOKEN_URL = URI.create("https://github.com/login/oauth/access_token");
   private static final String GITHUB_AUTHORIZE = "https://github.com/login/oauth/authorize";
 
-  private final String clientId = requireNonNull(System.getenv("GITHUB_CLIENT_ID"), "GITHUB_CLIENT_ID is not set");
-  private final String clientSecret = requireNonNull(System.getenv("GITHUB_CLIENT_SECRET"), "GITHUB_CLIENT_SECRET is not set");
-  private final String redirectUri = requireNonNull(System.getenv("GITHUB_REDIRECT_URI"), "GITHUB_REDIRECT_URI is not set");
+  private final String clientId;
+  private final String clientSecret;
+  private final String redirectUri;
+  // Generate with KeyGen in src/test/groovy. Never log this value or any token derived from it.
+  private final SecretKey secretKey;
+  private final String frontendOrigin;
 
-  // Generate with KeyGen in src/test/groovy
-  private final SecretKey secretKey = parseSecretKey(requireNonNull(System.getenv("SECRET_KEY"), "SECRET_KEY is not set"));
+  public GithubAccessExecutor() {
+    this(Config.fromEnv());
+  }
 
-  private SecretKey parseSecretKey(String secret_key) {
-    return new SecretKeySpec(Base64.getUrlDecoder().decode(secret_key), "AES");
+  GithubAccessExecutor(Config config) {
+    this.clientId = config.clientId();
+    this.clientSecret = config.clientSecret();
+    this.redirectUri = config.redirectUri();
+    this.secretKey = config.secretKey();
+    this.frontendOrigin = config.frontendOrigin();
   }
 
   // Create a client with some reasonable defaults. This client can be reused for multiple requests.
@@ -64,7 +71,22 @@ public class GithubAccessExecutor implements HttpFunction {
   }
 
   private void handleRequest(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
-    if (httpRequest.getMethod().equals("GET")) {
+    var method = httpRequest.getMethod();
+    if (method.equals("OPTIONS")) {
+      handlePreflight(httpRequest, httpResponse);
+      return;
+    }
+    if (isStateChanging(method)) {
+      if (!originAllowed(httpRequest)) {
+        httpResponse.setStatusCode(HTTP_FORBIDDEN);
+        return;
+      }
+      addCorsHeaders(httpRequest, httpResponse);
+      handleStateChangingRequest(httpRequest, httpResponse);
+      return;
+    }
+    if (method.equals("GET")) {
+      addCorsHeaders(httpRequest, httpResponse);
       var parameters = httpRequest.getQueryParameters();
 
       if (parameters.containsKey("error")) {
@@ -75,6 +97,62 @@ public class GithubAccessExecutor implements HttpFunction {
         handleAuthResponse(httpRequest, httpResponse);
       }
     }
+  }
+
+  private boolean isStateChanging(String method) {
+    return method.equals("POST") || method.equals("PATCH") || method.equals("DELETE");
+  }
+
+  private boolean originAllowed(HttpRequest httpRequest) {
+    var origin = firstHeader(httpRequest.getHeaders(), "Origin");
+    return origin.isPresent() && origin.get().equals(frontendOrigin);
+  }
+
+  private void handleStateChangingRequest(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
+    var parameters = httpRequest.getQueryParameters();
+    var action = parameters.containsKey("action") ? getFirstHeaderValue(parameters, "action") : "";
+    if (httpRequest.getMethod().equals("POST") && action.equals("logout")) {
+      handleLogout(httpResponse);
+    }
+  }
+
+  private void handleLogout(HttpResponse httpResponse) {
+    httpResponse.appendHeader("Set-Cookie", sessionCookie("", 0));
+    httpResponse.setStatusCode(HTTP_NO_CONTENT);
+  }
+
+  private String sessionCookie(String value, long maxAgeSeconds) {
+    return String.format("gwc_session=%s; Domain=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=Lax",
+      value, cookieDomain(), maxAgeSeconds);
+  }
+
+  private String cookieDomain() {
+    var origin = frontendOrigin;
+    var schemeEnd = origin.indexOf("://");
+    return schemeEnd >= 0 ? origin.substring(schemeEnd + 3) : origin;
+  }
+
+  private void handlePreflight(HttpRequest httpRequest, HttpResponse httpResponse) {
+    addCorsHeaders(httpRequest, httpResponse);
+    if (originAllowed(httpRequest)) {
+      httpResponse.appendHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
+      httpResponse.appendHeader("Access-Control-Allow-Headers", "Content-Type");
+    }
+    httpResponse.setStatusCode(HTTP_NO_CONTENT);
+  }
+
+  private void addCorsHeaders(HttpRequest httpRequest, HttpResponse httpResponse) {
+    if (originAllowed(httpRequest)) {
+      httpResponse.appendHeader("Access-Control-Allow-Origin", frontendOrigin);
+      httpResponse.appendHeader("Access-Control-Allow-Credentials", "true");
+    }
+    httpResponse.appendHeader("Vary", "Origin");
+  }
+
+  private Optional<String> firstHeader(Map<String, List<String>> headers, String name) {
+    var values = headers.get(name);
+    if (values == null || values.isEmpty()) return Optional.empty();
+    return Optional.ofNullable(values.get(0));
   }
 
   private void handleAuthResponse(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
