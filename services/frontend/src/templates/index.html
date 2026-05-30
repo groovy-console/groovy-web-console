@@ -233,7 +233,15 @@
             <p class="modal-card-title">History</p>
             <button class="delete" aria-label="close" id="historyModalClose"></button>
         </header>
-        <section class="modal-card-body">
+        <section class="modal-card-body history-modal-body">
+            <div class="field mb-3">
+                <p class="control has-icons-left">
+                    <input class="input" id="historySearch" type="search" placeholder="Search history (matches snapshot and session content)" autocomplete="off">
+                    <span class="icon is-small is-left">
+                        <i class="fas fa-search"></i>
+                    </span>
+                </p>
+            </div>
             <div class="history-cols">
                 <div class="history-col-left">
                     <h3 class="subtitle is-6 mb-2">

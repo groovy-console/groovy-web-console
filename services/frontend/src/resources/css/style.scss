@@ -17,6 +17,14 @@ $custom-colors: (
   max-width: none;
 }
 
+.history-modal-body {
+  // Flex column so the search field is a fixed-height row and the grid below
+  // takes the remaining space (and its inner regions can scroll).
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .history-cols {
   display: grid;
   // minmax(0, 1fr) — not plain "1fr" — so a long line in the preview can't
@@ -24,7 +32,7 @@ $custom-colors: (
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
   min-height: 0;
-  height: 100%;
+  flex: 1 1 auto;
 }
 
 .history-col-left,

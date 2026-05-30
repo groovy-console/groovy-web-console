@@ -60,10 +60,12 @@ export class HistoryModal {
   private clearAllBtn: HTMLElement
   private closeBtn: HTMLElement
   private backgroundEl: HTMLElement
+  private searchInput: HTMLInputElement
 
   private pendingDeletes = new Map<string, PendingDelete>()
   private storageListener?: (e: StorageEvent) => void
   private previewSourceRow: HTMLElement | null = null
+  private searchQuery = ''
 
   constructor (
     private historyService: HistoryService,
@@ -78,10 +80,16 @@ export class HistoryModal {
     this.clearAllBtn = document.getElementById('historyClearAll')!
     this.closeBtn = document.getElementById('historyModalClose')!
     this.backgroundEl = this.modal.querySelector('.modal-background')!
+    this.searchInput = document.getElementById('historySearch') as HTMLInputElement
 
     this.closeBtn.addEventListener('click', () => this.close())
     this.backgroundEl.addEventListener('click', () => this.close())
     this.clearAllBtn.addEventListener('click', () => this.handleClearAll())
+    this.searchInput.addEventListener('input', () => {
+      this.searchQuery = this.searchInput.value.trim().toLowerCase()
+      this.renderCurrentSnapshots()
+      this.renderOtherSessions()
+    })
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.isOpen()) this.close()
@@ -90,6 +98,8 @@ export class HistoryModal {
   }
 
   public open (): void {
+    this.searchQuery = ''
+    this.searchInput.value = ''
     this.resetPreview()
     this.render()
     this.modal.classList.add('is-active')
@@ -150,17 +160,27 @@ export class HistoryModal {
 
   private renderCurrentSnapshots (): void {
     this.currentSnapshotsEl.replaceChildren()
-    const snapshots = this.historyService.getSnapshots()
+    const all = this.historyService.getSnapshots()
+    const snapshots = this.searchQuery
+      ? all.filter(s => this.matchesSearch(s.content))
+      : all
     if (snapshots.length === 0) {
       const empty = document.createElement('p')
       empty.className = 'has-text-grey is-size-7 p-2'
-      empty.textContent = 'No snapshots yet — one is taken every 60 seconds while you type.'
+      empty.textContent = this.searchQuery
+        ? 'No snapshots match.'
+        : 'No snapshots yet — one is taken every 60 seconds while you type.'
       this.currentSnapshotsEl.appendChild(empty)
       return
     }
     snapshots.forEach(snap => {
       this.currentSnapshotsEl.appendChild(this.buildSnapshotRow(snap))
     })
+  }
+
+  private matchesSearch (content: string): boolean {
+    if (this.searchQuery === '') return true
+    return content.toLowerCase().includes(this.searchQuery)
   }
 
   private buildSnapshotRow (snapshot: Snapshot): HTMLElement {
@@ -191,11 +211,14 @@ export class HistoryModal {
     this.otherSessionsEl.replaceChildren()
     const sessions = this.historyService.getOtherSessions()
       .filter(s => !this.pendingDeletes.has(s.id))
+      .filter(s => this.matchesSearch(this.historyService.getSessionContent(s.id)))
 
     if (sessions.length === 0) {
       const empty = document.createElement('p')
       empty.className = 'has-text-grey is-size-7 p-2'
-      empty.textContent = 'No other sessions.'
+      empty.textContent = this.searchQuery
+        ? 'No sessions match.'
+        : 'No other sessions.'
       this.otherSessionsEl.appendChild(empty)
       return
     }

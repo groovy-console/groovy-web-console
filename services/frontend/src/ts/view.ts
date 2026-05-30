@@ -307,6 +307,10 @@ export function initView () {
   fromEvent(document.getElementById('openHistory'), 'click')
     .subscribe((event) => {
       event.preventDefault()
+      // Collapse the dropdown explicitly — otherwise it stays open after the
+      // menu item is clicked, and the next click on the History button
+      // toggles it closed instead of reopening.
+      document.querySelector('#dropdown-history')?.parentElement?.classList.remove('is-active')
       historyModal.open()
     })
 }

@@ -407,6 +407,60 @@ describe('groovy webconsole history', () => {
     })
   })
 
+  describe('search', () => {
+    beforeEach(() => {
+      cy.seedHistorySession(CURRENT, 'def main = 1\nprintln main', {
+        currentSession: true,
+        snapshots: [
+          { content: 'def alpha = "first"', timestamp: isoMinutesAgo(20) },
+          { content: 'def beta = "second"', timestamp: isoMinutesAgo(10) }
+        ]
+      })
+      cy.seedHistorySession(OTHER_A, 'class FooSpec extends Specification {\n  def "alpha test"() { expect: true }\n}', { lastModified: Date.now() - 2 * 60_000 })
+      cy.seedHistorySession(OTHER_B, 'println "totally unrelated content"', { lastModified: Date.now() - 30 * 60_000 })
+      cy.reload()
+      cy.wait('@warmup_request')
+      cy.openHistoryModal()
+    })
+
+    it('filters both snapshots and other sessions by case-insensitive substring', () => {
+      cy.get('#historySearch').type('alpha')
+
+      // The snapshot containing "alpha" stays; the "beta" one is filtered out.
+      cy.get('#historyCurrentSnapshots .history-row').should('have.length', 1)
+      cy.get('#historyCurrentSnapshots .history-row').first().should('contain.text', 'def alpha')
+
+      // OTHER_A matches via "alpha test"; OTHER_B doesn't.
+      cy.get('#historyOtherSessions .history-row').should('have.length', 1)
+      cy.get('#historyOtherSessions .history-row').first().should('contain.text', 'FooSpec')
+    })
+
+    it('matches against the full content, not only the visible label', () => {
+      // "expect: true" is on line 2 of OTHER_A's content (not its label).
+      cy.get('#historySearch').type('expect:')
+      cy.get('#historyOtherSessions .history-row').should('have.length', 1)
+      cy.get('#historyOtherSessions .history-row').first().should('contain.text', 'FooSpec')
+    })
+
+    it('shows "No … match" placeholders when nothing matches', () => {
+      cy.get('#historySearch').type('xyznoresult')
+      cy.get('#historyCurrentSnapshots').should('contain.text', 'No snapshots match')
+      cy.get('#historyOtherSessions').should('contain.text', 'No sessions match')
+    })
+
+    it('clears the search field and restores all rows on close + reopen', () => {
+      cy.get('#historySearch').type('alpha')
+      cy.get('#historyOtherSessions .history-row').should('have.length', 1)
+
+      cy.get('#historyModalClose').click()
+      cy.openHistoryModal()
+
+      cy.get('#historySearch').should('have.value', '')
+      cy.get('#historyCurrentSnapshots .history-row').should('have.length', 2)
+      cy.get('#historyOtherSessions .history-row').should('have.length', 2)
+    })
+  })
+
   describe('formatting', () => {
     it('renders unknown timestamps as an em dash', () => {
       cy.seedHistorySession(CURRENT, 'current', { currentSession: true })
