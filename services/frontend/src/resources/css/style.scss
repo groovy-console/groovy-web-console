@@ -100,16 +100,16 @@ $custom-colors: (
   border-radius: 3px;
   cursor: default;
 
-  &:hover,
-  &.is-preview-source {
+  &:hover {
     // Translucent overlay of the current text colour: shows as light-grey in
     // light mode and dark-grey in dark mode without two separate rules.
-    background-color: color-mix(in srgb, var(--bulma-text) 10%, transparent);
+    background-color: color-mix(in srgb, var(--bulma-text) 12%, transparent);
   }
 
   &.is-preview-source {
-    // Subtle left-edge accent so you can tell the sticky-highlighted row
-    // (the one whose preview is showing) apart from one your cursor is over.
+    // Stronger overlay than mere hover so the preview-source row is clearly
+    // the "selected" one. Plus a left-edge accent for an extra cue.
+    background-color: color-mix(in srgb, var(--bulma-text) 18%, transparent);
     box-shadow: inset 3px 0 0 0 hsl(202, 47%, 49%);
   }
 
@@ -122,8 +122,13 @@ $custom-colors: (
   }
 
   .history-row-time {
-    color: var(--bulma-text-soft);
+    // Same monospace stack as the label so digit columns line up exactly —
+    // proportional fonts give "20:06" and "20:46" different widths, which
+    // shifts the label start position between adjacent rows.
+    font-family: monospace;
     font-size: 0.85em;
+    color: var(--bulma-text);
+    opacity: 0.7;
     flex: 0 0 auto;
     min-width: 6rem;
   }
