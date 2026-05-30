@@ -6,6 +6,7 @@ on:
 jobs:
   deploy-github-access:
     runs-on: ubuntu-latest
+    environment: github-access-deploy
     steps:
       - uses: actions/checkout@v6
       - name: Cache Maven wrapper and dependencies
