@@ -81,7 +81,6 @@ Cypress.Commands.add('stubListRuntimes', () => {
 
 Cypress.Commands.add('seedHistorySession', (id, content, opts = {}) => {
   const lastModified = opts.lastModified ?? Date.now()
-  const snapshots = opts.snapshots ?? []
 
   cy.window().then((win) => {
     const raw = win.localStorage.getItem('history-sessions')
@@ -93,8 +92,15 @@ Cypress.Commands.add('seedHistorySession', (id, content, opts = {}) => {
     }
     win.localStorage.setItem('history-sessions', JSON.stringify(sessions))
     win.localStorage.setItem(`history-editorContent-${id}`, content)
-    if (snapshots.length > 0) {
-      win.localStorage.setItem(`history-snapshots-${id}`, JSON.stringify(snapshots))
+    if (opts.snapshots !== undefined) {
+      const snapshotsKey = `history-snapshots-${id}`
+      if (opts.snapshots.length > 0) {
+        win.localStorage.setItem(snapshotsKey, JSON.stringify(opts.snapshots))
+      } else {
+        // Explicitly passed an empty list — clear any prior data so reseeding
+        // doesn't inherit snapshots from an earlier call.
+        win.localStorage.removeItem(snapshotsKey)
+      }
     }
     if (opts.currentSession) {
       win.location.hash = id

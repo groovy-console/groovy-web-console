@@ -297,6 +297,57 @@ describe('groovy webconsole history', () => {
       })
     })
 
+    it('does not snapshot immediately on the second non-blank save of a brand-new session', () => {
+      cy.visit('/', {
+        onBeforeLoad (win) {
+          clearHistoryStorage(win)
+        }
+      })
+      cy.wait('@warmup_request')
+
+      // Two non-blank saves in quick succession. The 60-s snapshot guard
+      // must be anchored on the first save, so the second one stays within
+      // the window and produces no snapshot.
+      const dispatch = (win: Cypress.AUTWindow, value: string) => {
+        const editor = (win.document.getElementById('code')!.querySelector('.cm-content') as any)
+        const cm = editor.cmView.view
+        cm.contentDOM.focus()
+        cm.dispatch({ changes: { from: 0, to: cm.state.doc.length, insert: value } })
+        cm.contentDOM.blur()
+      }
+      cy.window().then((win) => dispatch(win, 'def first = 1'))
+      cy.window().then((win) => dispatch(win, 'def second = 2'))
+
+      cy.window().should((win) => {
+        const sessionId = win.location.hash.substring(1)
+        expect(win.localStorage.getItem(`history-snapshots-${sessionId}`)).to.equal(null)
+      })
+    })
+
+    it('readSnapshots tolerates malformed snapshot entries in localStorage', () => {
+      cy.window().then((win) => {
+        clearHistoryStorage(win)
+        win.localStorage.setItem('history-sessions', JSON.stringify([
+          { id: CURRENT, lastModified: Date.now() }
+        ]))
+        win.localStorage.setItem(`history-editorContent-${CURRENT}`, 'real content')
+        win.localStorage.setItem(`history-snapshots-${CURRENT}`, JSON.stringify([
+          null,
+          42,
+          'a string',
+          { content: 123, timestamp: 'x' },
+          { content: 'valid snapshot', timestamp: new Date(Date.now() - 5 * 60_000).toISOString() }
+        ]))
+        win.location.hash = CURRENT
+      })
+      cy.reload()
+      cy.wait('@warmup_request')
+
+      cy.openHistoryModal()
+      cy.get('#historyCurrentSnapshots .history-row').should('have.length', 1)
+      cy.get('#historyCurrentSnapshots .history-row').first().should('contain.text', 'valid snapshot')
+    })
+
     it('migration purges sessions whose content is whitespace-only', () => {
       cy.window().then(win => {
         clearHistoryStorage(win)

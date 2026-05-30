@@ -33,9 +33,22 @@ function isBlank (s: string): boolean {
   return s.trim() === ''
 }
 
+function isSnapshot (s: unknown): s is Snapshot {
+  return (
+    typeof s === 'object' &&
+    s !== null &&
+    typeof (s as { content?: unknown }).content === 'string' &&
+    typeof (s as { timestamp?: unknown }).timestamp === 'string'
+  )
+}
+
 function readSnapshots (id: string): Snapshot[] {
-  return safeParse<Snapshot[]>(localStorage.getItem(snapshotsKey(id)), [])
-    .filter(s => s && !isBlank(s.content))
+  // localStorage payloads can be malformed (external tampering, a different
+  // version of the app having written there, a partial write). Validate each
+  // entry's shape rather than trusting the JSON.
+  return safeParse<unknown[]>(localStorage.getItem(snapshotsKey(id)), [])
+    .filter(isSnapshot)
+    .filter(s => !isBlank(s.content))
 }
 
 /**
@@ -191,6 +204,10 @@ export class HistoryService {
     }
 
     if (!isBlank(content)) {
+      // Anchor the 60-s snapshot window on the FIRST non-blank save. Without
+      // this, lastSnapshotTimestamp stays at 0 and the second save snapshots
+      // immediately (currentTime - 0 is always >= 60_000).
+      if (this.lastSnapshotTimestamp === 0) this.lastSnapshotTimestamp = currentTime
       this.touchSession(currentTime)
     }
   }
