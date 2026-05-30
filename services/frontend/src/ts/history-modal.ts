@@ -164,6 +164,7 @@ export class HistoryModal {
     const snapshots = this.searchQuery
       ? all.filter(s => this.matchesSearch(s.content))
       : all
+    this.currentSnapshotsEl.classList.toggle('is-empty', snapshots.length === 0)
     if (snapshots.length === 0) {
       const empty = document.createElement('p')
       empty.className = 'has-text-grey is-size-7 p-2'
@@ -213,6 +214,7 @@ export class HistoryModal {
       .filter(s => !this.pendingDeletes.has(s.id))
       .filter(s => this.matchesSearch(this.historyService.getSessionContent(s.id)))
 
+    this.otherSessionsEl.classList.toggle('is-empty', sessions.length === 0)
     if (sessions.length === 0) {
       const empty = document.createElement('p')
       empty.className = 'has-text-grey is-size-7 p-2'

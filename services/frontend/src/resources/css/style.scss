@@ -59,6 +59,15 @@ $custom-colors: (
   border: 1px solid hsl(0, 0%, 86%);
   border-radius: 4px;
   padding: 0.25rem;
+
+  // When the region only contains an empty-state placeholder, center it in
+  // the available space instead of leaving it pinned to the top-left.
+  &.is-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
 }
 
 .history-preview {
