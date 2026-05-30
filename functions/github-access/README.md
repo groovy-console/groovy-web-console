@@ -58,7 +58,7 @@ attributes as the session cookie, 10-minute lifetime), and embeds the same value
 | `GITHUB_CLIENT_SECRET` | From the GitHub OAuth App. |
 | `GITHUB_REDIRECT_URI`  | Must match the OAuth App's authorized callback URL exactly. In production: `https://access.groovyconsole.dev/`. |
 | `SECRET_KEY`           | Base64url-encoded 16-byte AES key. Generate via `KeyGen.groovy` (see below). |
-| `FRONTEND_ORIGIN`      | The console's origin. Used for CORS allow-origin, CSRF Origin check, `postMessage` target origin, and the cookie's `Domain` attribute. In production: `https://groovyconsole.dev`. |
+| `FRONTEND_ORIGIN`      | The console's origin (scheme + host, no trailing slash). Used for CORS allow-origin, CSRF Origin check, `postMessage` target origin, and as the basis for the cookie's `Domain` attribute (the function strips the scheme and prepends a leading dot — e.g. `https://groovyconsole.dev` → `Domain=.groovyconsole.dev` — so the cookie is valid on both the apex and any subdomain). In production: `https://groovyconsole.dev`. |
 
 All five are validated at function startup; missing or bad values fail loudly via
 `Config.fromEnv()` before any request is served.
