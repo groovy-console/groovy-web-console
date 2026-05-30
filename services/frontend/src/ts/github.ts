@@ -9,7 +9,7 @@ import {
 import { Observable, from } from 'rxjs'
 import { fromFetch } from 'rxjs/fetch'
 import { concatMap } from 'rxjs/operators'
-import { loadedGist$ } from './auth'
+import { currentUser$, loadedGist$ } from './auth'
 
 interface AnonymousGistFile {
   filename: string
@@ -43,6 +43,10 @@ export function loadGist (gistId: string): Observable<LoadedGist> {
   }).pipe(
     concatMap(response => {
       if (response.status === 404 || response.status === 403) {
+        // Race-tolerant: we can't gate on currentUser$ being set because the
+        // anonymous 404 may resolve before ?action=me has answered. Always try
+        // the proxy; if the user is not logged in, the proxy responds 401 and
+        // we fall through to the sign-in error message below.
         return loadGistAuthenticated(gistId).then(result => {
           if (!result) {
             throw new Error('Could not load gist (private gist or rate-limited; sign in to retry).')
@@ -101,9 +105,12 @@ export function createGist (payload: SaveGistRequest): Observable<SavedGistRespo
       const saved = await response.json() as SavedGistResponse
       loadedGist$.next({
         id: saved.id,
-        filename: `${slugify(payload.name)}.groovy`,
+        // The server returns the canonical filename it computed from the name
+        // (slugified server-side). Use that as the source of truth so a later
+        // PATCH targets the exact file the server created.
+        filename: saved.filename ?? `${slugify(payload.name)}.groovy`,
         public: saved.public,
-        ownerLogin: null
+        ownerLogin: currentUser$.value?.login ?? null
       })
       return saved
     })

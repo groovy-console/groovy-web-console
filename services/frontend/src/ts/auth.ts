@@ -24,7 +24,12 @@ export async function refreshMe (): Promise<User | null> {
 }
 
 export function signIn (onComplete: () => void): void {
+  let popup: Window | null = null
+
   const messageListener = (event: MessageEvent) => {
+    // event.source check prevents any other same-origin tab / iframe / worker
+    // from spoofing a login-success message into the main window.
+    if (event.source !== popup) return
     if (event.origin !== location.origin) return
     if (!event.data || event.data.type !== 'gwc:login-success') return
     window.removeEventListener('message', messageListener)
@@ -32,7 +37,7 @@ export function signIn (onComplete: () => void): void {
   }
   window.addEventListener('message', messageListener)
 
-  const popup = window.open(accessUrl('/?action=login'), 'gwc-login', 'width=600,height=700')
+  popup = window.open(accessUrl('/?action=login'), 'gwc-login', 'width=600,height=700')
   if (popup === null) {
     window.removeEventListener('message', messageListener)
     window.location.assign(accessUrl('/?action=login'))
@@ -48,6 +53,10 @@ export function signIn (onComplete: () => void): void {
 }
 
 export async function signOut (): Promise<void> {
+  // Optimistic: clear local user state even if the server call failed. A failed
+  // logout means the cookie is still alive server-side, but the next page load
+  // calls ?action=me and will re-hydrate currentUser$ if the session is still
+  // valid. Prioritises responsive UI over strict server-side cleanup.
   try {
     await fetch(accessUrl('/?action=logout'), { method: 'POST', credentials: 'include' })
   } catch (e) {

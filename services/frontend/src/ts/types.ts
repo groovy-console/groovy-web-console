@@ -71,5 +71,6 @@ export interface UpdateGistRequest {
 
 export interface SavedGistResponse {
   id: string
+  filename?: string
   public: boolean
 }

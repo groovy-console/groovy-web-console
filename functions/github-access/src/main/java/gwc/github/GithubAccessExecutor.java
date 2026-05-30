@@ -64,7 +64,7 @@ public class GithubAccessExecutor implements HttpFunction {
     try {
       handleRequest(httpRequest, httpResponse);
     } catch (UnauthorizedException e) {
-      httpResponse.setStatusCode(HTTP_FORBIDDEN);
+      httpResponse.setStatusCode(HTTP_UNAUTHORIZED);
     } catch (Exception e) {
       httpResponse.setStatusCode(HTTP_INTERNAL_ERROR);
     }
@@ -183,13 +183,15 @@ public class GithubAccessExecutor implements HttpFunction {
   private Map<String, Object> pickGroovyFile(Map<?, ?> gist) {
     var files = (Map<String, Map<String, Object>>) gist.get("files");
     if (files == null) return null;
-    for (var entry : files.entrySet()) {
-      var file = entry.getValue();
-      if (Boolean.FALSE.equals(file.get("truncated")) && "Groovy".equals(file.get("language"))) {
-        return file;
-      }
-    }
-    return null;
+    // GitHub returns files as a JSON object — Gson preserves insertion order, but the
+    // ordering of object keys is not guaranteed by GitHub. Sort by filename so a GET
+    // and a subsequent PATCH always target the same Groovy file when multiple exist.
+    return files.entrySet().stream()
+      .sorted(Map.Entry.comparingByKey())
+      .map(Map.Entry::getValue)
+      .filter(file -> Boolean.FALSE.equals(file.get("truncated")) && "Groovy".equals(file.get("language")))
+      .findFirst()
+      .orElse(null);
   }
 
   private Optional<TokenResponse> decryptSessionCookie(HttpRequest httpRequest) {
@@ -299,8 +301,9 @@ public class GithubAccessExecutor implements HttpFunction {
     }
     var output = body.get("output") instanceof String o ? o : null;
 
+    var groovyFilename = slug(name) + ".groovy";
     var files = new LinkedHashMap<String, Map<String, String>>();
-    files.put(slug(name) + ".groovy", Map.of("content", code));
+    files.put(groovyFilename, Map.of("content", code));
     if (output != null) {
       files.put("output.txt", Map.of("content", output));
     }
@@ -323,6 +326,7 @@ public class GithubAccessExecutor implements HttpFunction {
     var created = GSON.fromJson(gistResponse.body(), Map.class);
     Map<String, Object> out = new LinkedHashMap<>();
     out.put("id", created.get("id"));
+    out.put("filename", groovyFilename);
     out.put("public", created.get("public"));
     httpResponse.setStatusCode(HTTP_OK);
     httpResponse.setContentType("application/json");
@@ -362,7 +366,11 @@ public class GithubAccessExecutor implements HttpFunction {
   private String cookieDomain() {
     var origin = frontendOrigin;
     var schemeEnd = origin.indexOf("://");
-    return schemeEnd >= 0 ? origin.substring(schemeEnd + 3) : origin;
+    var host = schemeEnd >= 0 ? origin.substring(schemeEnd + 3) : origin;
+    // Leading dot keeps the cookie visible on both the apex (groovyconsole.dev)
+    // and any subdomain (access.groovyconsole.dev). Modern browsers accept both
+    // forms; the explicit dot makes the intent unambiguous.
+    return "." + host;
   }
 
   private void handlePreflight(HttpRequest httpRequest, HttpResponse httpResponse) {
@@ -436,7 +444,11 @@ public class GithubAccessExecutor implements HttpFunction {
       "state", state
     );
     httpResponse.appendHeader("Location", GITHUB_AUTHORIZE + "?" + urlEncodeParams(authRequestParams));
-    httpResponse.appendHeader("Set-Cookie", "state=" + state);
+    // 10 minutes is plenty for a user to complete GitHub's OAuth dance; the cookie should not
+    // outlive that. Same HttpOnly/Secure/SameSite=Lax stance as gwc_session so a compromised
+    // page on the function's origin can neither read nor cross-site-write this CSRF token.
+    httpResponse.appendHeader("Set-Cookie",
+      "state=" + state + "; Path=/; Max-Age=600; HttpOnly; Secure; SameSite=Lax");
   }
 
   private void handleErrorResponse(HttpResponse httpResponse, Map<String, List<String>> parameters) throws IOException {
@@ -454,7 +466,9 @@ public class GithubAccessExecutor implements HttpFunction {
 
   private Optional<String> parseCookieForStateParam(Map<String, List<String>> headers) {
     // java.net.HttpCookie doesn't support parsing Cookie headers, only Set-Cookie headers
-    return headers.get("Cookie").stream()
+    var cookies = headers.get("Cookie");
+    if (cookies == null) return Optional.empty();
+    return cookies.stream()
       .map(COOKIE_PATTERN::matcher)
       .filter(Matcher::find)
       .map(matcher -> matcher.group(1))

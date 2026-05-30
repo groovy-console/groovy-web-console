@@ -72,7 +72,7 @@ class GithubAccessExecutorTest extends Specification {
     1 * httpResponse.setStatusCode(204)
     1 * httpResponse.appendHeader("Set-Cookie", { String it ->
       it.startsWith("gwc_session=;") &&
-        it.contains("Domain=groovyconsole.dev") &&
+        it.contains("Domain=.groovyconsole.dev") &&
         it.contains("HttpOnly") &&
         it.contains("Secure") &&
         it.contains("SameSite=Lax") &&
@@ -117,7 +117,7 @@ class GithubAccessExecutorTest extends Specification {
     1 * httpResponse.appendHeader("Set-Cookie", { String it ->
       it.startsWith("gwc_session=") &&
         !it.startsWith("gwc_session=;") &&
-        it.contains("Domain=groovyconsole.dev") &&
+        it.contains("Domain=.groovyconsole.dev") &&
         it.contains("HttpOnly") &&
         it.contains("Secure") &&
         it.contains("SameSite=Lax") &&
@@ -142,8 +142,43 @@ class GithubAccessExecutorTest extends Specification {
     executor.service(httpRequest, httpResponse)
 
     then:
-    1 * httpResponse.setStatusCode(403)
+    1 * httpResponse.setStatusCode(401)
     0 * httpResponse.appendHeader("Set-Cookie", { String it -> it.startsWith("gwc_session=") && !it.startsWith("gwc_session=;") })
+  }
+
+  def "OAuth callback returns 401 when no Cookie header is present"() {
+    given:
+    httpRequest.method >> "GET"
+    httpRequest.queryParameters >> ["code": ["the-code"], "state": ["11111111-2222-3333-4444-555555555555"]]
+    httpRequest.headers >> [:]
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(401)
+    0 * httpResponse.appendHeader("Set-Cookie", { String it -> it.startsWith("gwc_session=") && !it.startsWith("gwc_session=;") })
+  }
+
+  def "GET ?action=login sets a hardened state cookie"() {
+    given:
+    httpRequest.method >> "GET"
+    httpRequest.queryParameters >> ["action": ["login"]]
+    httpRequest.headers >> [:]
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(302)
+    1 * httpResponse.appendHeader("Location", { String it -> it.startsWith("https://github.com/login/oauth/authorize?") })
+    1 * httpResponse.appendHeader("Set-Cookie", { String it ->
+      it.startsWith("state=") &&
+        it.contains("HttpOnly") &&
+        it.contains("Secure") &&
+        it.contains("SameSite=Lax") &&
+        it.contains("Path=/")
+    })
   }
 
   def "OAuth callback without gist scope returns 403"() {
@@ -418,6 +453,24 @@ class GithubAccessExecutorTest extends Specification {
 
     then:
     1 * httpResponse.setStatusCode(401)
+  }
+
+  def "POST ?action=gist with missing code returns 400"() {
+    given:
+    def jwe = new SessionTokenCodec(config.secretKey()).encrypt(token("ghs_test", "gist"))
+    httpRequest.method >> "POST"
+    httpRequest.queryParameters >> ["action": ["gist"]]
+    httpRequest.headers >> [
+      "Origin": [FRONTEND],
+      "Cookie": ["gwc_session=${jwe}".toString()]
+    ]
+    httpRequest.reader >> new BufferedReader(new StringReader('{"name":"x","public":true}'))
+
+    when:
+    executor.service(httpRequest, httpResponse)
+
+    then:
+    1 * httpResponse.setStatusCode(400)
   }
 
   def "POST ?action=gist with empty name returns 400"() {
