@@ -363,6 +363,31 @@ describe('groovy webconsole history', () => {
       cy.get('#historyOtherSessions .history-row').eq(0).should('not.have.class', 'is-preview-source')
     })
 
+    it('modal height stays fixed when hovering rows with very different content sizes', () => {
+      const tiny = 'x'
+      const huge = Array.from({ length: 200 }, (_, i) => `def line${i} = "row ${i}"`).join('\n')
+      cy.seedHistorySession(CURRENT, 'current', { currentSession: true })
+      cy.seedHistorySession(OTHER_A, tiny, { lastModified: Date.now() - 5 * 60_000 })
+      cy.seedHistorySession(OTHER_B, huge, { lastModified: Date.now() - 10 * 60_000 })
+      cy.reload()
+      cy.wait('@warmup_request')
+
+      cy.openHistoryModal()
+
+      let heightAtStart = 0
+      cy.get('#historyModal .modal-card').then(($m) => { heightAtStart = $m[0].getBoundingClientRect().height })
+
+      cy.get('#historyOtherSessions .history-row').eq(0).trigger('mouseenter')
+      cy.get('#historyModal .modal-card').then(($m) => {
+        expect($m[0].getBoundingClientRect().height).to.equal(heightAtStart)
+      })
+
+      cy.get('#historyOtherSessions .history-row').eq(1).trigger('mouseenter')
+      cy.get('#historyModal .modal-card').then(($m) => {
+        expect($m[0].getBoundingClientRect().height).to.equal(heightAtStart)
+      })
+    })
+
     it('a long unwrapped line does not widen the modal or the preview pane', () => {
       const longLine = 'x'.repeat(2000)
       cy.seedHistorySession(CURRENT, 'current', { currentSession: true })
