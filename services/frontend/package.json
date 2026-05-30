@@ -26,6 +26,7 @@
     }
   ],
   "license": "Apache-2.0",
+  "type": "module",
   "devDependencies": {
     "@codemirror/autocomplete": "^6.16.3",
     "@codemirror/commands": "^6.6.0",
