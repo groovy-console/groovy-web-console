@@ -1,280 +1,260 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-    <title>Groovy Web Console</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Groovy Web Console</title>
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Hanken+Grotesk:wght@100..900&family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
 </head>
-
-<body class="grammarly-desktop-disable">
-<section class="hero is-groovy">
-    <div class="hero-head">
-        <nav class="navbar">
-            <div class="container">
-                <div class="navbar-brand">
-                    <a class="navbar-item">
-                        <h1 class="title">
-                            Groovy Web Console
-                        </h1>
-                    </a>
-                    <span class="navbar-burger burger" data-target="navbarMenuHeroB">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </span>
-                </div>
-                <div id="navbarMenuHeroB" class="navbar-menu">
-                    <div class="navbar-end">
-                        <div class="navbar-item has-dropdown is-hoverable">
-                            <a class="navbar-link is-arrowless" id="currentMode">
-                                this should have been replaced
-                            </a>
-
-                            <div class="navbar-dropdown mode-switcher">
-                                <a class="navbar-item" data-mode="light">
-                                    <span class="icon">
-                                        <i class="fas fa-sun"></i>
-                                    </span>
-                                    <span>Light</span>
-                                </a>
-                                <a class="navbar-item" data-mode="dark">
-                                    <span class="icon">
-                                        <i class="fas fa-moon"></i>
-                                    </span>
-                                    <span>Dark</span>
-                                </a>
-                                <a class="navbar-item" data-mode="system">
-                                    <span class="icon">
-                                        <i class="fas fa-desktop"></i>
-                                    </span>
-                                    <span>System</span>
-                                </a>
-                            </div>
-                        </div>
-                        <a class="navbar-item" target="_blank" href="https://github.com/groovy-console/groovy-web-console">
-                            <span class="icon">
-                                <i class="fab fa-github"></i>
-                            </span>
-                            <span>Github</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </nav>
-    </div>
-
-    <div class="hero-body pb-0 pt-4">
-        <div class="container">
-            <div name="code" id="code"></div>
+<body class="bg-background text-on-surface dark:bg-d-surface dark:text-d-on-surface h-screen w-screen flex flex-col font-body-md overflow-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-d-surface-container-lowest border-b border-outline-variant dark:border-d-outline-variant w-full h-16 flex items-center z-50">
+    <div class="flex justify-between items-center px-6 w-full">
+        <div class="flex items-center gap-4">
+            <span class="font-bold text-primary dark:text-primary-fixed">
+                <span class="md:hidden font-headline-md text-headline-md">Groovy</span>
+                <span class="hidden md:inline font-headline-lg text-headline-lg">Groovy Web Console</span>
+            </span>
         </div>
-        <div class="section">
-            <div class="container">
-                <div class="field is-grouped">
-                    <div class="control select">
-                        <select name="version" id="version">
-                            <option value="groovy_3_0">Groovy 3.0</option>
-                        </select>
-                    </div>
-                    <div class="control">
-                        <button class="button" id="execute">
-                            <span class="icon is-small">
-                                <i class="fas fa-play"></i>
-                            </span>
-                            <span>Execute</span>
-                        </button>
-                    </div>
-                    <div class="control is-hidden">
-                        <button class="button" id="save">
-                            <span class="icon is-small">
-                                <i class="fas fa-save"></i>
-                            </span>
-                            <span>Save</span>
-                        </button>
-                    </div>
-                    <div class="control">
-                        <button class="button" id="shareAsCode">
-                            <span class="icon is-small">
-                                <i class="fas fa-share"></i>
-                            </span>
-                            <span>Share as Link</span>
-                        </button>
-                    </div>
-                    <div class="control">
-                        <div class="dropdown">
-                            <div class="dropdown-trigger">
-                                <button class="button" aria-haspopup="true" aria-controls="dropdown-history">
-                                    <span class="icon is-small">
-                                        <i class="fas fa-clock"></i>
-                                    </span>
-                                    <span>History</span>
-                                </button>
-                            </div>
-                            <div class="dropdown-menu" id="dropdown-history" role="menu">
-                                <div class="dropdown-content">
-                                    <a id="openHistory" href="#" class="dropdown-item">Open History…</a>
-                                    <a href="." class="dropdown-item">New Session</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <div class="control select ml-6">
-                        <select name="astPhase" id="astPhase">
-                            <option value="CONVERSION">Conversion</option>
-                            <option value="SEMANTIC_ANALYSIS">Semantic Analysis</option>
-                            <option value="CANONICALIZATION">Canonicalization</option>
-                            <option value="INSTRUCTION_SELECTION">Instruction Selection</option>
-                            <option value="CLASS_GENERATION" selected>Class Generation</option>
-                        </select>
-                    </div>
-                    <div class="control">
-                        <button class="button" id="inspectAst">
-                            <span class="icon is-small">
-                                <i class="fas fa-search"></i>
-                            </span>
-                            <span>Inspect Ast</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="box is-hidden">
-                    <div class="control has-icons-right">
-                        <input class="input" type="text" name="shareAsCodeLink" id="shareAsCodeLink" readonly>
-                        <span class="icon is-small is-right" data-tooltip="Copied to Clipboard" id="shareLinkTooltip">
-                            <i class="fas fa-copy"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
+        <div class="flex items-center gap-1 mode-switcher">
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-[18px] cursor-pointer hover:opacity-80 transition-opacity" id="currentThemeIcon" title="Toggle Theme">desktop_windows</span>
+            <select id="themeSelect" class="hidden md:block bg-transparent border-none text-body-sm font-medium focus:ring-0 cursor-pointer hover:text-primary transition-colors p-0 text-primary dark:text-primary-fixed">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="system">System</option>
+            </select>
+            <div class="h-6 w-px bg-outline-variant mx-2"></div>
+            <a class="flex items-center gap-2 font-body-md text-body-md text-primary dark:text-primary-fixed font-bold py-1 px-2 transition-colors cursor-pointer active:opacity-80 hover:bg-surface-container-low dark:hover:bg-on-secondary-fixed-variant rounded-lg" target="_blank" href="https://github.com/groovy-console/groovy-web-console">
+                <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+                </svg>
+                <span class="hidden md:inline">GitHub</span>
+            </a>
         </div>
     </div>
-
-    <div class="hero-foot">
-        <nav class="tabs is-boxed is-fullwidth mb-0">
-            <div class="container">
-                <ul>
-                    <li class="is-active">
-                        <a id="tabOutput">Output</a>
-                    </li>
-                    <li>
-                        <a id="tabResult">Result</a>
-                    </li>
-                    <li>
-                        <a id="tabError">Error</a>
-                    </li>
-                    <li>
-                        <a id="tabExecInfo">Info</a>
-                    </li>
-                </ul>
+</header>
+<div class="flex flex-1 overflow-hidden">
+    <!-- SideNavBar -->
+    <aside class="bg-surface-container-low dark:bg-d-surface-container-low border-r border-outline-variant dark:border-d-outline-variant h-full w-20 md:w-20 hidden md:flex flex-col items-center py-4 gap-6 z-40">
+        <!-- Sidebar items mapped to existing IDs/actions -->
+        <div id="shareAsCode" class="flex flex-col items-center gap-1 group cursor-pointer text-on-surface-variant dark:text-d-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-container-high dark:hover:bg-d-surface-container-high transition-all w-full py-2">
+            <span class="material-symbols-outlined">share</span>
+            <span class="font-label-caps text-label-caps">Share</span>
+        </div>
+        <div id="openHistory" class="flex flex-col items-center gap-1 group cursor-pointer text-on-surface-variant dark:text-d-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-container-high dark:hover:bg-d-surface-container-high transition-all w-full py-2">
+            <span class="material-symbols-outlined">history</span>
+            <span class="font-label-caps text-label-caps">History</span>
+        </div>
+        
+        <!-- Share link input has been moved to shareModal -->
+    </aside>
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col bg-background dark:bg-d-surface-container-lowest min-w-0">
+        <!-- Toolbar -->
+        <div class="h-14 bg-surface dark:bg-d-surface-container-lowest border-b border-outline-variant dark:border-d-outline-variant px-2 md:px-6 flex items-center justify-between">
+            <div class="flex items-center gap-2 md:gap-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div class="flex flex-col">
+                    <span class="font-label-caps text-[10px] text-outline uppercase">Groovy Version</span>
+                    <select name="version" id="version" class="bg-transparent border-none text-body-sm font-medium focus:ring-0 cursor-pointer hover:text-primary transition-colors p-0">
+                        <option value="groovy_3_0">Groovy 3.0</option>
+                    </select>
+                </div>
+                <div class="h-8 w-px bg-outline-variant shrink-0"></div>
+                <div class="flex flex-col">
+                    <span class="font-label-caps text-[10px] text-outline uppercase">Compilation Phase</span>
+                    <select name="astPhase" id="astPhase" class="bg-transparent border-none text-body-sm font-medium focus:ring-0 cursor-pointer hover:text-primary transition-colors p-0">
+                        <option value="CONVERSION">Conversion</option>
+                        <option value="SEMANTIC_ANALYSIS">Semantic Analysis</option>
+                        <option value="CANONICALIZATION">Canonicalization</option>
+                        <option value="INSTRUCTION_SELECTION">Instruction Selection</option>
+                        <option value="CLASS_GENERATION" selected>Class Generation</option>
+                    </select>
+                </div>
             </div>
-        </nav>
-        <div class="container">
-            <div class="content mb-6">
-                <div name="output" id="output"></div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button id="inspectAst" class="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 border border-outline-variant bg-surface hover:bg-surface-container-low transition-all font-label-caps text-label-caps text-on-surface rounded-lg">
+                    <span class="material-symbols-outlined text-[18px]">account_tree</span>
+                    <span class="hidden md:inline">Inspect AST</span>
+                </button>
+                <button id="execute" class="flex items-center gap-1 md:gap-2 px-3 md:px-6 py-2 bg-primary-container text-on-primary-container hover:opacity-90 transition-all font-label-caps text-label-caps rounded-lg shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    <span class="hidden md:inline">Execute</span>
+                </button>
             </div>
         </div>
-    </div>
-</section>
+        
+        <!-- Editor Section -->
+        <div class="flex-1 flex flex-col min-h-0 relative">
+            <div class="flex-1 bg-surface-container-lowest dark:bg-d-surface-lowest flex overflow-auto code-shadow w-full" id="code"></div>
+            
+            <!-- Resizer Handle -->
+            <div id="resizer" class="h-2 -my-1 cursor-row-resize z-10 relative flex-shrink-0 flex items-center justify-center hover:bg-primary/10 transition-colors" title="Drag to resize">
+                <div class="w-10 h-1 bg-outline-variant dark:bg-d-outline-variant rounded-full opacity-50"></div>
+            </div>
 
+            <!-- Results Pane (Bottom) -->
+            <div id="resultsPane" style="height: 33.3333%;" class="bg-surface dark:bg-d-surface-container-lowest border-t border-outline-variant dark:border-d-outline-variant flex flex-col min-h-[100px] max-h-[90%]">
+                <div class="flex items-center px-4 md:px-6 border-b border-outline-variant dark:border-d-outline-variant bg-surface-container-lowest dark:bg-d-surface-container-lowest overflow-x-auto shrink-0">
+                    <button id="tabOutput" class="results-tab is-active px-4 py-3 font-label-caps text-label-caps text-primary border-b-2 border-primary">Output</button>
+                    <button id="tabResult" class="results-tab px-4 py-3 font-label-caps text-label-caps text-on-surface-variant opacity-60 hover:opacity-100">Result</button>
+                    <button id="tabError" class="results-tab px-4 py-3 font-label-caps text-label-caps text-on-surface-variant opacity-60 hover:opacity-100">Error</button>
+                    <button id="tabExecInfo" class="results-tab px-4 py-3 font-label-caps text-label-caps text-on-surface-variant opacity-60 hover:opacity-100">Info</button>
+                </div>
+                <div class="flex-1 overflow-auto bg-surface-container-lowest dark:bg-d-surface-lowest text-on-surface dark:text-d-on-surface w-full" id="output"></div>
+            </div>
+        </div>
+    </main>
+</div>
 
-<section class="section">
-    <h2 class="title is-2">Sharing scripts</h2>
-    <div class="columns">
-    <div class="column">
-        <h3 class="title is-3">Directly in the URL</h3>
-        <p>
-            You can encode the script as Base64 (URL-safe without padding) and then, simply append it to the url via
-            <code>&amp;code=&lt;code&gt;</code>.
-            This is best used for shorter scripts.
-        </p>
-        <p>
-            <a href="?code=ZGVmIHNjcmlwdCA9ICIiIlwKcHJpbnRsbiBoZWxsbyB3b3JsZAoiIiIKcHJpbnRsbiAiP2NvZGU9JHtCYXNlNjQudXJsRW5jb2Rlci53aXRob3V0UGFkZGluZygpLmVuY29kZVRvU3RyaW5nKHNjcmlwdC5ieXRlcyl9Igo">Example</a>
-        </p>
-        <br/>
-        <p>
-            For larger scripts you can also use a compressed (deflate) Base64 encoded version with via <code>&amp;codez=&lt;code&gt;</code>.
-            This is also used by the groovy console.
-        </p>
-        <p>
-            <a href="?codez=eJxtjrtuAjEQRfv5ipFFsW5cRVSsIh6pQUrKNAYPYDTY1uxsVoD49-wihLagnHtH5554LlkUT_7Pu1Yju2ssbkV79kqybrW0-q1C_gwQaI_NTmJRrNEY8wtFYlJOeCTmjF0WDtAXsLgozUX8ZQzAPD5qTNTh28fKwtC9k6jGDOu6qMcl54b8lglvgBgVZ7Onpdv29AbuL03zucuBrvXktvANTT9cK_yVhkweqB6-8SHEdKiso0fxk_utIRgPO80v8crau4F_h_92Kg">Example</a>
-        </p>
-    </div>
-    <div class="column">
-        <h3 class="title is-3">As gist</h3>
-        <p>
-            You can save your code on <a href="https://gist.github.com">https://gist.github.com</a> and then share by
-            appending the gistId in the url<code>&amp;gist=&lt;gistid&gt;</code>.
-        </p><p>
-            Important: that file needs to have the <code>.groovy</code> extension, otherwise it won't be picked up.
-        </p>
-        <p>
-            <a href="?gist=58f61cf36e112ff654041eeec8d11a98">Example</a>
-        </p>
-    </div>
-    <div class="column">
-        <h3 class="title is-3">From a repository</h3>
-        <p>
-            You can share a file from a Github repository via its canonical url via this parameter <code>&amp;github=&lt;canonical-path-to-file&gt;</code>.
-            You can get the <code>canonical-path-to-file</code> by going to the file on the Github frontend, then press
-            <code>y</code> now your url should include the commit hash instead of the branch name in the url,
-            then omit the <code>https://github.com/</code> and copy the rest.
-        </p>
-        <p>
-            <a href="?github=spockframework/spock/blob/6d2e6cc6475346f2fef256124e37f70514f0b98e/spock-specs/src/test/groovy/org/spockframework/docs/datadriven/v7/MathSpec.groovy">Example</a>
-        </p>
-    </div>
-    </div>
-</section>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-d-surface-container-lowest border-t border-outline-variant dark:border-d-outline-variant w-full mt-auto flex flex-col z-50">
+    <div id="docPanel" class="hidden w-full px-6 py-8 border-b border-outline-variant dark:border-d-outline-variant max-h-[50vh] overflow-y-auto bg-surface dark:bg-d-surface">
+        <div class="w-full max-w-max-width mx-auto">
+            <h2 class="text-2xl font-headline-lg text-primary dark:text-primary-fixed mb-6">Sharing scripts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="flex flex-col">
+                    <h3 class="text-lg font-headline-md text-on-surface dark:text-d-on-surface mb-2">Directly in the URL</h3>
+                    <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant mb-2">
+                        You can encode the script as Base64 (URL-safe without padding) and then, simply append it to the url via
+                        <code class="bg-surface-container-high dark:bg-d-surface-container-high px-1 py-0.5 rounded font-mono text-sm text-on-surface dark:text-d-on-surface">&amp;code=&lt;code&gt;</code>.
+                        This is best used for shorter scripts.
+                    </p>
+                    <p class="mb-4">
+                        <a class="text-primary dark:text-primary-fixed hover:underline" href="?code=ZGVmIHNjcmlwdCA9ICIiIlwKcHJpbnRsbiBoZWxsbyB3b3JsZAoiIiIKcHJpbnRsbiAiP2NvZGU9JHtCYXNlNjQudXJsRW5jb2Rlci53aXRob3V0UGFkZGluZygpLmVuY29kZVRvU3RyaW5nKHNjcmlwdC5ieXRlcyl9Igo">Example</a>
+                    </p>
+                    <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant mb-2">
+                        For larger scripts you can also use a compressed (deflate) Base64 encoded version via <code class="bg-surface-container-high dark:bg-d-surface-container-high px-1 py-0.5 rounded font-mono text-sm text-on-surface dark:text-d-on-surface">&amp;codez=&lt;code&gt;</code>.
+                        This is also used by the groovy console.
+                    </p>
+                    <p>
+                        <a class="text-primary dark:text-primary-fixed hover:underline" href="?codez=eJxtjrtuAjEQRfv5ipFFsW5cRVSsIh6pQUrKNAYPYDTY1uxsVoD49-wihLagnHtH5554LlkUT_7Pu1Yju2ssbkV79kqybrW0-q1C_gwQaI_NTmJRrNEY8wtFYlJOeCTmjF0WDtAXsLgozUX8ZQzAPD5qTNTh28fKwtC9k6jGDOu6qMcl54b8lglvgBgVZ7Onpdv29AbuL03zucuBrvXktvANTT9cK_yVhkweqB6-8SHEdKiso0fxk_utIRgPO80v8crau4F_h_92Kg">Example</a>
+                    </p>
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-lg font-headline-md text-on-surface dark:text-d-on-surface mb-2">As gist</h3>
+                    <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant mb-2">
+                        You can save your code on <a class="text-primary dark:text-primary-fixed hover:underline" href="https://gist.github.com">https://gist.github.com</a> and then share by
+                        appending the gistId in the url <code class="bg-surface-container-high dark:bg-d-surface-container-high px-1 py-0.5 rounded font-mono text-sm text-on-surface dark:text-d-on-surface">&amp;gist=&lt;gistid&gt;</code>.
+                    </p>
+                    <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant mb-4">
+                        Important: that file needs to have the <code class="bg-surface-container-high dark:bg-d-surface-container-high px-1 py-0.5 rounded font-mono text-sm text-on-surface dark:text-d-on-surface">.groovy</code> extension, otherwise it won't be picked up.
+                    </p>
+                    <p>
+                        <a class="text-primary dark:text-primary-fixed hover:underline" href="?gist=58f61cf36e112ff654041eeec8d11a98">Example</a>
+                    </p>
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-lg font-headline-md text-on-surface dark:text-d-on-surface mb-2">From a repository</h3>
+                    <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant mb-4">
+                        You can share a file from a Github repository via its canonical url via this parameter <code class="bg-surface-container-high dark:bg-d-surface-container-high px-1 py-0.5 rounded font-mono text-sm text-on-surface dark:text-d-on-surface">&amp;github=&lt;canonical-path-to-file&gt;</code>.
+                        You can get the <code class="bg-surface-container-high dark:bg-d-surface-container-high px-1 py-0.5 rounded font-mono text-sm text-on-surface dark:text-d-on-surface">canonical-path-to-file</code> by going to the file on the Github frontend, then press
+                        <code class="bg-surface-container-high dark:bg-d-surface-container-high px-1 py-0.5 rounded font-mono text-sm text-on-surface dark:text-d-on-surface">y</code> now your url should include the commit hash instead of the branch name in the url,
+                        then omit the <code class="bg-surface-container-high dark:bg-d-surface-container-high px-1 py-0.5 rounded font-mono text-sm text-on-surface dark:text-d-on-surface">https://github.com/</code> and copy the rest.
+                    </p>
+                    <p>
+                        <a class="text-primary dark:text-primary-fixed hover:underline" href="?github=spockframework/spock/blob/6d2e6cc6475346f2fef256124e37f70514f0b98e/spock-specs/src/test/groovy/org/spockframework/docs/datadriven/v7/MathSpec.groovy">Example</a>
+                    </p>
+                </div>
+            </div>
 
+            <h2 class="text-2xl font-headline-lg text-primary dark:text-primary-fixed mt-10 mb-4">History and Storage</h2>
+            <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant mb-2">
+                The Groovy Web Console stores your scripts in the browser's local storage.
+            </p>
+            <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant">
+                The history is stored per session which is identified by the <code class="bg-surface-container-high dark:bg-d-surface-container-high px-1 py-0.5 rounded font-mono text-sm text-on-surface dark:text-d-on-surface">#sessionId</code> in the url.
+            </p>
+        </div>
+    </div>
+    <div class="flex justify-start items-center gap-6 px-6 w-full py-3">
+        <button id="toggleDocBtn" class="flex items-center gap-1 text-on-surface-variant dark:text-d-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer font-label-caps text-[10px] uppercase">
+            <span class="material-symbols-outlined text-[18px]">help</span>
+            <span class="hidden md:inline">Documentation</span>
+            <span class="md:hidden">Docs</span>
+        </button>
+        <div class="flex gap-4 md:hidden">
+            <button id="historyMobileBtn" class="flex items-center gap-1 text-on-surface-variant dark:text-d-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer font-label-caps text-[10px] uppercase">
+                <span class="material-symbols-outlined text-[18px]">history</span>
+                History
+            </button>
+            <button id="shareMobileBtn" class="flex items-center gap-1 text-on-surface-variant dark:text-d-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer font-label-caps text-[10px] uppercase">
+                <span class="material-symbols-outlined text-[18px]">share</span>
+                Share
+            </button>
+        </div>
+    </div>
+</footer>
+
+<!-- Floating Action for Mobile -->
+<div class="md:hidden fixed bottom-6 right-6 z-50">
+    <button id="executeMobile" class="w-14 h-14 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-lg active:scale-95 transition-transform" onclick="document.getElementById('execute').click()">
+        <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+    </button>
+</div>
+
+<!-- History Modal -->
 <div class="modal" id="historyModal">
     <div class="modal-background"></div>
-    <div class="modal-card history-modal-card">
+    <div class="modal-card history-modal-card bg-surface">
         <header class="modal-card-head">
             <p class="modal-card-title">History</p>
-            <button class="delete" aria-label="close" id="historyModalClose"></button>
+            <button class="delete material-symbols-outlined text-outline dark:text-d-outline hover:text-on-surface dark:hover:text-d-on-surface bg-transparent border-none cursor-pointer" aria-label="close" id="historyModalClose">close</button>
         </header>
         <section class="modal-card-body history-modal-body">
-            <div class="field mb-3">
-                <p class="control has-icons-left">
-                    <input class="input" id="historySearch" type="search" placeholder="Search history (matches snapshot and session content)" autocomplete="off">
-                    <span class="icon is-small is-left">
-                        <i class="fas fa-search"></i>
-                    </span>
-                </p>
+            <div class="mb-3">
+                <div class="relative flex items-center">
+                    <span class="material-symbols-outlined absolute left-3 text-outline">search</span>
+                    <input class="w-full bg-surface-container-high dark:bg-d-surface-container-high border border-outline-variant dark:border-d-outline-variant text-on-surface dark:text-d-on-surface rounded px-10 py-2 focus:outline-none focus:border-primary dark:focus:border-d-primary" id="historySearch" type="search" placeholder="Search history (matches snapshot and session content)" autocomplete="off">
+                </div>
             </div>
             <div class="history-cols">
                 <div class="history-col-left">
-                    <h3 class="subtitle is-6 mb-2">
+                    <h3 class="font-label-caps text-on-surface dark:text-d-on-surface opacity-80 mb-2">
                         Current session
-                        <span id="historyCurrentLabel" class="has-text-grey ml-2"></span>
+                        <span id="historyCurrentLabel" class="text-outline ml-2 text-[10px]"></span>
                     </h3>
                     <div class="history-region" id="historyCurrentSnapshots"></div>
 
-                    <h3 class="subtitle is-6 mt-4 mb-2">Other sessions</h3>
+                    <h3 class="font-label-caps text-on-surface dark:text-d-on-surface opacity-80 mt-4 mb-2">Other sessions</h3>
                     <div class="history-region" id="historyOtherSessions"></div>
                 </div>
                 <div class="history-col-right">
-                    <h3 class="subtitle is-6 mb-2">Preview</h3>
-                    <pre class="history-preview"><code id="historyPreview" class="has-text-grey-light">Hover a row to preview its content.</code></pre>
+                    <h3 class="font-label-caps text-on-surface dark:text-d-on-surface opacity-80 mb-2">Preview</h3>
+                    <pre class="history-preview"><code id="historyPreview" class="text-outline">Hover a row to preview its content.</code></pre>
                 </div>
             </div>
         </section>
-        <footer class="modal-card-foot is-justify-content-space-between">
-            <button class="button is-danger is-outlined" id="historyClearAll">Clear all sessions</button>
+        <footer class="modal-card-foot flex justify-between">
+            <button class="px-4 py-2 border border-error text-error hover:bg-error-container hover:text-on-error-container rounded font-label-caps cursor-pointer" id="historyClearAll">Clear all sessions</button>
             <div id="historyToasts" class="history-toasts"></div>
         </footer>
     </div>
 </div>
 
-<section class="section">
-    <h2 class="title is-2">History and Storage</h2>
-    <p>
-        The Groovy Web Console stores your scripts in the browser's local storage.
-    </p>
-    <p>
-        The history is stored per session which is identified by the <code>#sessionId</code> in the url.
-    </p>
-</section>
+<!-- Share Modal -->
+<dialog id="shareModal" closedby="any" aria-labelledby="shareModalTitle" class="bg-surface dark:bg-d-surface text-on-surface dark:text-d-on-surface rounded-xl shadow-2xl border border-outline-variant dark:border-d-outline-variant max-w-lg w-full backdrop:bg-black/50 backdrop:backdrop-blur-sm m-auto relative overflow-hidden p-0">
+    <div class="flex justify-between items-center px-6 py-4 border-b border-outline-variant dark:border-d-outline-variant bg-surface-container-low dark:bg-d-surface-container-low">
+        <h2 id="shareModalTitle" class="text-xl font-headline-md text-on-surface dark:text-d-on-surface">Share Script</h2>
+        <button id="closeShareModal" class="material-symbols-outlined text-outline dark:text-d-outline hover:text-on-surface dark:hover:text-d-on-surface bg-transparent border-none cursor-pointer">close</button>
+    </div>
+    <div class="p-6">
+        <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant mb-4">
+            Copy the link below to share your Groovy script:
+        </p>
+        <div class="flex flex-col gap-2">
+            <div class="flex relative">
+                <input type="text" id="shareAsCodeLink" class="w-full bg-surface-container-high dark:bg-d-surface-container-high border border-outline-variant dark:border-d-outline-variant text-on-surface dark:text-d-on-surface rounded-lg px-3 py-3 pr-12 focus:outline-none focus:border-primary dark:focus:border-d-primary font-mono text-sm" readonly />
+                <button id="copyShareLinkBtn" class="absolute right-2 top-1/2 -translate-y-1/2 text-primary dark:text-primary-fixed hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest rounded p-1 transition-colors flex items-center justify-center cursor-pointer" aria-label="Copy to clipboard">
+                    <span class="material-symbols-outlined text-[20px]">content_copy</span>
+                </button>
+            </div>
+            <div id="shareLinkTooltip" class="text-sm text-primary dark:text-primary-fixed hidden self-start font-medium">Copied to clipboard!</div>
+        </div>
+    </div>
+</dialog>
 
 </body>
 </html>

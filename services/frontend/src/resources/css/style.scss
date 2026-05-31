@@ -1,30 +1,42 @@
-@charset "utf-8";
-$groovy: #4298B8;
-// groovy-dark: #286B86;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-// Add the custom color to Bulma's color map
-$custom-colors: (
-        'groovy': $groovy
-);
-@use "bulma/sass" with (
-  $custom-colors: $custom-colors,
-);
+@layer base {
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .code-shadow {
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  }
+  
+  /* Custom Scrollbar for IDE feel */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { 
+    background: theme('colors.outline-variant'); 
+    border-radius: 10px; 
+  }
+  ::-webkit-scrollbar-thumb:hover { 
+    background: theme('colors.outline'); 
+  }
 
-@import '~@creativebulma/bulma-tooltip/dist/bulma-tooltip.css';
+  /* Subtle glow for focus */
+  .input-focus-glow:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px theme('colors.primary');
+    border-color: theme('colors.primary');
+  }
+}
 
+/* History Modal Styles (Preserving layout without Bulma) */
 #historyModal .history-modal-card {
   width: min(1200px, 95vw);
   max-width: none;
-  // Anchor the modal at a fixed height. Without this, the modal sizes to its
-  // content, which means hovering a different row (= different preview
-  // content) resizes the modal, shifts the rows on the left, and changes what
-  // the cursor is over — easy to get into a bouncing-resize loop.
   height: min(720px, 90vh);
 }
 
 .history-modal-body {
-  // Flex column so the search field is a fixed-height row and the grid below
-  // takes the remaining space (and its inner regions can scroll).
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -32,8 +44,6 @@ $custom-colors: (
 
 .history-cols {
   display: grid;
-  // minmax(0, 1fr) — not plain "1fr" — so a long line in the preview can't
-  // push its column wider than its share of the available space.
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
   min-height: 0;
@@ -44,10 +54,6 @@ $custom-colors: (
 .history-col-right {
   display: flex;
   flex-direction: column;
-  // min-width: 0 lets the column shrink below its flex children's intrinsic
-  // width. overflow: hidden additionally clips any child that still tries to
-  // grow past its share (an unwrapped 2000-char pre in the preview, say) so
-  // overflow:auto on .history-preview can actually scroll horizontally.
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -56,12 +62,14 @@ $custom-colors: (
 .history-region {
   max-height: 30vh;
   overflow-y: auto;
-  border: 1px solid var(--bulma-border);
+  border: 1px solid theme('colors.outline-variant');
   border-radius: 4px;
   padding: 0.25rem;
 
-  // When the region only contains an empty-state placeholder, center it in
-  // the available space instead of leaving it pinned to the top-left.
+  .dark & {
+    border-color: theme('colors.d-outline-variant');
+  }
+
   &.is-empty {
     display: flex;
     align-items: center;
@@ -71,25 +79,23 @@ $custom-colors: (
 }
 
 .history-preview {
-  // flex-basis 0 (not auto) so the pane fills its column regardless of
-  // content. With "auto", the basis is content size and small/large previews
-  // produce different layouts, which interacts badly with the modal's
-  // fixed height and would still cause minor row jumps.
   flex: 1 1 0;
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  // Bulma's scheme-main-bis is the "slightly off the main background" shade
-  // that adapts to light/dark theme automatically (whitesmoke in light,
-  // near-black in dark).
-  background: var(--bulma-scheme-main-bis);
-  border: 1px solid var(--bulma-border);
+  background: theme('colors.surface-container-high');
+  border: 1px solid theme('colors.outline-variant');
   border-radius: 4px;
   padding: 0.5rem 0.75rem;
   font-size: 0.85em;
   line-height: 1.4;
   white-space: pre;
   word-break: normal;
+
+  .dark & {
+    background: theme('colors.d-surface-container-high');
+    border-color: theme('colors.d-outline-variant');
+  }
 }
 
 .history-row {
@@ -99,18 +105,28 @@ $custom-colors: (
   padding: 0.25rem 0.5rem;
   border-radius: 3px;
   cursor: default;
+  color: theme('colors.on-surface');
+
+  .dark & {
+    color: theme('colors.d-on-surface');
+  }
 
   &:hover {
-    // Translucent overlay of the current text colour: shows as light-grey in
-    // light mode and dark-grey in dark mode without two separate rules.
-    background-color: color-mix(in srgb, var(--bulma-text) 12%, transparent);
+    background-color: color-mix(in srgb, theme('colors.on-surface') 12%, transparent);
+    
+    .dark & {
+      background-color: color-mix(in srgb, theme('colors.d-on-surface') 12%, transparent);
+    }
   }
 
   &.is-preview-source {
-    // Stronger overlay than mere hover so the preview-source row is clearly
-    // the "selected" one. Plus a left-edge accent for an extra cue.
-    background-color: color-mix(in srgb, var(--bulma-text) 18%, transparent);
-    box-shadow: inset 3px 0 0 0 hsl(202, 47%, 49%);
+    background-color: color-mix(in srgb, theme('colors.on-surface') 18%, transparent);
+    box-shadow: inset 3px 0 0 0 theme('colors.primary');
+
+    .dark & {
+      background-color: color-mix(in srgb, theme('colors.d-on-surface') 18%, transparent);
+      box-shadow: inset 3px 0 0 0 theme('colors.d-primary');
+    }
   }
 
   .history-row-label {
@@ -122,15 +138,16 @@ $custom-colors: (
   }
 
   .history-row-time {
-    // Same monospace stack as the label so digit columns line up exactly —
-    // proportional fonts give "20:06" and "20:46" different widths, which
-    // shifts the label start position between adjacent rows.
     font-family: monospace;
     font-size: 0.85em;
-    color: var(--bulma-text);
+    color: theme('colors.on-surface');
     opacity: 0.7;
     flex: 0 0 auto;
     min-width: 6rem;
+
+    .dark & {
+      color: theme('colors.d-on-surface');
+    }
   }
 }
 
@@ -144,8 +161,106 @@ $custom-colors: (
 .history-toast {
   padding: 0.5rem 1rem;
   margin: 0;
+  background: theme('colors.surface-container-highest');
+  border: 1px solid theme('colors.outline-variant');
+  border-radius: 4px;
+
+  .dark & {
+    background: theme('colors.d-surface-container-highest');
+    border-color: theme('colors.d-outline-variant');
+  }
 
   .history-toast-undo {
     margin-left: 0.5rem;
+    color: theme('colors.primary');
+    cursor: pointer;
+
+    .dark & {
+      color: theme('colors.d-primary');
+    }
   }
+}
+
+/* Base Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  
+  &.is-active {
+    display: flex;
+  }
+}
+
+.modal-background {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: theme('colors.surface');
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+  .dark & {
+    background-color: theme('colors.d-surface');
+  }
+}
+
+.modal-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background-color: theme('colors.surface-container-low');
+  border-bottom: 1px solid theme('colors.outline-variant');
+
+  .dark & {
+    background-color: theme('colors.d-surface-container-low');
+    border-bottom-color: theme('colors.d-outline-variant');
+  }
+}
+
+.modal-card-title {
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: theme('colors.on-surface');
+
+  .dark & {
+    color: theme('colors.d-on-surface');
+  }
+}
+
+.modal-card-body {
+  padding: 1.5rem;
+  flex-grow: 1;
+  overflow: auto;
+}
+
+.modal-card-foot {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: theme('colors.surface-container-low');
+  border-top: 1px solid theme('colors.outline-variant');
+
+  .dark & {
+    background-color: theme('colors.d-surface-container-low');
+    border-top-color: theme('colors.d-outline-variant');
+  }
+}
+
+/* Ensure CodeMirror editor expands to fill the entire flex container */
+.cm-editor {
+  width: 100%;
+  height: 100%;
 }
