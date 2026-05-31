@@ -81,11 +81,11 @@ function handleExecutionResult (result: ExecutionResult) {
 
 function switchTab (active: HTMLElement) {
   tabs.forEach(e => {
-    e.classList.remove('text-primary', 'border-b-2', 'border-primary')
-    e.classList.add('text-on-surface-variant', 'opacity-60')
+    e.classList.remove('text-primary', 'dark:text-d-primary', 'border-b-2', 'border-primary', 'dark:border-d-primary')
+    e.classList.add('text-on-surface-variant', 'dark:text-d-on-surface-variant', 'opacity-60')
   })
-  active.classList.remove('text-on-surface-variant', 'opacity-60')
-  active.classList.add('text-primary', 'border-b-2', 'border-primary')
+  active.classList.remove('text-on-surface-variant', 'dark:text-d-on-surface-variant', 'opacity-60')
+  active.classList.add('text-primary', 'dark:text-d-primary', 'border-b-2', 'border-primary', 'dark:border-d-primary')
   activeTab = active
 }
 
