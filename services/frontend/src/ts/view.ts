@@ -250,14 +250,16 @@ export function initView () {
 
   const shareHandler = () => {
     return of(null).pipe(
-      throttleTime(500),
       map(() => codeCM.getCode()),
       concatMap(editorContent => compressToBase64(editorContent))
     )
   }
 
   fromEvent(share, 'click')
-    .pipe(concatMap(() => shareHandler()))
+    .pipe(
+      throttleTime(500),
+      concatMap(() => shareHandler())
+    )
     .subscribe(codez => {
       shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`
       const shareModal = document.getElementById('shareModal') as HTMLDialogElement
@@ -267,7 +269,10 @@ export function initView () {
   const shareMobileBtn = document.getElementById('shareMobileBtn')
   if (shareMobileBtn) {
     fromEvent(shareMobileBtn, 'click')
-      .pipe(concatMap(() => shareHandler()))
+      .pipe(
+        throttleTime(500),
+        concatMap(() => shareHandler())
+      )
       .subscribe(codez => {
         shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`
         const shareModal = document.getElementById('shareModal') as HTMLDialogElement

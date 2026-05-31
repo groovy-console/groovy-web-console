@@ -85,6 +85,7 @@ module.exports = {
         "code-sm": ["Geist Mono", "JetBrains Mono", "monospace"],
         "body-sm": ["Inter", "sans-serif"],
         "body-md": ["Inter", "sans-serif"],
+        "headline-md": ["Hanken Grotesk", "sans-serif"],
         "headline-lg": ["Hanken Grotesk", "sans-serif"],
         "headline-lg-mobile": ["Hanken Grotesk", "sans-serif"],
         "headline-xl": ["Hanken Grotesk", "sans-serif"]
@@ -94,6 +95,7 @@ module.exports = {
         "code-sm": ["13px", { lineHeight: "20px", fontWeight: "450" }],
         "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
         "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+        "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }],
         "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600" }],
         "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "600" }],
         "headline-xl": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }]
