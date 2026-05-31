@@ -19,7 +19,7 @@ describe('GitHub auth + gist save/update', () => {
 
       cy.get('#signInItem').should('be.visible')
       cy.get('#accountItem').should('not.be.visible')
-      
+
       cy.get('#shareAsCode').click()
       cy.get('#saveAsPublicGistControl').should('not.be.visible')
       cy.get('#saveAsSecretGistControl').should('not.be.visible')
@@ -43,7 +43,7 @@ describe('GitHub auth + gist save/update', () => {
       cy.get('#signInItem').should('not.be.visible')
       cy.get('#accountItem').should('be.visible')
       cy.get('#accountLogin').should('have.text', '@alice')
-      
+
       cy.get('#shareAsCode').click()
       cy.get('#saveAsPublicGistControl').should('be.visible')
       cy.get('#saveAsSecretGistControl').should('be.visible')
