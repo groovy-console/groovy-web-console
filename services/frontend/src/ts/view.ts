@@ -147,17 +147,17 @@ function switchMode (mode:ColorMode) {
       switchEditorTheme(getPreferredColorScheme())
       break
   }
-  
-  const icon = document.getElementById('currentThemeIcon');
+
+  const icon = document.getElementById('currentThemeIcon')
   if (icon) {
-    if (mode === 'light') icon.textContent = 'light_mode';
-    else if (mode === 'dark') icon.textContent = 'dark_mode';
-    else icon.textContent = 'desktop_windows';
+    if (mode === 'light') icon.textContent = 'light_mode'
+    else if (mode === 'dark') icon.textContent = 'dark_mode'
+    else icon.textContent = 'desktop_windows'
   }
-  
-  const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
+
+  const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement
   if (themeSelect && themeSelect.value !== mode) {
-    themeSelect.value = mode;
+    themeSelect.value = mode
   }
 }
 
@@ -167,7 +167,7 @@ function switchEditorTheme (theme:ThemeColor) {
 }
 
 function setupModeSwitchersAndRestoreSavedColorMode () {
-  const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement;
+  const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement
   if (themeSelect) {
     fromEvent(themeSelect, 'change')
       .pipe(
@@ -180,19 +180,19 @@ function setupModeSwitchersAndRestoreSavedColorMode () {
       ).subscribe()
   }
 
-  const icon = document.getElementById('currentThemeIcon');
+  const icon = document.getElementById('currentThemeIcon')
   if (icon) {
     fromEvent(icon, 'click').subscribe(() => {
-      const current = localStorage.getItem('colorMode') || 'system';
-      const nextMode = current === 'system' ? 'light' : current === 'light' ? 'dark' : 'system';
+      const current = localStorage.getItem('colorMode') || 'system'
+      const nextMode = current === 'system' ? 'light' : current === 'light' ? 'dark' : 'system'
       if (themeSelect) {
-        themeSelect.value = nextMode;
-        themeSelect.dispatchEvent(new Event('change'));
+        themeSelect.value = nextMode
+        themeSelect.dispatchEvent(new Event('change'))
       } else {
-        switchMode(nextMode as ColorMode);
-        localStorage.setItem('colorMode', nextMode);
+        switchMode(nextMode as ColorMode)
+        localStorage.setItem('colorMode', nextMode)
       }
-    });
+    })
   }
 
   const savedColorMode = localStorage.getItem('colorMode')
@@ -253,49 +253,49 @@ export function initView () {
       throttleTime(500),
       map(() => codeCM.getCode()),
       concatMap(editorContent => compressToBase64(editorContent))
-    );
-  };
+    )
+  }
 
   fromEvent(share, 'click')
     .pipe(concatMap(() => shareHandler()))
     .subscribe(codez => {
-      shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`;
-      const shareModal = document.getElementById('shareModal') as HTMLDialogElement;
-      if (shareModal) shareModal.showModal();
+      shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`
+      const shareModal = document.getElementById('shareModal') as HTMLDialogElement
+      if (shareModal) shareModal.showModal()
     })
 
-  const shareMobileBtn = document.getElementById('shareMobileBtn');
+  const shareMobileBtn = document.getElementById('shareMobileBtn')
   if (shareMobileBtn) {
     fromEvent(shareMobileBtn, 'click')
       .pipe(concatMap(() => shareHandler()))
       .subscribe(codez => {
-        shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`;
-        const shareModal = document.getElementById('shareModal') as HTMLDialogElement;
-        if (shareModal) shareModal.showModal();
+        shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`
+        const shareModal = document.getElementById('shareModal') as HTMLDialogElement
+        if (shareModal) shareModal.showModal()
       })
   }
 
-  const shareModal = document.getElementById('shareModal') as HTMLDialogElement;
+  const shareModal = document.getElementById('shareModal') as HTMLDialogElement
   if (shareModal && !('closedBy' in HTMLDialogElement.prototype)) {
     fromEvent(shareModal, 'click').subscribe((event) => {
-      if (event.target !== shareModal) return;
-      const rect = shareModal.getBoundingClientRect();
+      if (event.target !== shareModal) return
+      const rect = shareModal.getBoundingClientRect()
       const isDialogContent = (
         rect.top <= (event as MouseEvent).clientY &&
         (event as MouseEvent).clientY <= rect.top + rect.height &&
         rect.left <= (event as MouseEvent).clientX &&
         (event as MouseEvent).clientX <= rect.left + rect.width
-      );
-      if (!isDialogContent) shareModal.close();
-    });
+      )
+      if (!isDialogContent) shareModal.close()
+    })
   }
 
-  const closeShareModalBtn = document.getElementById('closeShareModal');
+  const closeShareModalBtn = document.getElementById('closeShareModal')
   if (closeShareModalBtn && shareModal) {
-    fromEvent(closeShareModalBtn, 'click').subscribe(() => shareModal.close());
+    fromEvent(closeShareModalBtn, 'click').subscribe(() => shareModal.close())
   }
 
-  const copyShareLinkBtn = document.getElementById('copyShareLinkBtn');
+  const copyShareLinkBtn = document.getElementById('copyShareLinkBtn')
   if (copyShareLinkBtn) {
     fromEvent(copyShareLinkBtn, 'click')
       .pipe(
@@ -380,13 +380,13 @@ export function initView () {
     // toggles it closed instead of reopening.
     document.querySelector('#dropdown-history')?.parentElement?.classList.remove('is-active')
     historyModal.open()
-  };
+  }
 
-  const openHistory = document.getElementById('openHistory');
-  if (openHistory) fromEvent(openHistory, 'click').subscribe(historyHandler);
+  const openHistory = document.getElementById('openHistory')
+  if (openHistory) fromEvent(openHistory, 'click').subscribe(historyHandler)
 
-  const historyMobileBtn = document.getElementById('historyMobileBtn');
-  if (historyMobileBtn) fromEvent(historyMobileBtn, 'click').subscribe(historyHandler);
+  const historyMobileBtn = document.getElementById('historyMobileBtn')
+  if (historyMobileBtn) fromEvent(historyMobileBtn, 'click').subscribe(historyHandler)
 
   const toggleDocBtn = document.getElementById('toggleDocBtn')
   const docPanel = document.getElementById('docPanel')
@@ -397,55 +397,55 @@ export function initView () {
   }
 
   // --- Vertical Resizer Logic ---
-  const resizer = document.getElementById('resizer');
-  const resultsPane = document.getElementById('resultsPane');
-  
+  const resizer = document.getElementById('resizer')
+  const resultsPane = document.getElementById('resultsPane')
+
   if (resizer && resultsPane) {
     // Restore saved height if it exists
-    const savedHeight = localStorage.getItem('resultsPaneHeight');
+    const savedHeight = localStorage.getItem('resultsPaneHeight')
     if (savedHeight) {
-      resultsPane.style.height = savedHeight;
+      resultsPane.style.height = savedHeight
     }
 
-    let isResizing = false;
+    let isResizing = false
 
     fromEvent<PointerEvent>(resizer, 'pointerdown').subscribe((e) => {
-      isResizing = true;
-      e.preventDefault(); // Prevent text selection
-      document.body.style.cursor = 'row-resize';
-      document.body.style.userSelect = 'none'; // Also prevent selection globally during drag
-    });
+      isResizing = true
+      e.preventDefault() // Prevent text selection
+      document.body.style.cursor = 'row-resize'
+      document.body.style.userSelect = 'none' // Also prevent selection globally during drag
+    })
 
     fromEvent<PointerEvent>(window, 'pointermove').subscribe((e) => {
-      if (!isResizing) return;
-      
-      const container = resultsPane.parentElement;
-      if (!container) return;
+      if (!isResizing) return
 
-      const containerRect = container.getBoundingClientRect();
-      
+      const container = resultsPane.parentElement
+      if (!container) return
+
+      const containerRect = container.getBoundingClientRect()
+
       // Calculate the new height from the bottom of the container
       // height = containerBottom - mouseY
-      let newHeight = containerRect.bottom - e.clientY;
-      
+      let newHeight = containerRect.bottom - e.clientY
+
       // Enforce bounds (e.g., between 10% and 90% of container height)
-      const minHeight = 100; // pixels
-      const maxHeight = containerRect.height * 0.9;
-      
-      newHeight = Math.max(minHeight, Math.min(newHeight, maxHeight));
-      
+      const minHeight = 100 // pixels
+      const maxHeight = containerRect.height * 0.9
+
+      newHeight = Math.max(minHeight, Math.min(newHeight, maxHeight))
+
       // Convert back to percentage for fluid resizing when browser resizes
-      const heightPercent = (newHeight / containerRect.height) * 100;
-      resultsPane.style.height = `${heightPercent}%`;
-    });
+      const heightPercent = (newHeight / containerRect.height) * 100
+      resultsPane.style.height = `${heightPercent}%`
+    })
 
     fromEvent<PointerEvent>(window, 'pointerup').subscribe(() => {
       if (isResizing) {
-        isResizing = false;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-        localStorage.setItem('resultsPaneHeight', resultsPane.style.height);
+        isResizing = false
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+        localStorage.setItem('resultsPaneHeight', resultsPane.style.height)
       }
-    });
+    })
   }
 }

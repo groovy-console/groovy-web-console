@@ -1,0 +1,26 @@
+{
+  "name": "gwc-experiment",
+  "version": "1.0.0",
+  "description": "Go to `functions/groovy-executor` and type `../../mvnw package`. The output will be in `functions/groovy-executor/target/deployment`.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glaforge/gwc-experiment.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/glaforge/gwc-experiment/issues"
+  },
+  "homepage": "https://github.com/glaforge/gwc-experiment#readme",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7"
+  }
+}
