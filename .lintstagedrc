@@ -1,5 +1,0 @@
-{
-  "services/frontend/**/*.{ts,js,cjs}": [
-    "cd services/frontend && npx eslint --fix"
-  ]
-}
