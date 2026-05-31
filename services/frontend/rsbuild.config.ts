@@ -21,6 +21,7 @@ export default defineConfig(({ envMode }) => ({
       plugins: [
         new rspack.DefinePlugin({
           GROOVY_CONSOLE_SERVICE_URL: JSON.stringify(envMode === 'production' ? 'https://europe-west1-gwc-experiment.cloudfunctions.net/' : 'http://localhost:9080/'),
+          GITHUB_ACCESS_SERVICE_URL: JSON.stringify(envMode === 'production' ? 'https://access.groovyconsole.dev' : 'http://localhost:9081'),
           LOCAL_DEVELOPMENT: JSON.stringify(envMode === 'development')
         }),
         new rspack.CopyRspackPlugin({
