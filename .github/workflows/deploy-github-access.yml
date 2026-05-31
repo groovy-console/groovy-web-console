@@ -6,6 +6,7 @@ on:
 jobs:
   deploy-github-access:
     runs-on: ubuntu-latest
+    environment: github-access-deploy
     steps:
       - uses: actions/checkout@v6
       - name: Cache Maven wrapper and dependencies
@@ -37,5 +38,5 @@ jobs:
         run: |
           gcloud functions deploy github-access --gen2 --entry-point gwc.github.GithubAccessExecutor \
           --runtime java21 --trigger-http --memory 8192MB --allow-unauthenticated --source functions/github-access/target/deployment \
-          --set-secrets="GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,GITHUB_REDIRECT_URI=GITHUB_REDIRECT_URI:latest,SECRET_KEY=SECRET_KEY:latest" \
-          --region europe-west1 --service-account github-access-sa@gwc-experiment.iam.gserviceaccount.com
+          --region europe-west1 --service-account github-access-sa@gwc-experiment.iam.gserviceaccount.com \
+          --set-secrets="GITHUB_CLIENT_ID=GITHUB_CLIENT_ID:latest,GITHUB_CLIENT_SECRET=GITHUB_CLIENT_SECRET:latest,GITHUB_REDIRECT_URI=GITHUB_REDIRECT_URI:latest,SECRET_KEY=SECRET_KEY:latest,FRONTEND_ORIGIN=FRONTEND_ORIGIN:latest"

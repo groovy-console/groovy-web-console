@@ -28,8 +28,24 @@
             <div class="h-6 w-px bg-outline-variant mx-2"></div>
             <a class="flex items-center gap-2 font-body-md text-body-md text-primary dark:text-primary-fixed font-bold py-1 px-2 transition-colors cursor-pointer active:opacity-80 hover:bg-surface-container-low dark:hover:bg-on-secondary-fixed-variant rounded-lg" target="_blank" rel="noopener noreferrer" href="https://github.com/groovy-console/groovy-web-console">
                 <i class="fab fa-github"></i>
-                <span class="hidden md:inline">GitHub</span>
+                <span class="hidden md:inline">Repo</span>
             </a>
+            <div class="h-6 w-px bg-outline-variant mx-2"></div>
+            <a id="signInItem" class="flex items-center gap-2 font-body-md text-body-md text-primary dark:text-primary-fixed font-bold py-1 px-2 transition-colors cursor-pointer active:opacity-80 hover:bg-surface-container-low dark:hover:bg-on-secondary-fixed-variant rounded-lg" role="button" tabindex="0">
+                <i class="fab fa-github"></i>
+                <span class="hidden md:inline">Sign in with GitHub</span>
+            </a>
+            <div id="accountItem" class="relative hidden flex items-center gap-2 font-body-md text-body-md text-primary dark:text-primary-fixed font-bold py-1 px-2 transition-colors cursor-pointer hover:bg-surface-container-low dark:hover:bg-on-secondary-fixed-variant rounded-lg group">
+                <img id="accountAvatar" alt="" class="w-6 h-6 rounded-full"/>
+                <span id="accountLogin" class="hidden md:inline"></span>
+                <!-- Dropdown -->
+                <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-surface dark:bg-d-surface border border-outline-variant dark:border-d-outline-variant rounded-lg shadow-lg z-50 py-1">
+                    <a id="signOutItem" class="flex flex-nowrap items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low whitespace-nowrap" role="button" tabindex="0">
+                        <span class="material-symbols-outlined text-[18px]">logout</span>
+                        <span>Sign out</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </header>
@@ -246,21 +262,74 @@
         <h2 id="shareModalTitle" class="text-xl font-headline-md text-on-surface dark:text-d-on-surface">Share Script</h2>
         <button id="closeShareModal" class="material-symbols-outlined text-outline dark:text-d-outline hover:text-on-surface dark:hover:text-d-on-surface bg-transparent border-none cursor-pointer">close</button>
     </div>
-    <div class="p-6">
-        <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant mb-4">
+    <div class="p-6 flex flex-col items-center gap-4">
+        <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant self-start">
             Copy the link below to share your Groovy script:
         </p>
-        <div class="flex flex-col gap-2">
-            <div class="flex relative">
-                <input type="text" id="shareAsCodeLink" class="w-full bg-surface-container-high dark:bg-d-surface-container-high border border-outline-variant dark:border-d-outline-variant text-on-surface dark:text-d-on-surface rounded-lg px-3 py-3 pr-12 focus:outline-none focus:border-primary dark:focus:border-d-primary font-mono text-sm" readonly />
-                <button id="copyShareLinkBtn" class="absolute right-2 top-1/2 -translate-y-1/2 text-primary dark:text-primary-fixed hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest rounded p-1 transition-colors flex items-center justify-center cursor-pointer" aria-label="Copy to clipboard">
-                    <span class="material-symbols-outlined text-[20px]">content_copy</span>
+        <div class="relative w-full">
+            <input type="text" id="shareAsCodeLink" class="w-full bg-surface-container-high dark:bg-d-surface-container-high border border-outline-variant dark:border-d-outline-variant text-on-surface dark:text-d-on-surface rounded-lg px-3 py-3 pr-12 focus:outline-none focus:border-primary dark:focus:border-d-primary font-mono text-sm" readonly />
+            <button id="copyShareLinkBtn" class="absolute right-2 top-1/2 -translate-y-1/2 text-primary dark:text-primary-fixed hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest rounded p-1 transition-colors flex items-center justify-center cursor-pointer" aria-label="Copy to clipboard">
+                <span class="material-symbols-outlined text-[20px]">content_copy</span>
+            </button>
+        </div>
+        <div id="shareLinkTooltip" class="text-sm text-primary dark:text-primary-fixed hidden self-start font-medium">Copied to clipboard!</div>
+        
+        <div class="w-full h-px bg-outline-variant dark:bg-d-outline-variant my-2"></div>
+        
+        <div class="flex flex-col gap-2 w-full">
+            <div id="saveAsPublicGistControl" class="hidden w-full">
+                <button id="saveAsPublicGist" class="flex items-center justify-center gap-2 bg-surface-container-high dark:bg-d-surface-container-high hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest text-on-surface dark:text-d-on-surface py-2 px-4 rounded-lg font-label-caps transition-colors w-full border-none cursor-pointer">
+                    <i class="fab fa-github"></i> Save as public gist
                 </button>
             </div>
-            <div id="shareLinkTooltip" class="text-sm text-primary dark:text-primary-fixed hidden self-start font-medium">Copied to clipboard!</div>
+            <div id="saveAsSecretGistControl" class="hidden w-full">
+                <button id="saveAsSecretGist" class="flex items-center justify-center gap-2 bg-surface-container-high dark:bg-d-surface-container-high hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest text-on-surface dark:text-d-on-surface py-2 px-4 rounded-lg font-label-caps transition-colors w-full border-none cursor-pointer">
+                    <i class="fas fa-lock"></i> Save as secret gist
+                </button>
+            </div>
+            <div id="updateGistControl" class="hidden w-full">
+                <button id="updateGist" class="flex items-center justify-center gap-2 bg-primary text-on-primary py-2 px-4 rounded-lg font-label-caps transition-colors w-full border-none cursor-pointer hover:opacity-90">
+                    <i class="fas fa-floppy-disk"></i> Update gist
+                </button>
+            </div>
+            <div id="saveAsNewGistControl" class="hidden w-full">
+                <button id="saveAsNewGist" class="flex items-center justify-center gap-2 bg-surface-container-high dark:bg-d-surface-container-high hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest text-on-surface dark:text-d-on-surface py-2 px-4 rounded-lg font-label-caps transition-colors w-full border-none cursor-pointer">
+                    <i class="fab fa-github"></i> Save as new gist
+                </button>
+            </div>
         </div>
     </div>
 </dialog>
+
+<!-- Save Gist Modal -->
+<dialog id="saveGistModal" class="bg-surface dark:bg-d-surface text-on-surface dark:text-d-on-surface rounded-xl shadow-2xl border border-outline-variant dark:border-d-outline-variant max-w-sm w-full backdrop:bg-black/50 backdrop:backdrop-blur-sm m-auto relative overflow-hidden p-0">
+    <div class="flex justify-between items-center px-6 py-4 border-b border-outline-variant dark:border-d-outline-variant">
+        <h2 id="saveGistModalTitle" class="text-xl font-headline-md text-on-surface dark:text-d-on-surface">Save as gist</h2>
+        <button id="saveGistModalClose" class="material-symbols-outlined text-outline dark:text-d-outline hover:text-on-surface dark:hover:text-d-on-surface bg-transparent border-none cursor-pointer">close</button>
+    </div>
+    <div class="p-6 flex flex-col gap-4">
+        <div class="flex flex-col gap-2">
+            <label for="saveGistName" class="font-label-md">Name</label>
+            <input type="text" id="saveGistName" placeholder="My script" class="w-full bg-surface-container-high dark:bg-d-surface-container-high border border-outline-variant dark:border-d-outline-variant text-on-surface dark:text-d-on-surface rounded-lg px-3 py-2 focus:outline-none focus:border-primary dark:focus:border-d-primary text-sm" />
+            <p id="saveGistNameError" class="text-error text-sm hidden">Name is required</p>
+        </div>
+        <div id="saveGistIncludeOutputField" class="hidden flex items-center gap-2">
+            <input type="checkbox" id="saveGistIncludeOutput" class="accent-primary" />
+            <label for="saveGistIncludeOutput" class="text-body-sm">Include output</label>
+        </div>
+        <p id="saveGistError" class="text-error text-sm hidden"></p>
+    </div>
+    <div class="px-6 py-4 border-t border-outline-variant dark:border-d-outline-variant flex justify-end gap-3 bg-surface-container-lowest dark:bg-d-surface-container-lowest">
+        <button id="saveGistCancel" class="px-4 py-2 rounded-lg font-label-caps text-on-surface dark:text-d-on-surface hover:bg-surface-container-high dark:hover:bg-d-surface-container-high transition-colors cursor-pointer border border-outline-variant dark:border-d-outline-variant bg-transparent">Cancel</button>
+        <button id="saveGistConfirm" class="px-4 py-2 rounded-lg font-label-caps bg-primary text-on-primary hover:opacity-90 transition-opacity border-none cursor-pointer">Save</button>
+    </div>
+</dialog>
+
+<!-- Session Notification -->
+<div id="sessionNotification" class="hidden fixed bottom-4 right-4 max-w-sm bg-error-container text-on-error-container px-4 py-3 rounded-lg shadow-lg flex items-center justify-between gap-4 z-50 transition-opacity">
+    <span id="sessionNotificationText" class="text-sm font-medium"></span>
+    <button id="sessionNotificationClose" class="material-symbols-outlined text-on-error-container hover:opacity-70 bg-transparent border-none cursor-pointer p-0 text-[20px]">close</button>
+</div>
 
 </body>
 </html>

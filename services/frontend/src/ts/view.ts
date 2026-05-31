@@ -4,6 +4,7 @@ import { concatMap, delay, map, tap, throttleTime } from 'rxjs/operators'
 import { GroovyConsole } from './groovy-console'
 import { compressToBase64 } from './compression'
 import { CodeEditor, OutputEditor } from './codemirror'
+import { setupGistUi } from './gist-ui'
 import { HistoryModal } from './history-modal'
 
 const groovyConsole = new GroovyConsole()
@@ -376,6 +377,7 @@ export function initView () {
 
   setupNavbarBurgerClickHandlers()
   setupModeSwitchersAndRestoreSavedColorMode()
+  setupGistUi(codeCM)
 
   const historyModal = new HistoryModal(codeCM.getHistoryService(), codeCM)
   const historyHandler = (event: Event) => {
