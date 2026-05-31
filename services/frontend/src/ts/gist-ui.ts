@@ -126,6 +126,7 @@ export function setupGistUi (codeCM: CodeEditor) {
   })
 
   function openSaveModal (mode: 'public' | 'secret' | 'new') {
+    if (shareDropdown) hide(shareDropdown)
     pendingVisibility = mode === 'public' ? true : mode === 'secret' ? false : loadedGist$.value?.public ?? true
     saveGistModalTitle.textContent = mode === 'public'
       ? 'Save as public gist'
@@ -193,7 +194,10 @@ export function setupGistUi (codeCM: CodeEditor) {
   throttledClick$(updateGistBtn).pipe(
     map(() => loadedGist$.value),
     filter((gist): gist is GistMetadata => gist !== null),
-    tap(() => updateGistBtn.classList.add('is-loading')),
+    tap(() => {
+      if (shareDropdown) hide(shareDropdown)
+      updateGistBtn.classList.add('is-loading')
+    }),
     exhaustMap(gist => updateGist(gist.id, {
       filename: gist.filename,
       code: codeCM.getCode(),
