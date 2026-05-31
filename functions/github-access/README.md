@@ -75,9 +75,9 @@ cd functions/github-access
 
 Or open `src/test/groovy/KeyGen.groovy` in an IDE and run `main` directly.
 
-Output is a 22-char URL-safe base64 string. Store it as the `GH_ACCESS_SECRET_KEY` GitHub
-Actions secret on the `github-access-deploy` environment. Rotating the key invalidates every
-live session — users will be silently signed out on their next `?action=me`.
+Output is a 22-char URL-safe base64 string. Store it as the `SECRET_KEY` secret in
+Secret Manager (see deploy below). Rotating the key invalidates every live session —
+users will be silently signed out on their next `?action=me`.
 
 ## Build & deploy
 
@@ -94,12 +94,21 @@ expects.
 ### Deploy
 
 Triggered manually via the `Deploy GitHub Access` workflow
-(`.github/workflows/deploy-github-access.yml`). Secrets live in the `github-access-deploy`
-environment.
+(`.github/workflows/deploy-github-access.yml`).
 
-The workflow pre-validates `SECRET_KEY` (base64url-decodes it and checks it's 16 bytes)
-before calling `gcloud`, so a misconfigured key fails the GHA step rather than crashing the
-function at startup.
+All five runtime values are resolved from Secret Manager at function boot via gcloud's
+`--set-secrets` flag — the deploy stores only references (`ENV_VAR=SECRET_NAME:latest`),
+never the values themselves. Provision a secret per variable in the `gwc-experiment`
+project, named to match the env var (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`,
+`GITHUB_REDIRECT_URI`, `SECRET_KEY`, `FRONTEND_ORIGIN`), and grant the runtime service
+account `github-access-sa@gwc-experiment.iam.gserviceaccount.com` the
+`roles/secretmanager.secretAccessor` role on each. Add a new secret version to rotate a
+value; the next cold start picks up `:latest`.
+
+> **Where the secrets live:** all five are stored in Google Secret Manager in the
+> `gwc-experiment` project. View or edit a value (and add new versions) in the console at
+> `https://console.cloud.google.com/security/secret-manager/secret/<SECRET_NAME>` — e.g.
+> [`SECRET_KEY`](https://console.cloud.google.com/security/secret-manager/secret/SECRET_KEY/versions?project=gwc-experiment).
 
 ### Custom domain
 
