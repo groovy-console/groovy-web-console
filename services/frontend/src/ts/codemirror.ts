@@ -41,7 +41,8 @@ import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete'
 import { Diagnostic, linter, lintGutter, lintKeymap, setDiagnostics } from '@codemirror/lint'
 import { ThemeColor } from './types'
-import { ayuLight, dracula } from 'thememirror'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { ayuLight } from 'thememirror'
 
 export type EditorHistoryState = 'saved' | 'unsaved'
 
@@ -56,7 +57,7 @@ abstract class ThemeableEditor {
   protected abstract get codeMirror (): EditorView
 
   private getTheme (themeColor: ThemeColor) {
-    return (themeColor === 'light') ? ayuLight : dracula
+    return (themeColor === 'light') ? ayuLight : oneDark
   }
 
   public switchTheme (themeColor: ThemeColor) {
