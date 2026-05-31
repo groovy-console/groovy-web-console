@@ -36,6 +36,10 @@
 <div class="flex flex-1 overflow-hidden">
     <!-- SideNavBar -->
     <aside class="w-16 bg-surface dark:bg-d-surface-container-low border-r border-outline-variant dark:border-d-outline-variant hidden md:flex flex-col items-center py-4 gap-6 shrink-0">
+        <a href="/" id="newScript" class="flex flex-col items-center gap-1 group text-on-surface-variant dark:text-d-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-container-high dark:hover:bg-d-surface-container-high transition-all w-full py-2 bg-transparent border-none no-underline" aria-label="New Script">
+            <span class="material-symbols-outlined">note_add</span>
+            <span class="font-label-caps text-label-caps">New</span>
+        </a>
         <button type="button" id="openHistory" class="flex flex-col items-center gap-1 group text-on-surface-variant dark:text-d-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-container-high dark:hover:bg-d-surface-container-high transition-all w-full py-2 bg-transparent border-none" aria-label="Open History">
             <span class="material-symbols-outlined">history</span>
             <span class="font-label-caps text-label-caps">History</span>
@@ -171,6 +175,10 @@
             <span class="md:hidden">Docs</span>
         </button>
         <div class="flex gap-4 md:hidden">
+            <a href="/" id="newScriptMobileBtn" class="flex items-center gap-1 text-on-surface-variant dark:text-d-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer font-label-caps text-[10px] uppercase no-underline">
+                <span class="material-symbols-outlined text-[18px]">note_add</span>
+                New
+            </a>
             <button id="historyMobileBtn" class="flex items-center gap-1 text-on-surface-variant dark:text-d-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer font-label-caps text-[10px] uppercase">
                 <span class="material-symbols-outlined text-[18px]">history</span>
                 History
