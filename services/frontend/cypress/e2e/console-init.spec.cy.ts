@@ -14,12 +14,12 @@ describe('groovy webconsole', () => {
     cy.visit('/')
 
     cy.get('#version option').should('have.length', 1)
-    cy.get('#version').parent().should('have.class', 'is-loading')
+    cy.get('#version').should('have.class', 'opacity-50')
       .then(() => {
         response.sendResponse()
         cy.wait(`@${response.alias}`)
       })
-      .get('#version').parent().should('not.have.class', 'is-loading')
+      .get('#version').should('not.have.class', 'opacity-50')
       .get('#version option').should('have.length', 3)
   })
   describe('initial values', () => {
