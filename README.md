@@ -1,4 +1,25 @@
+<div style="float:right">
+  <img src="GWC-Logo.png" alt="description" width="300">
+</div>
+
 # Groovy Web Console
+
+Visit https://groovyconsole.dev/ to try it out!
+
+The Groovy Web Console lets you write, run, and share [Groovy](https://groovy-lang.org/)
+scripts right from your browser — no local installation required. Your code is
+executed by a cloud backend and the result is sent straight back to the editor.
+
+You can:
+
+* Run plain Groovy scripts as well as [Spock](https://spockframework.org/)
+  specifications.
+* Pick the Groovy version to run against (3, 4, 5, or a 6 pre-release).
+* Inspect the Abstract Syntax Tree (AST) of your code.
+* Save and share your scripts as GitHub gists, and browse your session history.
+
+The sections below are for contributors who want to build, run, or deploy the
+project locally.
 
 ## Backend
 
