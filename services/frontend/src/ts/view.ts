@@ -263,8 +263,6 @@ export function initView () {
     )
     .subscribe(codez => {
       shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`
-      const shareModal = document.getElementById('shareModal') as HTMLDialogElement
-      if (shareModal) shareModal.showModal()
     })
 
   const shareMobileBtn = document.getElementById('shareMobileBtn')
@@ -276,29 +274,7 @@ export function initView () {
       )
       .subscribe(codez => {
         shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`
-        const shareModal = document.getElementById('shareModal') as HTMLDialogElement
-        if (shareModal) shareModal.showModal()
       })
-  }
-
-  const shareModal = document.getElementById('shareModal') as HTMLDialogElement
-  if (shareModal && !('closedBy' in HTMLDialogElement.prototype)) {
-    fromEvent(shareModal, 'click').subscribe((event) => {
-      if (event.target !== shareModal) return
-      const rect = shareModal.getBoundingClientRect()
-      const isDialogContent = (
-        rect.top <= (event as MouseEvent).clientY &&
-        (event as MouseEvent).clientY <= rect.top + rect.height &&
-        rect.left <= (event as MouseEvent).clientX &&
-        (event as MouseEvent).clientX <= rect.left + rect.width
-      )
-      if (!isDialogContent) shareModal.close()
-    })
-  }
-
-  const closeShareModalBtn = document.getElementById('closeShareModal')
-  if (closeShareModalBtn && shareModal) {
-    fromEvent(closeShareModalBtn, 'click').subscribe(() => shareModal.close())
   }
 
   const copyShareLinkBtn = document.getElementById('copyShareLinkBtn')

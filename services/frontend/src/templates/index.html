@@ -31,12 +31,12 @@
                 <i class="fab fa-github"></i>
                 <span class="hidden md:inline">Sign in with GitHub</span>
             </a>
-            <div id="accountItem" class="relative hidden flex items-center gap-2 font-body-md text-body-md text-primary dark:text-primary-fixed font-bold py-1 px-2 transition-colors cursor-pointer hover:bg-surface-container-low dark:hover:bg-on-secondary-fixed-variant rounded-lg group">
+            <div id="accountItem" class="relative hidden flex items-center gap-2 font-body-md text-body-md text-primary dark:text-primary-fixed font-bold py-1 px-2 transition-colors cursor-pointer hover:bg-surface-container-low dark:hover:bg-on-secondary-fixed-variant rounded-lg">
                 <img id="accountAvatar" alt="" class="w-6 h-6 rounded-full"/>
                 <span id="accountLogin" class="hidden md:inline"></span>
                 <!-- Dropdown -->
-                <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-surface dark:bg-d-surface border border-outline-variant dark:border-d-outline-variant rounded-lg shadow-lg z-50 py-1">
-                    <a id="signOutItem" class="flex flex-nowrap items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low whitespace-nowrap" role="button" tabindex="0">
+                <div id="accountDropdown" class="absolute right-0 top-full mt-1 hidden bg-surface dark:bg-d-surface border border-outline-variant dark:border-d-outline-variant rounded-lg shadow-lg z-50 py-1">
+                    <a id="signOutItem" class="flex flex-nowrap items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low whitespace-nowrap cursor-pointer" role="button" tabindex="0">
                         <span class="material-symbols-outlined text-[18px]">logout</span>
                         <span>Sign out</span>
                     </a>
@@ -55,10 +55,6 @@
         <button type="button" id="openHistory" class="flex flex-col items-center gap-1 group text-on-surface-variant dark:text-d-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-container-high dark:hover:bg-d-surface-container-high transition-all w-full py-2 bg-transparent border-none" aria-label="Open History">
             <span class="material-symbols-outlined">history</span>
             <span class="font-label-caps text-label-caps">History</span>
-        </button>
-        <button type="button" id="shareAsCode" class="flex flex-col items-center gap-1 group text-on-surface-variant dark:text-d-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-container-high dark:hover:bg-d-surface-container-high transition-all w-full py-2 bg-transparent border-none" aria-label="Share Script">
-            <span class="material-symbols-outlined">share</span>
-            <span class="font-label-caps text-label-caps">Share</span>
         </button>
         <a href="https://github.com/groovy-console/groovy-web-console" target="_blank" rel="noopener noreferrer" class="mt-auto flex flex-col items-center gap-1 group text-on-surface-variant dark:text-d-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-container-high dark:hover:bg-d-surface-container-high transition-all w-full py-2 bg-transparent border-none no-underline" aria-label="GitHub Repository">
             <i class="fab fa-github text-[24px]"></i>
@@ -94,6 +90,45 @@
                 </button>
             </div>
             <div class="flex items-center gap-2 shrink-0">
+                <div class="relative" id="shareDropdownContainer">
+                    <button id="shareAsCode" class="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 border border-outline-variant bg-surface hover:bg-surface-container-low transition-all font-label-caps text-label-caps text-on-surface rounded-lg">
+                        <span class="material-symbols-outlined text-[18px]">share</span>
+                        <span class="hidden md:inline">Share</span>
+                    </button>
+                    <!-- Share Dropdown -->
+                    <div id="shareDropdown" class="absolute right-0 top-full mt-1 hidden bg-surface dark:bg-d-surface border border-outline-variant dark:border-d-outline-variant rounded-lg shadow-lg z-50 py-2 w-56 flex-col">
+                        <div class="px-4 py-2 flex flex-col gap-2 border-b border-outline-variant dark:border-d-outline-variant">
+                            <span class="text-[10px] uppercase font-bold text-outline">Share as Link</span>
+                            <div class="flex items-center gap-1">
+                                <input type="text" id="shareAsCodeLink" class="w-full bg-surface-container-high dark:bg-d-surface-container-high border border-outline-variant dark:border-d-outline-variant text-on-surface dark:text-d-on-surface rounded px-2 py-1 text-xs focus:outline-none focus:border-primary dark:focus:border-d-primary" readonly />
+                                <button id="copyShareLinkBtn" class="text-primary dark:text-primary-fixed hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest rounded p-1 transition-colors flex items-center justify-center cursor-pointer" aria-label="Copy to clipboard">
+                                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                                </button>
+                            </div>
+                            <div id="shareLinkTooltip" class="text-[10px] text-primary dark:text-primary-fixed hidden font-medium">Copied!</div>
+                        </div>
+                        <div id="saveAsPublicGistControl" class="hidden w-full">
+                            <button id="saveAsPublicGist" class="flex items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low text-on-surface dark:text-d-on-surface bg-transparent border-none cursor-pointer w-full text-left font-body-sm">
+                                <i class="fab fa-github"></i> Save as public gist
+                            </button>
+                        </div>
+                        <div id="saveAsSecretGistControl" class="hidden w-full">
+                            <button id="saveAsSecretGist" class="flex items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low text-on-surface dark:text-d-on-surface bg-transparent border-none cursor-pointer w-full text-left font-body-sm">
+                                <i class="fas fa-lock"></i> Save as secret gist
+                            </button>
+                        </div>
+                        <div id="updateGistControl" class="hidden w-full">
+                            <button id="updateGist" class="flex items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low text-on-surface dark:text-d-on-surface bg-transparent border-none cursor-pointer w-full text-left font-body-sm">
+                                <i class="fas fa-floppy-disk"></i> Update gist
+                            </button>
+                        </div>
+                        <div id="saveAsNewGistControl" class="hidden w-full">
+                            <button id="saveAsNewGist" class="flex items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low text-on-surface dark:text-d-on-surface bg-transparent border-none cursor-pointer w-full text-left font-body-sm">
+                                <i class="fas fa-copy"></i> Save as new gist
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <button id="execute" class="flex items-center gap-1 md:gap-2 px-3 md:px-6 py-2 bg-primary-container text-on-primary-container hover:opacity-90 transition-all font-label-caps text-label-caps rounded-lg shadow-sm">
                     <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
                     <span class="hidden md:inline">Execute</span>
@@ -202,10 +237,6 @@
                 <span class="material-symbols-outlined text-[18px]">history</span>
                 History
             </button>
-            <button id="shareMobileBtn" class="flex items-center gap-1 text-on-surface-variant dark:text-d-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer font-label-caps text-[10px] uppercase">
-                <span class="material-symbols-outlined text-[18px]">share</span>
-                Share
-            </button>
         </div>
     </div>
 </footer>
@@ -256,50 +287,7 @@
     </div>
 </div>
 
-<!-- Share Modal -->
-<dialog id="shareModal" closedby="any" aria-labelledby="shareModalTitle" class="bg-surface dark:bg-d-surface text-on-surface dark:text-d-on-surface rounded-xl shadow-2xl border border-outline-variant dark:border-d-outline-variant max-w-lg w-full backdrop:bg-black/50 backdrop:backdrop-blur-sm m-auto relative overflow-hidden p-0">
-    <div class="flex justify-between items-center px-6 py-4 border-b border-outline-variant dark:border-d-outline-variant bg-surface-container-low dark:bg-d-surface-container-low">
-        <h2 id="shareModalTitle" class="text-xl font-headline-md text-on-surface dark:text-d-on-surface">Share Script</h2>
-        <button id="closeShareModal" class="material-symbols-outlined text-outline dark:text-d-outline hover:text-on-surface dark:hover:text-d-on-surface bg-transparent border-none cursor-pointer">close</button>
-    </div>
-    <div class="p-6 flex flex-col items-center gap-4">
-        <p class="text-body-md text-on-surface-variant dark:text-d-on-surface-variant self-start">
-            Copy the link below to share your Groovy script:
-        </p>
-        <div class="relative w-full">
-            <input type="text" id="shareAsCodeLink" class="w-full bg-surface-container-high dark:bg-d-surface-container-high border border-outline-variant dark:border-d-outline-variant text-on-surface dark:text-d-on-surface rounded-lg px-3 py-3 pr-12 focus:outline-none focus:border-primary dark:focus:border-d-primary font-mono text-sm" readonly />
-            <button id="copyShareLinkBtn" class="absolute right-2 top-1/2 -translate-y-1/2 text-primary dark:text-primary-fixed hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest rounded p-1 transition-colors flex items-center justify-center cursor-pointer" aria-label="Copy to clipboard">
-                <span class="material-symbols-outlined text-[20px]">content_copy</span>
-            </button>
-        </div>
-        <div id="shareLinkTooltip" class="text-sm text-primary dark:text-primary-fixed hidden self-start font-medium">Copied to clipboard!</div>
-        
-        <div class="w-full h-px bg-outline-variant dark:bg-d-outline-variant my-2"></div>
-        
-        <div class="flex flex-col gap-2 w-full">
-            <div id="saveAsPublicGistControl" class="hidden w-full">
-                <button id="saveAsPublicGist" class="flex items-center justify-center gap-2 bg-surface-container-high dark:bg-d-surface-container-high hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest text-on-surface dark:text-d-on-surface py-2 px-4 rounded-lg font-label-caps transition-colors w-full border-none cursor-pointer">
-                    <i class="fab fa-github"></i> Save as public gist
-                </button>
-            </div>
-            <div id="saveAsSecretGistControl" class="hidden w-full">
-                <button id="saveAsSecretGist" class="flex items-center justify-center gap-2 bg-surface-container-high dark:bg-d-surface-container-high hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest text-on-surface dark:text-d-on-surface py-2 px-4 rounded-lg font-label-caps transition-colors w-full border-none cursor-pointer">
-                    <i class="fas fa-lock"></i> Save as secret gist
-                </button>
-            </div>
-            <div id="updateGistControl" class="hidden w-full">
-                <button id="updateGist" class="flex items-center justify-center gap-2 bg-primary text-on-primary py-2 px-4 rounded-lg font-label-caps transition-colors w-full border-none cursor-pointer hover:opacity-90">
-                    <i class="fas fa-floppy-disk"></i> Update gist
-                </button>
-            </div>
-            <div id="saveAsNewGistControl" class="hidden w-full">
-                <button id="saveAsNewGist" class="flex items-center justify-center gap-2 bg-surface-container-high dark:bg-d-surface-container-high hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest text-on-surface dark:text-d-on-surface py-2 px-4 rounded-lg font-label-caps transition-colors w-full border-none cursor-pointer">
-                    <i class="fab fa-github"></i> Save as new gist
-                </button>
-            </div>
-        </div>
-    </div>
-</dialog>
+
 
 <!-- Save Gist Modal -->
 <dialog id="saveGistModal" class="bg-surface dark:bg-d-surface text-on-surface dark:text-d-on-surface rounded-xl shadow-2xl border border-outline-variant dark:border-d-outline-variant max-w-sm w-full backdrop:bg-black/50 backdrop:backdrop-blur-sm m-auto relative overflow-hidden p-0">

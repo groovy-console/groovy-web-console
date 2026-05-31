@@ -42,6 +42,44 @@ export function setupGistUi (codeCM: CodeEditor) {
   const show = (el: HTMLElement) => el.classList.remove('hidden')
   const hide = (el: HTMLElement) => el.classList.add('hidden')
 
+  const shareDropdown = document.getElementById('shareDropdown')
+  const shareAsCode = document.getElementById('shareAsCode')
+  if (shareAsCode && shareDropdown) {
+    shareAsCode.addEventListener('click', (e) => {
+      e.stopPropagation()
+      if (shareDropdown.classList.contains('hidden')) {
+        show(shareDropdown)
+        if (accountDropdown && !accountDropdown.classList.contains('hidden')) hide(accountDropdown)
+      } else {
+        hide(shareDropdown)
+      }
+    })
+    shareDropdown.addEventListener('click', (e) => e.stopPropagation())
+  }
+
+  const accountDropdown = document.getElementById('accountDropdown')
+  if (accountItem && accountDropdown) {
+    accountItem.addEventListener('click', (e) => {
+      e.stopPropagation()
+      if (accountDropdown.classList.contains('hidden')) {
+        show(accountDropdown)
+        if (shareDropdown && !shareDropdown.classList.contains('hidden')) hide(shareDropdown)
+      } else {
+        hide(accountDropdown)
+      }
+    })
+    accountDropdown.addEventListener('click', (e) => e.stopPropagation())
+  }
+
+  document.addEventListener('click', () => {
+    if (shareDropdown && !shareDropdown.classList.contains('hidden')) {
+      hide(shareDropdown)
+    }
+    if (accountDropdown && !accountDropdown.classList.contains('hidden')) {
+      hide(accountDropdown)
+    }
+  })
+
   const outputText = () => (document.getElementById('output') as HTMLElement).textContent ?? ''
   const hasOutput = () => outputText().trim().length > 0
 
@@ -82,7 +120,10 @@ export function setupGistUi (codeCM: CodeEditor) {
   throttledClick$(signInItem).subscribe(() => signIn(() => { refreshMe() }))
   throttledClick$(signOutItem).pipe(
     tap(e => e.preventDefault())
-  ).subscribe(() => signOut())
+  ).subscribe(() => {
+    if (accountDropdown) hide(accountDropdown)
+    signOut()
+  })
 
   function openSaveModal (mode: 'public' | 'secret' | 'new') {
     pendingVisibility = mode === 'public' ? true : mode === 'secret' ? false : loadedGist$.value?.public ?? true
