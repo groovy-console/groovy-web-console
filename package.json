@@ -1,5 +1,5 @@
 {
-  "name": "gwc-experiment",
+  "name": "groovy-web-console",
   "version": "1.0.0",
   "description": "Go to `functions/groovy-executor` and type `../../mvnw package`. The output will be in `functions/groovy-executor/target/deployment`.",
   "main": "index.js",
@@ -9,16 +9,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/glaforge/gwc-experiment.git"
+    "url": "git+https://github.com/groovy-console/groovy-web-console.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/glaforge/gwc-experiment/issues"
+    "url": "https://github.com/groovy-console/groovy-web-console/issues"
   },
-  "homepage": "https://github.com/glaforge/gwc-experiment#readme",
+  "homepage": "https://github.com/groovy-console/groovy-web-console#readme",
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7"
