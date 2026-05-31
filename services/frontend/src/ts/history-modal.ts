@@ -5,7 +5,7 @@ import { CodeEditor } from './codemirror'
 const UNDO_TIMEOUT_MS = 15_000
 const LABEL_MAX_LEN = 40
 const SEARCH_DEBOUNCE_MS = 150
-const PREVIEW_PLACEHOLDER = 'Hover a row to preview its content.'
+const PREVIEW_PLACEHOLDER = 'Hover or tap a row to preview its content.'
 
 export function deriveLabel (content: string): string {
   const lines = content.split('\n')
@@ -208,6 +208,9 @@ export class HistoryModal {
     this.currentSnapshotsSubs.add(
       fromEvent(row, 'mouseenter').subscribe(() => this.setPreview(snapshot.content, row))
     )
+    this.currentSnapshotsSubs.add(
+      fromEvent(row, 'click').subscribe(() => this.setPreview(snapshot.content, row))
+    )
 
     const time = document.createElement('span')
     time.className = 'history-row-time'
@@ -263,6 +266,9 @@ export class HistoryModal {
     row.dataset.sessionId = meta.id
     this.otherSessionsSubs.add(
       fromEvent(row, 'mouseenter').subscribe(() => this.setPreview(content, row))
+    )
+    this.otherSessionsSubs.add(
+      fromEvent(row, 'click').subscribe(() => this.setPreview(content, row))
     )
 
     const label = document.createElement('span')
