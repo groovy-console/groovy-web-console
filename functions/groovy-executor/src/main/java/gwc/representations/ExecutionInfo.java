@@ -1,13 +1,14 @@
 package gwc.representations;
 
 import groovy.lang.GroovySystem;
-import org.spockframework.util.SpockReleaseInfo;
 
 public class ExecutionInfo {
   private long executionTime = -1;
   private String groovyVersion = GroovySystem.getVersion();
 
-  private String spockVersion = SpockReleaseInfo.getVersion().toString();
+  // Populated by the executor from the Spock provider; "n/a" when Spock is absent
+  // (e.g. the Groovy 6 build), since spock-core is not on the classpath here.
+  private String spockVersion = "n/a";
 
   private String javaVersion = System.getProperty("java.version");
 

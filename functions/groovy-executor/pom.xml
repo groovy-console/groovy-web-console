@@ -52,7 +52,53 @@
             </exclusion>
           </exclusions>
         </dependency>
+
+        <dependency>
+          <groupId>org.spockframework</groupId>
+          <artifactId>spock-core</artifactId>
+          <scope>compile</scope>
+          <!-- For Groovy 3 the groupId is still org.codehaus.groovy, so no exclusion is needed. -->
+        </dependency>
+        <dependency>
+          <groupId>net.bytebuddy</groupId>
+          <artifactId>byte-buddy</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.objenesis</groupId>
+          <artifactId>objenesis</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.junit.platform</groupId>
+          <artifactId>junit-platform-launcher</artifactId>
+        </dependency>
       </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.6.0</version>
+            <executions>
+              <execution>
+                <id>add-spock-source</id>
+                <phase>generate-sources</phase>
+                <goals><goal>add-source</goal></goals>
+                <configuration>
+                  <sources><source>src/spock/java</source></sources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>add-spock-resource</id>
+                <phase>generate-resources</phase>
+                <goals><goal>add-resource</goal></goals>
+                <configuration>
+                  <resources><resource><directory>src/spock/resources</directory></resource></resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <id>groovy_4_0</id>
@@ -101,7 +147,46 @@
             </exclusion>
           </exclusions>
         </dependency>
+        <dependency>
+          <groupId>net.bytebuddy</groupId>
+          <artifactId>byte-buddy</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.objenesis</groupId>
+          <artifactId>objenesis</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.junit.platform</groupId>
+          <artifactId>junit-platform-launcher</artifactId>
+        </dependency>
       </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.6.0</version>
+            <executions>
+              <execution>
+                <id>add-spock-source</id>
+                <phase>generate-sources</phase>
+                <goals><goal>add-source</goal></goals>
+                <configuration>
+                  <sources><source>src/spock/java</source></sources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>add-spock-resource</id>
+                <phase>generate-resources</phase>
+                <goals><goal>add-resource</goal></goals>
+                <configuration>
+                  <resources><resource><directory>src/spock/resources</directory></resource></resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <id>groovy_5_0</id>
@@ -147,7 +232,109 @@
             </exclusion>
           </exclusions>
         </dependency>
+        <dependency>
+          <groupId>net.bytebuddy</groupId>
+          <artifactId>byte-buddy</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.objenesis</groupId>
+          <artifactId>objenesis</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.junit.platform</groupId>
+          <artifactId>junit-platform-launcher</artifactId>
+        </dependency>
       </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.6.0</version>
+            <executions>
+              <execution>
+                <id>add-spock-source</id>
+                <phase>generate-sources</phase>
+                <goals><goal>add-source</goal></goals>
+                <configuration>
+                  <sources><source>src/spock/java</source></sources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>add-spock-resource</id>
+                <phase>generate-resources</phase>
+                <goals><goal>add-resource</goal></goals>
+                <configuration>
+                  <resources><resource><directory>src/spock/resources</directory></resource></resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- Groovy 6 is pre-release and Spock has no compatible release yet, so this
+           variant ships WITHOUT spock-core. Spec/AST requests return a "not supported"
+           message via the SpecSupport SPI (no provider is on the classpath). -->
+      <id>groovy_6_0_alpha</id>
+      <properties>
+        <groovy.version>${groovy.6.version}</groovy.version>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+      </properties>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-bom</artifactId>
+            <version>${groovy.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.groovy</groupId>
+          <artifactId>groovy-all</artifactId>
+          <version>${groovy.version}</version>
+          <type>pom</type>
+          <exclusions>
+            <exclusion>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-test-testng</artifactId>
+              <!-- Exclude testng for now, as this causes surefire to ignore junit5 platform tests -->
+            </exclusion>
+          </exclusions>
+        </dependency>
+
+        <!-- Spock is absent on this variant, so the fallback tests use plain JUnit 5. -->
+        <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter</artifactId>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <!-- Compile the no-Spock fallback tests instead of the Spock-based default tests. -->
+          <plugin>
+            <groupId>org.codehaus.gmavenplus</groupId>
+            <artifactId>gmavenplus-plugin</artifactId>
+            <configuration>
+              <testSources>
+                <testSource>
+                  <directory>${project.basedir}/src/no-spock-test/groovy</directory>
+                  <includes>
+                    <include>**/*.groovy</include>
+                  </includes>
+                </testSource>
+              </testSources>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 
@@ -156,23 +343,10 @@
       <groupId>com.google.cloud.functions</groupId>
       <artifactId>functions-framework-api</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.spockframework</groupId>
-      <artifactId>spock-core</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>net.bytebuddy</groupId>
-      <artifactId>byte-buddy</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.objenesis</groupId>
-      <artifactId>objenesis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-launcher</artifactId>
-    </dependency>
+    <!-- spock-core and its Spock-only runtime deps (byte-buddy, objenesis,
+         junit-platform-launcher) are intentionally NOT declared here: they are added
+         per-profile for the Spock-supporting variants (Groovy 3/4/5) only, so the
+         Groovy 6 build ships without Spock or its runtime helpers. -->
     <dependency>
       <groupId>org.apache.ivy</groupId>
       <artifactId>ivy</artifactId>

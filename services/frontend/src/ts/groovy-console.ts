@@ -7,7 +7,12 @@ export class GroovyVersion {
   public name: string
 
   constructor (public id: string) {
-    this.name = 'Groovy ' + id.substring('groovy_'.length).replace(/_/g, '.')
+    const rest = id.substring('groovy_'.length)
+    // e.g. "6_0_alpha" -> "6.0-alpha", "4_0" -> "4.0"; leave anything unexpected as-is
+    const match = rest.match(/^(\d+)_(\d+)(?:_(.+))?$/)
+    this.name = match
+      ? `Groovy ${match[1]}.${match[2]}${match[3] ? '-' + match[3].replace(/_/g, '-') : ''}`
+      : 'Groovy ' + rest.replace(/_/g, '.')
   }
 }
 

@@ -11,7 +11,7 @@ import com.google.gson.Gson;
 import groovy.lang.*;
 import groovy.util.logging.Log;
 import gwc.representations.*;
-import gwc.spock.*;
+import gwc.spi.SpecSupport;
 import gwc.util.*;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.*;
@@ -27,6 +27,21 @@ public class GFunctionExecutor implements HttpFunction {
     "groovy", "org.codehaus.groovy.", "org.apache.groovy",
     "gwc.");
   private static final Gson GSON = new Gson();
+
+  // Resolved once: present on Spock-supporting builds (Groovy 3/4/5), absent on
+  // builds without Spock (e.g. Groovy 6), where spec/AST requests are unsupported.
+  private static final Optional<SpecSupport> SPEC_SUPPORT = loadSpecSupport();
+
+  private static Optional<SpecSupport> loadSpecSupport() {
+    try {
+      return ServiceLoader.load(SpecSupport.class).findFirst();
+    } catch (ServiceConfigurationError e) {
+      // A malformed or failing SpecSupport provider must not prevent the function
+      // from starting; plain Groovy scripts work without it.
+      LOG.warning("Failed to load SpecSupport provider, spec/AST features disabled: " + e);
+      return Optional.empty();
+    }
+  }
 
 
   public GFunctionExecutor() {
@@ -71,19 +86,26 @@ public class GFunctionExecutor implements HttpFunction {
     OutputRedirector outputRedirector = new OutputRedirector();
     Object result = null;
     ExecutionInfo stats = new ExecutionInfo();
+    SPEC_SUPPORT.map(SpecSupport::spockVersion).ifPresent(stats::setSpockVersion);
     try (var ignore = new MetaClassRegistryGuard();
          var ignore2 = outputRedirector.redirect();
-         var igonre3 = new SystemPropertiesGuard()) {
+         var ignore3 = new SystemPropertiesGuard()) {
       long executionStart = System.currentTimeMillis();
       boolean isSpock = SPOCK_SCRIPT.matcher(inputScriptOrClass).find();
       if ("ast".equalsIgnoreCase(scriptRequest.getAction())) {
-        result = transpileScript(inputScriptOrClass, scriptRequest.getAstPhase(), isSpock);
-      } else {
-        if (isSpock) {
-          result = executeSpock(inputScriptOrClass);
+        if (SPEC_SUPPORT.isPresent()) {
+          result = SPEC_SUPPORT.get().renderAst(inputScriptOrClass, scriptRequest.getAstPhase(), isSpock);
         } else {
-          result = executeGroovyScript(inputScriptOrClass, outputRedirector);
+          errorOutput.append(featureUnavailable("The AST view is not supported"));
         }
+      } else if (isSpock) {
+        if (SPEC_SUPPORT.isPresent()) {
+          result = SPEC_SUPPORT.get().runSpec(inputScriptOrClass);
+        } else {
+          errorOutput.append(featureUnavailable("Spock specifications are not supported"));
+        }
+      } else {
+        result = executeGroovyScript(inputScriptOrClass, outputRedirector);
       }
       stats.setExecutionTime(System.currentTimeMillis() - executionStart);
     } catch (MultipleCompilationErrorsException e) {
@@ -130,15 +152,10 @@ public class GFunctionExecutor implements HttpFunction {
     return shell.evaluate(inputScriptOrClass);
   }
 
-  private Object executeSpock(String inputScriptOrClass) {
-    ScriptRunner scriptRunner = new ScriptRunner();
-    // TODO revisit colored output
-    scriptRunner.setDisableColors(true);
-    return scriptRunner.run(inputScriptOrClass);
-  }
-
-  private String transpileScript(String script, String astPhase, boolean isSpock) {
-    return new AstRenderer().render(script, astPhase, isSpock);
+  private static String featureUnavailable(String lead) {
+    return lead + " on the selected Groovy version (" + GroovySystem.getVersion()
+      + "), because Spock has no release compatible with this Groovy version yet. "
+      + "Select a different Groovy version to use Spock; plain Groovy scripts work on all versions.";
   }
 
   private void handleCompilationErrors(StringBuilder errorOutput, MultipleCompilationErrorsException e) {
