@@ -379,7 +379,7 @@ describe('groovy webconsole history', () => {
       cy.wait('@warmup_request')
 
       cy.openHistoryModal()
-      cy.get('#historyPreview').should('contain.text', 'Hover a row to preview')
+      cy.get('#historyPreview').should('contain.text', 'Hover or tap a row to preview its content.')
 
       cy.get('#historyOtherSessions .history-row').first().trigger('mouseenter')
       cy.get('#historyPreview')
