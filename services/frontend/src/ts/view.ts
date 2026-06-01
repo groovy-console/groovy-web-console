@@ -100,8 +100,18 @@ function addTabBehavior (tab: HTMLElement) {
 function setLoadingState (target: HTMLElement, loading: boolean) {
   if (loading) {
     target.classList.add('opacity-50', 'pointer-events-none')
+    target.setAttribute('aria-busy', 'true')
+    target.setAttribute('aria-disabled', 'true')
+    if (target instanceof HTMLButtonElement) {
+      target.disabled = true
+    }
   } else {
     target.classList.remove('opacity-50', 'pointer-events-none')
+    target.removeAttribute('aria-busy')
+    target.removeAttribute('aria-disabled')
+    if (target instanceof HTMLButtonElement) {
+      target.disabled = false
+    }
   }
 
   const playIcon = target.querySelector('.play-icon')
