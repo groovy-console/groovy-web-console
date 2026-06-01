@@ -128,7 +128,11 @@
                     </div>
                 </div>
                 <button id="execute" class="flex items-center gap-1 md:gap-2 px-3 md:px-6 py-2 bg-primary-container text-on-primary-container hover:opacity-90 transition-all font-label-caps text-label-caps rounded-lg shadow-sm">
-                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    <span class="material-symbols-outlined text-[18px] play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    <svg class="animate-spin h-[18px] w-[18px] text-current hidden spinner-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                     <span class="hidden md:inline">Execute</span>
                 </button>
             </div>
@@ -242,7 +246,11 @@
 <!-- Floating Action for Mobile -->
 <div class="md:hidden fixed bottom-6 right-6 z-50">
     <button id="executeMobile" class="w-14 h-14 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-lg active:scale-95 transition-transform" onclick="document.getElementById('execute').click()">
-        <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        <span class="material-symbols-outlined text-2xl play-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        <svg class="animate-spin h-7 w-7 text-current hidden spinner-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
     </button>
 </div>
 

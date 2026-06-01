@@ -97,12 +97,50 @@ function addTabBehavior (tab: HTMLElement) {
     ).subscribe(() => updateOutput())
 }
 
+function setLoadingState (target: HTMLElement, loading: boolean) {
+  if (loading) {
+    target.classList.add('opacity-50', 'pointer-events-none')
+    target.setAttribute('aria-busy', 'true')
+    target.setAttribute('aria-disabled', 'true')
+    if (target instanceof HTMLButtonElement) {
+      target.disabled = true
+    }
+  } else {
+    target.classList.remove('opacity-50', 'pointer-events-none')
+    target.removeAttribute('aria-busy')
+    target.removeAttribute('aria-disabled')
+    if (target instanceof HTMLButtonElement) {
+      target.disabled = false
+    }
+  }
+
+  const playIcon = target.querySelector('.play-icon')
+  const spinnerIcon = target.querySelector('.spinner-icon')
+
+  if (playIcon && spinnerIcon) {
+    if (loading) {
+      playIcon.classList.add('hidden')
+      spinnerIcon.classList.remove('hidden')
+    } else {
+      playIcon.classList.remove('hidden')
+      spinnerIcon.classList.add('hidden')
+    }
+  }
+
+  if (target.id === 'execute') {
+    const mobileBtn = document.getElementById('executeMobile')
+    if (mobileBtn && mobileBtn !== target) {
+      setLoadingState(mobileBtn, loading)
+    }
+  }
+}
+
 function scriptExecution (target: HTMLElement, action: () => Observable<ExecutionResult>) {
   fromEvent(target, 'click')
     .pipe(
       throttleTime(500),
       tap(() => {
-        target.classList.add('opacity-50', 'pointer-events-none')
+        setLoadingState(target, true)
         clearOutput()
       }),
       concatMap(action),
@@ -111,12 +149,12 @@ function scriptExecution (target: HTMLElement, action: () => Observable<Executio
     .subscribe({
       next: result => {
         executionResult = result
-        target.classList.remove('opacity-50', 'pointer-events-none')
+        setLoadingState(target, false)
         updateOutput()
       },
       error: err => {
         console.log('Response NOT OK', err)
-        target.classList.remove('opacity-50', 'pointer-events-none')
+        setLoadingState(target, false)
         executionResult = {
           out: '',
           err: 'An error occurred while sending the Groovy script for execution',
