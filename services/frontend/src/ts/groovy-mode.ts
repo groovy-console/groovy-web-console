@@ -26,8 +26,8 @@ function tokenBase(stream, state) {
     return null;
   }
   if (/\d/.test(ch)) {
-    stream.eatWhile(/[\w\.]/);
-    if (stream.eat(/eE/)) { stream.eat(/\+\-/); stream.eatWhile(/\d/); }
+    stream.eatWhile(/[\d\.]/);
+    if (stream.eat(/[eE]/)) { stream.eat(/[+\-]/); stream.eatWhile(/\d/); }
     return "number";
   }
   if (ch == "/") {
@@ -92,7 +92,7 @@ function startString(quote, stream, state) {
         if (!tripleQuoted) { break; }
         if (stream.match(quote + quote)) { end = true; break; }
       }
-      if (quote == '"' && next == "$" && !escaped) {
+      if ((quote == '"' || quote == '/') && next == "$" && !escaped) {
         if (stream.eat("{")) {
           state.tokenize.push(tokenBaseUntilBrace());
           return "string";
