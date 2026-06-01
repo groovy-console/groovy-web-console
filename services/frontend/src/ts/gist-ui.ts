@@ -13,12 +13,10 @@ export function setupGistUi (codeCM: CodeEditor) {
   const accountAvatar = document.getElementById('accountAvatar') as HTMLImageElement
   const accountLogin = document.getElementById('accountLogin')
   const signOutItem = document.getElementById('signOutItem')
-  const saveAsPublicGistControl = document.getElementById('saveAsPublicGistControl')
-  const saveAsSecretGistControl = document.getElementById('saveAsSecretGistControl')
+  const saveAsGistControl = document.getElementById('saveAsGistControl')
   const updateGistControl = document.getElementById('updateGistControl')
   const saveAsNewGistControl = document.getElementById('saveAsNewGistControl')
-  const saveAsPublicGistBtn = document.getElementById('saveAsPublicGist')
-  const saveAsSecretGistBtn = document.getElementById('saveAsSecretGist')
+  const saveAsGistBtn = document.getElementById('saveAsGist')
   const updateGistBtn = document.getElementById('updateGist')
   const saveAsNewGistBtn = document.getElementById('saveAsNewGist')
 
@@ -29,6 +27,7 @@ export function setupGistUi (codeCM: CodeEditor) {
   const saveGistNameError = document.getElementById('saveGistNameError')
   const saveGistIncludeOutputField = document.getElementById('saveGistIncludeOutputField')
   const saveGistIncludeOutput = document.getElementById('saveGistIncludeOutput') as HTMLInputElement
+  const saveGistPrivate = document.getElementById('saveGistPrivate') as HTMLInputElement
   const saveGistError = document.getElementById('saveGistError')
   const saveGistConfirm = document.getElementById('saveGistConfirm')
   const saveGistCancel = document.getElementById('saveGistCancel')
@@ -36,8 +35,6 @@ export function setupGistUi (codeCM: CodeEditor) {
   const sessionNotification = document.getElementById('sessionNotification')
   const sessionNotificationText = document.getElementById('sessionNotificationText')
   const sessionNotificationClose = document.getElementById('sessionNotificationClose')
-
-  let pendingVisibility: boolean | null = null
 
   const show = (el: HTMLElement) => el.classList.remove('hidden')
   const hide = (el: HTMLElement) => el.classList.add('hidden')
@@ -93,8 +90,9 @@ export function setupGistUi (codeCM: CodeEditor) {
   function refreshButtons (user: User | null, gist: GistMetadata | null) {
     if (user === null) {
       show(signInItem); hide(accountItem)
-      hide(saveAsPublicGistControl); hide(saveAsSecretGistControl)
-      hide(updateGistControl); hide(saveAsNewGistControl)
+      if (saveAsGistControl) hide(saveAsGistControl)
+      if (updateGistControl) hide(updateGistControl)
+      if (saveAsNewGistControl) hide(saveAsNewGistControl)
       return
     }
     hide(signInItem); show(accountItem)
@@ -103,11 +101,13 @@ export function setupGistUi (codeCM: CodeEditor) {
 
     const ownsLoadedGist = gist !== null && gist.ownerLogin === user.login
     if (ownsLoadedGist) {
-      hide(saveAsPublicGistControl); hide(saveAsSecretGistControl)
-      show(updateGistControl); show(saveAsNewGistControl)
+      if (saveAsGistControl) hide(saveAsGistControl)
+      if (updateGistControl) show(updateGistControl)
+      if (saveAsNewGistControl) show(saveAsNewGistControl)
     } else {
-      show(saveAsPublicGistControl); show(saveAsSecretGistControl)
-      hide(updateGistControl); hide(saveAsNewGistControl)
+      if (saveAsGistControl) show(saveAsGistControl)
+      if (updateGistControl) hide(updateGistControl)
+      if (saveAsNewGistControl) hide(saveAsNewGistControl)
     }
   }
 
@@ -125,14 +125,12 @@ export function setupGistUi (codeCM: CodeEditor) {
     signOut()
   })
 
-  function openSaveModal (mode: 'public' | 'secret' | 'new') {
+  function openSaveModal (mode: 'save' | 'new') {
     if (shareDropdown) hide(shareDropdown)
-    pendingVisibility = mode === 'public' ? true : mode === 'secret' ? false : loadedGist$.value?.public ?? true
-    saveGistModalTitle.textContent = mode === 'public'
-      ? 'Save as public gist'
-      : mode === 'secret' ? 'Save as secret gist' : 'Save as new gist'
+    saveGistModalTitle.textContent = mode === 'save' ? 'Save as gist' : 'Save as new gist'
     saveGistName.value = ''
     saveGistIncludeOutput.checked = false
+    saveGistPrivate.checked = false
     hide(saveGistNameError); hide(saveGistError); saveGistError.textContent = ''
     if (hasOutput()) show(saveGistIncludeOutputField); else hide(saveGistIncludeOutputField)
     ;(saveGistModal as HTMLDialogElement).showModal()
@@ -140,12 +138,10 @@ export function setupGistUi (codeCM: CodeEditor) {
   }
   function closeSaveModal () {
     ;(saveGistModal as HTMLDialogElement).close()
-    pendingVisibility = null
   }
 
-  throttledClick$(saveAsPublicGistBtn).subscribe(() => openSaveModal('public'))
-  throttledClick$(saveAsSecretGistBtn).subscribe(() => openSaveModal('secret'))
-  throttledClick$(saveAsNewGistBtn).subscribe(() => openSaveModal('new'))
+  if (saveAsGistBtn) throttledClick$(saveAsGistBtn).subscribe(() => openSaveModal('save'))
+  if (saveAsNewGistBtn) throttledClick$(saveAsNewGistBtn).subscribe(() => openSaveModal('new'))
   saveGistModalClose.addEventListener('click', closeSaveModal)
   saveGistCancel.addEventListener('click', closeSaveModal)
   saveGistModal.addEventListener('click', (e) => {
@@ -171,7 +167,7 @@ export function setupGistUi (codeCM: CodeEditor) {
     }),
     exhaustMap(name => createGist({
       name,
-      public: pendingVisibility ?? true,
+      public: !saveGistPrivate.checked,
       code: codeCM.getCode(),
       output: saveGistIncludeOutput.checked ? outputText() : undefined
     }).pipe(

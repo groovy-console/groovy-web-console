@@ -21,8 +21,7 @@ describe('GitHub auth + gist save/update', () => {
       cy.get('#accountItem').should('not.be.visible')
 
       cy.get('#shareAsCode').click()
-      cy.get('#saveAsPublicGistControl').should('not.be.visible')
-      cy.get('#saveAsSecretGistControl').should('not.be.visible')
+      cy.get('#saveAsGistControl').should('not.be.visible')
       cy.get('#updateGistControl').should('not.be.visible')
       cy.get('#saveAsNewGistControl').should('not.be.visible')
     })
@@ -45,8 +44,7 @@ describe('GitHub auth + gist save/update', () => {
       cy.get('#accountLogin').should('have.text', '@alice')
 
       cy.get('#shareAsCode').click()
-      cy.get('#saveAsPublicGistControl').should('be.visible')
-      cy.get('#saveAsSecretGistControl').should('be.visible')
+      cy.get('#saveAsGistControl').should('be.visible')
       cy.get('#updateGistControl').should('not.be.visible')
       cy.get('#saveAsNewGistControl').should('not.be.visible')
     })
@@ -62,7 +60,7 @@ describe('GitHub auth + gist save/update', () => {
       cy.wait(['@warmup_request', '@me'])
 
       cy.get('#shareAsCode').click()
-      cy.get('#saveAsPublicGist').click()
+      cy.get('#saveAsGist').click()
       cy.get('#saveGistModal').should('have.prop', 'open', true)
       cy.get('#saveGistName').type('My Snippet')
       cy.get('#saveGistConfirm').click()
@@ -77,7 +75,7 @@ describe('GitHub auth + gist save/update', () => {
       cy.wait(['@warmup_request', '@me'])
 
       cy.get('#shareAsCode').click()
-      cy.get('#saveAsSecretGist').click()
+      cy.get('#saveAsGist').click()
       cy.get('#saveGistConfirm').click()
       cy.get('#saveGistNameError').should('be.visible')
     })
@@ -115,8 +113,7 @@ describe('GitHub auth + gist save/update', () => {
       cy.get('#shareAsCode').click()
       cy.get('#updateGistControl').should('be.visible')
       cy.get('#saveAsNewGistControl').should('be.visible')
-      cy.get('#saveAsPublicGistControl').should('not.be.visible')
-      cy.get('#saveAsSecretGistControl').should('not.be.visible')
+      cy.get('#saveAsGistControl').should('not.be.visible')
     })
 
     it('PATCHes the existing gist when Update is clicked', () => {
@@ -129,7 +126,6 @@ describe('GitHub auth + gist save/update', () => {
       cy.visit('/?gist=abc123')
       cy.wait(['@warmup_request', '@me', '@gist'])
 
-      cy.get('#shareAsCode').click()
       cy.get('#updateGist').click()
       cy.wait('@updateGist')
       cy.get('#saveGistModal').should('have.prop', 'open', false)

@@ -91,6 +91,13 @@
                 </button>
             </div>
             <div class="flex items-center gap-2 shrink-0">
+                <!-- Gist Toolbar Controls -->
+                <div id="updateGistControl" class="hidden">
+                    <button id="updateGist" class="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 bg-[#00a896] text-white hover:opacity-90 transition-all font-label-caps text-label-caps rounded-lg shadow-sm">
+                        <i class="fas fa-save text-[16px]"></i>
+                        <span class="hidden md:inline">Update gist</span>
+                    </button>
+                </div>
                 <div class="relative" id="shareDropdownContainer">
                     <button id="shareAsCode" class="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 border border-outline-variant bg-surface hover:bg-surface-container-low transition-all font-label-caps text-label-caps text-on-surface rounded-lg">
                         <span class="material-symbols-outlined text-[18px]">share</span>
@@ -108,19 +115,9 @@
                             </div>
                             <div id="shareLinkTooltip" class="text-[10px] text-primary dark:text-primary-fixed hidden font-medium">Copied!</div>
                         </div>
-                        <div id="saveAsPublicGistControl" class="hidden w-full">
-                            <button id="saveAsPublicGist" class="flex items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low text-on-surface dark:text-d-on-surface bg-transparent border-none cursor-pointer w-full text-left font-body-sm">
-                                <i class="fab fa-github"></i> Save as public gist
-                            </button>
-                        </div>
-                        <div id="saveAsSecretGistControl" class="hidden w-full">
-                            <button id="saveAsSecretGist" class="flex items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low text-on-surface dark:text-d-on-surface bg-transparent border-none cursor-pointer w-full text-left font-body-sm">
-                                <i class="fab fa-github"></i> Save as secret gist
-                            </button>
-                        </div>
-                        <div id="updateGistControl" class="hidden w-full">
-                            <button id="updateGist" class="flex items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low text-on-surface dark:text-d-on-surface bg-transparent border-none cursor-pointer w-full text-left font-body-sm">
-                                <i class="fas fa-save"></i> Update gist
+                        <div id="saveAsGistControl" class="hidden w-full">
+                            <button id="saveAsGist" class="flex items-center gap-2 px-4 py-2 hover:bg-surface-container-low dark:hover:bg-d-surface-container-low text-on-surface dark:text-d-on-surface bg-transparent border-none cursor-pointer w-full text-left font-body-sm">
+                                <i class="fab fa-github"></i> Save as gist
                             </button>
                         </div>
                         <div id="saveAsNewGistControl" class="hidden w-full">
@@ -305,6 +302,10 @@
         <div id="saveGistIncludeOutputField" class="hidden flex items-center gap-2">
             <input type="checkbox" id="saveGistIncludeOutput" class="accent-primary" />
             <label for="saveGistIncludeOutput" class="text-body-sm">Include output</label>
+        </div>
+        <div id="saveGistPrivateField" class="flex items-center gap-2">
+            <input type="checkbox" id="saveGistPrivate" class="accent-primary" />
+            <label for="saveGistPrivate" class="text-body-sm">Make gist private</label>
         </div>
         <p id="saveGistError" class="text-error text-sm hidden"></p>
     </div>
