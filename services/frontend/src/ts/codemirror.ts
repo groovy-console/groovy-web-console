@@ -36,7 +36,7 @@ import {
   StreamLanguage,
   syntaxHighlighting
 } from '@codemirror/language'
-import { groovy } from '@codemirror/legacy-modes/mode/groovy'
+import { groovy } from './groovy-mode'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete'
@@ -145,6 +145,20 @@ export class CodeEditor extends ThemeableEditor {
         linter(__ => this.lintErrors, { delay: 0 }),
         lintGutter(),
         keymap.of([
+          {
+            key: 'Mod-Enter',
+            run: () => {
+              document.getElementById('execute')?.click()
+              return true
+            }
+          },
+          {
+            key: 'Shift-Enter',
+            run: () => {
+              document.getElementById('inspectAst')?.click()
+              return true
+            }
+          },
           ...closeBracketsKeymap,
           ...defaultKeymap,
           ...searchKeymap,
