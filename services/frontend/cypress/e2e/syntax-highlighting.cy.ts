@@ -1,5 +1,3 @@
-import { interceptIndefinitely } from '../support/utils'
-
 describe('syntax highlighting', () => {
   beforeEach(() => {
     cy.stubListRuntimes()
@@ -9,7 +7,7 @@ describe('syntax highlighting', () => {
 
   it('highlights val and var like def', () => {
     cy.setCodeEditorValue('def a = 1\nval b = 2\nvar c = 3')
-    
+
     cy.get('#code .cm-content').within(() => {
       cy.get('.cm-line').eq(0).contains('span', 'def').invoke('attr', 'class').then(keywordClass => {
         cy.get('.cm-line').eq(1).contains('span', 'val').should('have.attr', 'class', keywordClass)
@@ -20,7 +18,7 @@ describe('syntax highlighting', () => {
 
   it('highlights async, await, defer as keywords', () => {
     cy.setCodeEditorValue('def a\nasync b\nawait c\ndefer d')
-    
+
     cy.get('#code .cm-content').within(() => {
       cy.get('.cm-line').eq(0).contains('span', 'def').invoke('attr', 'class').then(keywordClass => {
         cy.get('.cm-line').eq(1).contains('span', 'async').should('have.attr', 'class', keywordClass)
@@ -32,12 +30,12 @@ describe('syntax highlighting', () => {
 
   it('highlights yield contextually', () => {
     cy.setCodeEditorValue('return a\nyield return b\nyield c')
-    
+
     cy.get('#code .cm-content').within(() => {
       cy.get('.cm-line').eq(0).contains('span', 'return').invoke('attr', 'class').then(returnClass => {
         // 'yield' on line 2 should have the keyword class
         cy.get('.cm-line').eq(1).contains('span', 'yield').should('have.attr', 'class', returnClass)
-        
+
         // 'yield' on line 3 should not have the keyword class
         cy.get('.cm-line').eq(2).then($line => {
           const spans = $line.find('span')
@@ -46,7 +44,7 @@ describe('syntax highlighting', () => {
             expect(yieldSpan.className).not.to.eq(returnClass)
           } else {
             // Unstyled text means it correctly wasn't treated as a keyword
-            expect(true).to.be.true
+            expect(true).to.equal(true)
           }
         })
       })
@@ -55,12 +53,12 @@ describe('syntax highlighting', () => {
 
   it('highlights module contextually', () => {
     cy.setCodeEditorValue('import a\nimport module b\nmodule c')
-    
+
     cy.get('#code .cm-content').within(() => {
       cy.get('.cm-line').eq(0).contains('span', 'import').invoke('attr', 'class').then(importClass => {
         // 'module' on line 2 should have the keyword class
         cy.get('.cm-line').eq(1).contains('span', 'module').should('have.attr', 'class', importClass)
-        
+
         // 'module' on line 3 should not have the keyword class
         cy.get('.cm-line').eq(2).then($line => {
           const spans = $line.find('span')
@@ -69,7 +67,7 @@ describe('syntax highlighting', () => {
             expect(moduleSpan.className).not.to.eq(importClass)
           } else {
             // Unstyled text
-            expect(true).to.be.true
+            expect(true).to.equal(true)
           }
         })
       })
