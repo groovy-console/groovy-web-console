@@ -39,31 +39,31 @@ export function setupGistUi (codeCM: CodeEditor) {
   const show = (el: HTMLElement) => el.classList.remove('hidden')
   const hide = (el: HTMLElement) => el.classList.add('hidden')
 
+  const toggleDropdown = (target: HTMLElement, other: HTMLElement | null) => {
+    if (target.classList.contains('hidden')) {
+      show(target)
+      if (other && !other.classList.contains('hidden')) hide(other)
+    } else {
+      hide(target)
+    }
+  }
+
   const shareDropdown = document.getElementById('shareDropdown')
+  const accountDropdown = document.getElementById('accountDropdown')
+
   const shareAsCode = document.getElementById('shareAsCode')
   if (shareAsCode && shareDropdown) {
     shareAsCode.addEventListener('click', (e) => {
       e.stopPropagation()
-      if (shareDropdown.classList.contains('hidden')) {
-        show(shareDropdown)
-        if (accountDropdown && !accountDropdown.classList.contains('hidden')) hide(accountDropdown)
-      } else {
-        hide(shareDropdown)
-      }
+      toggleDropdown(shareDropdown, accountDropdown)
     })
     shareDropdown.addEventListener('click', (e) => e.stopPropagation())
   }
 
-  const accountDropdown = document.getElementById('accountDropdown')
   if (accountItem && accountDropdown) {
     accountItem.addEventListener('click', (e) => {
       e.stopPropagation()
-      if (accountDropdown.classList.contains('hidden')) {
-        show(accountDropdown)
-        if (shareDropdown && !shareDropdown.classList.contains('hidden')) hide(shareDropdown)
-      } else {
-        hide(accountDropdown)
-      }
+      toggleDropdown(accountDropdown, shareDropdown)
     })
     accountDropdown.addEventListener('click', (e) => e.stopPropagation())
   }
