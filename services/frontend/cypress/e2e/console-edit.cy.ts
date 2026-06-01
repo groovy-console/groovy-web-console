@@ -103,16 +103,16 @@ describe('groovy webconsole', () => {
       'execute_hello_world_4_0')
 
     cy.get('#execute')
-      .should('not.have.class', 'is-loading') // should not display loading initially
+      .should('not.have.class', 'opacity-50') // should not display loading initially
       .click()
 
     cy.get('#execute')
-      .should('have.class', 'is-loading') // should display loading after click on execute
+      .should('have.class', 'opacity-50') // should display loading after click on execute
       .then(() => {
         response.sendResponse() // let the network request complete
         cy.wait(`@${response.alias}`)
       })
       .get('#execute') // we need to select the element again
-      .should('not.have.class', 'is-loading') // loading indicator should be gone
+      .should('not.have.class', 'opacity-50') // loading indicator should be gone
   })
 })

@@ -229,7 +229,7 @@ export class HistoryService {
   }
 
   public getEditorContent (): string {
-    return localStorage.getItem(contentKey(this.sessionId)) || '\n\n\n\n'
+    return localStorage.getItem(contentKey(this.sessionId)) || ''
   }
 
   public getCurrentSessionId (): string {

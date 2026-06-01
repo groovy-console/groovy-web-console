@@ -5,7 +5,7 @@ import { CodeEditor } from './codemirror'
 const UNDO_TIMEOUT_MS = 15_000
 const LABEL_MAX_LEN = 40
 const SEARCH_DEBOUNCE_MS = 150
-const PREVIEW_PLACEHOLDER = 'Hover a row to preview its content.'
+const PREVIEW_PLACEHOLDER = 'Hover or tap a row to preview its content.'
 
 export function deriveLabel (content: string): string {
   const lines = content.split('\n')
@@ -143,13 +143,15 @@ export class HistoryModal {
 
   private resetPreview (): void {
     this.previewEl.textContent = PREVIEW_PLACEHOLDER
-    this.previewEl.classList.add('has-text-grey-light')
+    this.previewEl.classList.add('text-outline', 'dark:text-d-outline', 'opacity-50')
     this.clearPreviewSource()
   }
 
   private setPreview (content: string, sourceRow: HTMLElement): void {
     this.previewEl.textContent = content === '' ? '(empty)' : content
-    this.previewEl.classList.toggle('has-text-grey-light', content === '')
+    this.previewEl.classList.toggle('text-outline', content === '')
+    this.previewEl.classList.toggle('dark:text-d-outline', content === '')
+    this.previewEl.classList.toggle('opacity-50', content === '')
     this.setPreviewSource(sourceRow)
   }
 
@@ -183,7 +185,7 @@ export class HistoryModal {
     this.currentSnapshotsEl.classList.toggle('is-empty', snapshots.length === 0)
     if (snapshots.length === 0) {
       const empty = document.createElement('p')
-      empty.className = 'has-text-grey is-size-7 p-2'
+      empty.className = 'text-outline dark:text-d-outline text-xs p-2'
       empty.textContent = this.searchQuery
         ? 'No snapshots match.'
         : 'No snapshots yet — one is taken every 60 seconds while you type.'
@@ -206,6 +208,9 @@ export class HistoryModal {
     this.currentSnapshotsSubs.add(
       fromEvent(row, 'mouseenter').subscribe(() => this.setPreview(snapshot.content, row))
     )
+    this.currentSnapshotsSubs.add(
+      fromEvent(row, 'click').subscribe(() => this.setPreview(snapshot.content, row))
+    )
 
     const time = document.createElement('span')
     time.className = 'history-row-time'
@@ -216,7 +221,7 @@ export class HistoryModal {
     label.textContent = deriveLabel(snapshot.content)
 
     const btn = document.createElement('button')
-    btn.className = 'button is-small'
+    btn.className = 'px-3 py-1 bg-surface-container-high dark:bg-d-surface-container-high hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest text-on-surface dark:text-d-on-surface text-xs rounded border border-outline-variant dark:border-d-outline-variant transition-colors'
     btn.textContent = 'Restore'
     this.currentSnapshotsSubs.add(
       fromEvent(btn, 'click').subscribe(() => this.handleRestore(snapshot))
@@ -240,7 +245,7 @@ export class HistoryModal {
     this.otherSessionsEl.classList.toggle('is-empty', sessions.length === 0)
     if (sessions.length === 0) {
       const empty = document.createElement('p')
-      empty.className = 'has-text-grey is-size-7 p-2'
+      empty.className = 'text-outline dark:text-d-outline text-xs p-2'
       empty.textContent = this.searchQuery
         ? 'No sessions match.'
         : 'No other sessions.'
@@ -262,6 +267,9 @@ export class HistoryModal {
     this.otherSessionsSubs.add(
       fromEvent(row, 'mouseenter').subscribe(() => this.setPreview(content, row))
     )
+    this.otherSessionsSubs.add(
+      fromEvent(row, 'click').subscribe(() => this.setPreview(content, row))
+    )
 
     const label = document.createElement('span')
     label.className = 'history-row-label'
@@ -272,23 +280,18 @@ export class HistoryModal {
     time.textContent = formatTimestamp(meta.lastModified)
 
     const switchBtn = document.createElement('button')
-    switchBtn.className = 'button is-small'
+    switchBtn.className = 'px-3 py-1 bg-surface-container-high dark:bg-d-surface-container-high hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest text-on-surface dark:text-d-on-surface text-xs rounded border border-outline-variant dark:border-d-outline-variant transition-colors'
     switchBtn.textContent = 'Switch'
     this.otherSessionsSubs.add(
       fromEvent(switchBtn, 'click').subscribe(() => this.handleSwitch(meta.id))
     )
 
     const deleteBtn = document.createElement('button')
-    deleteBtn.className = 'button is-small delete-session'
+    deleteBtn.className = 'px-2 py-1 bg-surface-container-high dark:bg-d-surface-container-high hover:bg-surface-container-highest dark:hover:bg-d-surface-container-highest text-error text-xs rounded border border-outline-variant dark:border-d-outline-variant transition-colors delete-session'
     deleteBtn.setAttribute('aria-label', 'delete session')
     const deleteIcon = document.createElement('span')
-    // has-text-danger keeps the trash icon red (recognizable as a destructive
-    // action) while the button itself stays neutral so it adapts to dark mode
-    // instead of being permanently pale-red via `is-light is-danger`.
-    deleteIcon.className = 'icon is-small has-text-danger'
-    const deleteIconI = document.createElement('i')
-    deleteIconI.className = 'fas fa-trash'
-    deleteIcon.appendChild(deleteIconI)
+    deleteIcon.className = 'material-symbols-outlined text-[16px]'
+    deleteIcon.textContent = 'delete'
     deleteBtn.appendChild(deleteIcon)
     this.otherSessionsSubs.add(
       fromEvent(deleteBtn, 'click').subscribe(() => this.handleDelete(meta))
@@ -325,12 +328,12 @@ export class HistoryModal {
 
   private buildToast (meta: SessionMeta): { toast: HTMLElement, undoSub: Subscription } {
     const toast = document.createElement('div')
-    toast.className = 'notification is-warning history-toast'
+    toast.className = 'history-toast'
     toast.dataset.sessionId = meta.id
     toast.textContent = 'Session deleted. '
 
     const undo = document.createElement('button')
-    undo.className = 'button is-small is-text history-toast-undo'
+    undo.className = 'history-toast-undo'
     undo.textContent = 'Undo'
     toast.appendChild(undo)
 

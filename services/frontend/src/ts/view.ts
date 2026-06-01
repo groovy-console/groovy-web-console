@@ -23,8 +23,7 @@ const tabResult = document.getElementById('tabResult')
 const tabError = document.getElementById('tabError')
 const tabExecInfo = document.getElementById('tabExecInfo')
 const tabs = [tabOutput, tabResult, tabError, tabExecInfo]
-const modeSwitchers = Array.from(document.querySelectorAll('.mode-switcher a')) as HTMLLinkElement[]
-const currentMode = document.getElementById('currentMode') as HTMLLinkElement
+
 let activeTab: HTMLElement
 
 let executionResult: ExecutionResult = {
@@ -82,10 +81,12 @@ function handleExecutionResult (result: ExecutionResult) {
 }
 
 function switchTab (active: HTMLElement) {
-  tabs.forEach(e =>
-    (e.parentNode as HTMLElement).classList.remove('is-active')
-  );
-  (active.parentNode as HTMLElement).classList.add('is-active')
+  tabs.forEach(e => {
+    e.classList.remove('text-primary', 'dark:text-d-primary', 'border-b-2', 'border-primary', 'dark:border-d-primary')
+    e.classList.add('text-on-surface-variant', 'dark:text-d-on-surface-variant', 'opacity-60')
+  })
+  active.classList.remove('text-on-surface-variant', 'dark:text-d-on-surface-variant', 'opacity-60')
+  active.classList.add('text-primary', 'dark:text-d-primary', 'border-b-2', 'border-primary', 'dark:border-d-primary')
   activeTab = active
 }
 
@@ -101,7 +102,7 @@ function scriptExecution (target: HTMLElement, action: () => Observable<Executio
     .pipe(
       throttleTime(500),
       tap(() => {
-        target.classList.add('is-loading')
+        target.classList.add('opacity-50', 'pointer-events-none')
         clearOutput()
       }),
       concatMap(action),
@@ -110,12 +111,12 @@ function scriptExecution (target: HTMLElement, action: () => Observable<Executio
     .subscribe({
       next: result => {
         executionResult = result
-        target.classList.remove('is-loading')
+        target.classList.remove('opacity-50', 'pointer-events-none')
         updateOutput()
       },
       error: err => {
         console.log('Response NOT OK', err)
-        target.classList.remove('is-loading')
+        target.classList.remove('opacity-50', 'pointer-events-none')
         executionResult = {
           out: '',
           err: 'An error occurred while sending the Groovy script for execution',
@@ -131,22 +132,34 @@ function scriptExecution (target: HTMLElement, action: () => Observable<Executio
 function switchMode (mode:ColorMode) {
   switch (mode) {
     case 'light':
-      htmlRoot.classList.remove('theme-dark')
-      htmlRoot.classList.add('theme-light')
+      htmlRoot.classList.remove('dark')
       switchEditorTheme('light')
       break
     case 'dark':
-      htmlRoot.classList.remove('theme-light')
-      htmlRoot.classList.add('theme-dark')
+      htmlRoot.classList.add('dark')
       switchEditorTheme('dark')
       break
     case 'system':
-      htmlRoot.classList.remove('theme-light')
-      htmlRoot.classList.remove('theme-dark')
+      if (getPreferredColorScheme() === 'dark') {
+        htmlRoot.classList.add('dark')
+      } else {
+        htmlRoot.classList.remove('dark')
+      }
       switchEditorTheme(getPreferredColorScheme())
       break
   }
-  currentMode.innerHTML = modeSwitchers.find(ms => ms.dataset.mode === mode).innerHTML
+
+  const icon = document.getElementById('currentThemeIcon')
+  if (icon) {
+    if (mode === 'light') icon.textContent = 'light_mode'
+    else if (mode === 'dark') icon.textContent = 'dark_mode'
+    else icon.textContent = 'desktop_windows'
+  }
+
+  const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement
+  if (themeSelect && themeSelect.value !== mode) {
+    themeSelect.value = mode
+  }
 }
 
 function switchEditorTheme (theme:ThemeColor) {
@@ -155,17 +168,33 @@ function switchEditorTheme (theme:ThemeColor) {
 }
 
 function setupModeSwitchersAndRestoreSavedColorMode () {
-  modeSwitchers.forEach(modeSwitcher => {
-    fromEvent(modeSwitcher, 'click')
+  const themeSelect = document.getElementById('themeSelect') as HTMLSelectElement
+  if (themeSelect) {
+    fromEvent(themeSelect, 'change')
       .pipe(
         tap(e => {
           e.preventDefault()
-          const mode = modeSwitcher.dataset.mode as ColorMode
+          const mode = (e.target as HTMLSelectElement).value as ColorMode
           switchMode(mode)
           localStorage.setItem('colorMode', mode)
         })
       ).subscribe()
-  })
+  }
+
+  const icon = document.getElementById('currentThemeIcon')
+  if (icon) {
+    fromEvent(icon, 'click').subscribe(() => {
+      const current = localStorage.getItem('colorMode') || 'system'
+      const nextMode = current === 'system' ? 'light' : current === 'light' ? 'dark' : 'system'
+      if (themeSelect) {
+        themeSelect.value = nextMode
+        themeSelect.dispatchEvent(new Event('change'))
+      } else {
+        switchMode(nextMode as ColorMode)
+        localStorage.setItem('colorMode', nextMode)
+      }
+    })
+  }
 
   const savedColorMode = localStorage.getItem('colorMode')
   if (savedColorMode !== null) {
@@ -220,30 +249,51 @@ export function initView () {
   scriptExecution(executeButton, () => groovyConsole.executeScript(version.value, codeCM.getCode()))
   scriptExecution(inspectAstButton, () => groovyConsole.inspectAst(version.value, codeCM.getCode(), astPhaseSelect.value))
 
+  const shareHandler = () => {
+    return of(null).pipe(
+      map(() => codeCM.getCode()),
+      concatMap(editorContent => compressToBase64(editorContent))
+    )
+  }
+
   fromEvent(share, 'click')
     .pipe(
       throttleTime(500),
-      map(() => codeCM.getCode()),
-      concatMap(editorContent => compressToBase64(editorContent))
-    ).subscribe(codez => {
-      shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`;
-      (shareLink.parentNode.parentNode as HTMLElement).classList.remove('is-hidden')
+      concatMap(() => shareHandler())
+    )
+    .subscribe(codez => {
+      shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`
     })
 
-  fromEvent(shareLink, 'click')
-    .pipe(
-      throttleTime(500),
-      concatMap(() => navigator.clipboard.writeText(shareLink.value)),
-      tap(() => shareLinkTooltip.classList.add('has-tooltip-active')),
-      delay(500),
-      tap(() => shareLinkTooltip.classList.remove('has-tooltip-active'))
-    ).subscribe()
+  const shareMobileBtn = document.getElementById('shareMobileBtn')
+  if (shareMobileBtn) {
+    fromEvent(shareMobileBtn, 'click')
+      .pipe(
+        throttleTime(500),
+        concatMap(() => shareHandler())
+      )
+      .subscribe(codez => {
+        shareLink.value = `${location.origin + location.pathname}?g=${version.value}&codez=${codez}`
+      })
+  }
+
+  const copyShareLinkBtn = document.getElementById('copyShareLinkBtn')
+  if (copyShareLinkBtn) {
+    fromEvent(copyShareLinkBtn, 'click')
+      .pipe(
+        throttleTime(500),
+        concatMap(() => navigator.clipboard.writeText(shareLink.value)),
+        tap(() => shareLinkTooltip.classList.remove('hidden')),
+        delay(1500),
+        tap(() => shareLinkTooltip.classList.add('hidden'))
+      ).subscribe()
+  }
 
   const fetchGroovyVersion = of(1)
     .pipe(
-      tap(() => (version.parentNode as HTMLElement).classList.add('is-loading')),
+      tap(() => version.classList.add('opacity-50', 'pointer-events-none')),
       concatMap(() => groovyConsole.getAvailableGroovyVersions()),
-      tap(() => (version.parentNode as HTMLElement).classList.remove('is-loading'))
+      tap(() => version.classList.remove('opacity-50', 'pointer-events-none'))
     )
 
   const groovyParam = of(location.search)
@@ -306,13 +356,79 @@ export function initView () {
   setupGistUi(codeCM)
 
   const historyModal = new HistoryModal(codeCM.getHistoryService(), codeCM)
-  fromEvent(document.getElementById('openHistory'), 'click')
-    .subscribe((event) => {
-      event.preventDefault()
-      // Collapse the dropdown explicitly — otherwise it stays open after the
-      // menu item is clicked, and the next click on the History button
-      // toggles it closed instead of reopening.
-      document.querySelector('#dropdown-history')?.parentElement?.classList.remove('is-active')
-      historyModal.open()
+  const historyHandler = (event: Event) => {
+    event.preventDefault()
+    // Collapse the dropdown explicitly — otherwise it stays open after the
+    // menu item is clicked, and the next click on the History button
+    // toggles it closed instead of reopening.
+    document.querySelector('#dropdown-history')?.parentElement?.classList.remove('is-active')
+    historyModal.open()
+  }
+
+  const openHistory = document.getElementById('openHistory')
+  if (openHistory) fromEvent(openHistory, 'click').subscribe(historyHandler)
+
+  const historyMobileBtn = document.getElementById('historyMobileBtn')
+  if (historyMobileBtn) fromEvent(historyMobileBtn, 'click').subscribe(historyHandler)
+
+  const toggleDocBtn = document.getElementById('toggleDocBtn')
+  const docPanel = document.getElementById('docPanel')
+  if (toggleDocBtn && docPanel) {
+    fromEvent(toggleDocBtn, 'click').subscribe(() => {
+      docPanel.classList.toggle('hidden')
     })
+  }
+
+  // --- Vertical Resizer Logic ---
+  const resizer = document.getElementById('resizer')
+  const resultsPane = document.getElementById('resultsPane')
+
+  if (resizer && resultsPane) {
+    // Restore saved height if it exists
+    const savedHeight = localStorage.getItem('resultsPaneHeight')
+    if (savedHeight) {
+      resultsPane.style.height = savedHeight
+    }
+
+    let isResizing = false
+
+    fromEvent<PointerEvent>(resizer, 'pointerdown').subscribe((e) => {
+      isResizing = true
+      e.preventDefault() // Prevent text selection
+      document.body.style.cursor = 'row-resize'
+      document.body.style.userSelect = 'none' // Also prevent selection globally during drag
+    })
+
+    fromEvent<PointerEvent>(window, 'pointermove').subscribe((e) => {
+      if (!isResizing) return
+
+      const container = resultsPane.parentElement
+      if (!container) return
+
+      const containerRect = container.getBoundingClientRect()
+
+      // Calculate the new height from the bottom of the container
+      // height = containerBottom - mouseY
+      let newHeight = containerRect.bottom - e.clientY
+
+      // Enforce bounds (e.g., between 10% and 90% of container height)
+      const minHeight = 100 // pixels
+      const maxHeight = containerRect.height * 0.9
+
+      newHeight = Math.max(minHeight, Math.min(newHeight, maxHeight))
+
+      // Convert back to percentage for fluid resizing when browser resizes
+      const heightPercent = (newHeight / containerRect.height) * 100
+      resultsPane.style.height = `${heightPercent}%`
+    })
+
+    fromEvent<PointerEvent>(window, 'pointerup').subscribe(() => {
+      if (isResizing) {
+        isResizing = false
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+        localStorage.setItem('resultsPaneHeight', resultsPane.style.height)
+      }
+    })
+  }
 }

@@ -56,8 +56,7 @@ Cypress.Commands.add('assertOutputEditorValue', (expectedValue) => {
 
 Cypress.Commands.add('assertTabActive', (tabId) => {
   cy.get(`#${tabId}`)
-    .parent()
-    .should('have.class', 'is-active')
+    .should('have.class', 'border-primary')
 })
 
 Cypress.Commands.add('stubListRuntimes', () => {
@@ -109,7 +108,6 @@ Cypress.Commands.add('seedHistorySession', (id, content, opts = {}) => {
 })
 
 Cypress.Commands.add('openHistoryModal', () => {
-  cy.get('#dropdown-history').parent().find('.dropdown-trigger button').click()
   cy.get('#openHistory').click()
   cy.get('#historyModal').should('have.class', 'is-active')
 })
