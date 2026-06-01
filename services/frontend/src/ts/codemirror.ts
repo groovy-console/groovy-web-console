@@ -36,7 +36,7 @@ import {
   StreamLanguage,
   syntaxHighlighting
 } from '@codemirror/language'
-import { groovy } from '@codemirror/legacy-modes/mode/groovy'
+import { groovy } from './groovy-mode'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete'
