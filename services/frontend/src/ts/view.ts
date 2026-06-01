@@ -350,6 +350,7 @@ export function initView () {
           const optionElement = document.createElement('option')
           optionElement.value = gv.id
           optionElement.text = gv.name
+          optionElement.className = 'bg-surface text-on-surface'
           if (paramVersion !== '' && gv.id.startsWith(paramVersion)) {
             optionElement.selected = true
             selected = true

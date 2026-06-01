@@ -22,9 +22,9 @@
         <div class="flex items-center gap-1 mode-switcher">
             <button type="button" class="material-symbols-outlined text-primary dark:text-primary-fixed text-[18px] hover:opacity-80 transition-opacity bg-transparent border-none p-0" id="currentThemeIcon" title="Toggle Theme" aria-label="Toggle Theme">desktop_windows</button>
             <select id="themeSelect" class="hidden md:block bg-transparent border-none text-body-sm font-medium focus:ring-0 cursor-pointer hover:text-primary transition-colors p-0 text-primary dark:text-primary-fixed">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="system">System</option>
+                <option value="light" class="bg-surface text-on-surface">Light</option>
+                <option value="dark" class="bg-surface text-on-surface">Dark</option>
+                <option value="system" class="bg-surface text-on-surface">System</option>
             </select>
 
             <div class="h-6 w-px bg-outline-variant mx-2"></div>
@@ -71,18 +71,18 @@
                 <div class="flex flex-col">
                     <span class="font-label-caps text-[10px] text-outline uppercase">Groovy Version</span>
                     <select name="version" id="version" class="bg-transparent border-none text-body-sm font-medium focus:ring-0 cursor-pointer hover:text-primary transition-colors p-0">
-                        <option value="groovy_3_0">Groovy 3.0</option>
+                        <option value="groovy_3_0" class="bg-surface text-on-surface">Groovy 3.0</option>
                     </select>
                 </div>
                 <div class="h-8 w-px bg-outline-variant shrink-0"></div>
                 <div class="flex flex-col">
                     <span class="font-label-caps text-[10px] text-outline uppercase">Compilation Phase</span>
                     <select name="astPhase" id="astPhase" class="bg-transparent border-none text-body-sm font-medium focus:ring-0 cursor-pointer hover:text-primary transition-colors p-0">
-                        <option value="CONVERSION">Conversion</option>
-                        <option value="SEMANTIC_ANALYSIS">Semantic Analysis</option>
-                        <option value="CANONICALIZATION">Canonicalization</option>
-                        <option value="INSTRUCTION_SELECTION">Instruction Selection</option>
-                        <option value="CLASS_GENERATION" selected>Class Generation</option>
+                        <option value="CONVERSION" class="bg-surface text-on-surface">Conversion</option>
+                        <option value="SEMANTIC_ANALYSIS" class="bg-surface text-on-surface">Semantic Analysis</option>
+                        <option value="CANONICALIZATION" class="bg-surface text-on-surface">Canonicalization</option>
+                        <option value="INSTRUCTION_SELECTION" class="bg-surface text-on-surface">Instruction Selection</option>
+                        <option value="CLASS_GENERATION" class="bg-surface text-on-surface" selected>Class Generation</option>
                     </select>
                 </div>
                 <button id="inspectAst" class="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 border border-outline-variant bg-surface hover:bg-surface-container-low transition-all font-label-caps text-label-caps text-on-surface rounded-lg ml-2">
