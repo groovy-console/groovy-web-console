@@ -31,11 +31,11 @@ The output will be in `functions/groovy-executor/target/deployment`.
 There are different profiles, one for each groovy version:
 
 * `groovy_6_0_rc` (no Spock — see below)
-* `groovy_5_0`
+* `groovy_5_1`
 * `groovy_4_0` (default)
 * `groovy_3_0`
 
-Use `../../mvnw package -P groovy_5_0`
+Use `../../mvnw package -P groovy_5_1`
 
 > **Switching profiles locally requires `clean`.** Each profile compiles a
 > different set of (test) sources, so run e.g. `../../mvnw clean package -P groovy_6_0_rc`.
