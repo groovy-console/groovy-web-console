@@ -30,7 +30,7 @@ The output will be in `functions/groovy-executor/target/deployment`.
 
 There are different profiles, one for each groovy version:
 
-* `groovy_6_0_alpha` (no Spock — see below)
+* `groovy_6_0_rc` (no Spock — see below)
 * `groovy_5_0`
 * `groovy_4_0` (default)
 * `groovy_3_0`
@@ -38,21 +38,21 @@ There are different profiles, one for each groovy version:
 Use `../../mvnw package -P groovy_5_0`
 
 > **Switching profiles locally requires `clean`.** Each profile compiles a
-> different set of (test) sources, so run e.g. `../../mvnw clean package -P groovy_6_0_alpha`.
+> different set of (test) sources, so run e.g. `../../mvnw clean package -P groovy_6_0_rc`.
 > Without `clean`, stale classes from a previous profile linger in `target/` and
 > can cause a confusing `spock/lang/Specification` failure when building the
-> Spock-free `groovy_6_0_alpha` variant. (CI is unaffected — it builds from a
+> Spock-free `groovy_6_0_rc` variant. (CI is unaffected — it builds from a
 > fresh checkout.)
 
 #### Groovy 6 (pre-release, no Spock)
 
-Spock has no release compatible with Groovy 6 yet, so the `groovy_6_0_alpha`
+Spock has no release compatible with Groovy 6 yet, so the `groovy_6_0_rc`
 variant ships **without** Spock. Plain Groovy scripts run normally; submitting a
 Spock specification (or using the AST view) returns a "not supported on this
-Groovy version yet" message instead. The concrete alpha version is controlled by
+Groovy version yet" message instead. The concrete RC version is controlled by
 the `groovy.6.version` property in `functions/pom.xml`, so bumping to a newer
-alpha is a one-line change deployed to the same `groovy_6_0_alpha` function.
-Because the runtime id contains `alpha`, the frontend never selects it as the
+RC is a one-line change deployed to the same `groovy_6_0_rc` function.
+Because the runtime id contains `rc`, the frontend never selects it as the
 default version.
 
 ### Deploying the backend

@@ -277,7 +277,7 @@
       <!-- Groovy 6 is pre-release and Spock has no compatible release yet, so this
            variant ships WITHOUT spock-core. Spec/AST requests return a "not supported"
            message via the SpecSupport SPI (no provider is on the classpath). -->
-      <id>groovy_6_0_alpha</id>
+      <id>groovy_6_0_rc</id>
       <properties>
         <groovy.version>${groovy.6.version}</groovy.version>
         <maven.compiler.target>17</maven.compiler.target>
