@@ -4,7 +4,7 @@
   "type": "module",
   "main": "index.mjs",
   "dependencies": {
-    "@google-cloud/functions-framework": "^4.0.0",
+    "@google-cloud/functions-framework": "^5.0.0",
     "google-auth-library": "^10.5.0",
     "node-fetch": "^3.3.2"
   }
