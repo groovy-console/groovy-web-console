@@ -8,11 +8,11 @@ function words(str) {
 var keywords = words(
   "abstract as assert boolean break byte case catch char class const continue def default " +
     "do double else enum extends final finally float for goto if implements import in " +
-    "instanceof int interface long native new package private protected public return " +
-    "short static strictfp super switch synchronized threadsafe throw throws trait transient " +
-    "try void volatile while val var async await defer");
-var blockKeywords = words("catch class def do else enum finally for if interface switch trait try while val var");
-var standaloneKeywords = words("return break continue");
+    "instanceof int interface long native new package permits private protected public record " +
+    "return sealed short static strictfp super switch synchronized threadsafe throw throws " +
+    "trait transient try void volatile while val var async await defer yield");
+var blockKeywords = words("async catch class def defer do else enum finally for if interface record switch trait try while val var");
+var standaloneKeywords = words("return break continue yield");
 var atoms = words("null true false this");
 
 var curPunc;
@@ -21,13 +21,30 @@ function tokenBase(stream, state) {
   if (ch == '"' || ch == "'") {
     return startString(ch, stream, state);
   }
+  if (ch == "." && stream.eat(".")) {
+    stream.eat("<");
+    return "operator";
+  }
   if (/[\[\]{}\(\),;\:\.]/.test(ch)) {
     curPunc = ch;
     return null;
   }
   if (/\d/.test(ch)) {
-    stream.eatWhile(/[\d\.]/);
-    if (stream.eat(/[eE]/)) { stream.eat(/[+\-]/); stream.eatWhile(/\d/); }
+    if (ch == "0" && stream.eat(/[xX]/)) {
+      stream.eatWhile(/[\da-fA-F_]/);
+    } else if (ch == "0" && stream.eat(/[bB]/)) {
+      stream.eatWhile(/[01_]/);
+    } else {
+      stream.eatWhile(/[\d_]/);
+      if (stream.match(/^\.\d/)) {
+        stream.eatWhile(/[\d_]/);
+      }
+      if (stream.eat(/[eE]/)) {
+        stream.eat(/[+\-]/);
+        stream.eatWhile(/[\d_]/);
+      }
+    }
+    stream.eat(/[lLgGiIdDfF]/);
     return "number";
   }
   if (ch == "/") {
@@ -47,8 +64,8 @@ function tokenBase(stream, state) {
     curPunc = "->";
     return null;
   }
-  if (/[+\-*&%=<>!?|\/~]/.test(ch)) {
-    stream.eatWhile(/[+\-*&%=<>|~]/);
+  if (/[+\-*&%=<>!?|\/~^]/.test(ch)) {
+    stream.eatWhile(/[+\-*&%=<>|~^]/);
     return "operator";
   }
   stream.eatWhile(/[\w\$_]/);
@@ -57,12 +74,15 @@ function tokenBase(stream, state) {
   if (stream.eat(":")) { curPunc = "proplabel"; return "property"; }
   var cur = stream.current();
 
+  if (cur === "non" && stream.match(/^-sealed\b/)) {
+    state.lastWord = "non-sealed";
+    return "keyword";
+  }
   if (cur === "module" && state.lastWord === "import") {
     state.lastWord = cur;
     return "keyword";
   }
-  if (cur === "yield" && stream.match(/^\s*return/, false)) {
-    curPunc = "standalone";
+  if ((cur === "DO" || cur === "GQ" || cur === "GQL") && stream.match(/^\s*[\(\{]/, false)) {
     state.lastWord = cur;
     return "keyword";
   }
