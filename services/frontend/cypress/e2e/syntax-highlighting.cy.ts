@@ -73,4 +73,19 @@ describe('syntax highlighting', () => {
       })
     })
   })
+
+  it('highlights sealed, non-sealed, permits, record, and comprehension macros', () => {
+    cy.setCodeEditorValue('sealed class A permits B {}\nnon-sealed class B extends A {}\nrecord R(int x) {}\nDO(x in opt) {}\nGQ {}')
+
+    cy.get('#code .cm-content').within(() => {
+      cy.get('.cm-line').eq(0).contains('span', 'class').invoke('attr', 'class').then(keywordClass => {
+        cy.get('.cm-line').eq(0).contains('span', 'sealed').should('have.attr', 'class', keywordClass)
+        cy.get('.cm-line').eq(0).contains('span', 'permits').should('have.attr', 'class', keywordClass)
+        cy.get('.cm-line').eq(1).contains('span', 'non-sealed').should('have.attr', 'class', keywordClass)
+        cy.get('.cm-line').eq(2).contains('span', 'record').should('have.attr', 'class', keywordClass)
+        cy.get('.cm-line').eq(3).contains('span', 'DO').should('have.attr', 'class', keywordClass)
+        cy.get('.cm-line').eq(4).contains('span', 'GQ').should('have.attr', 'class', keywordClass)
+      })
+    })
+  })
 })

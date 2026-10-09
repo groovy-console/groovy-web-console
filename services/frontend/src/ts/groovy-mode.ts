@@ -10,9 +10,9 @@ var keywords = words(
     "do double else enum extends final finally float for goto if implements import in " +
     "instanceof int interface long native new package permits private protected public record " +
     "return sealed short static strictfp super switch synchronized threadsafe throw throws " +
-    "trait transient try void volatile while val var async await defer yield");
+    "trait transient try void volatile while val var async await defer");
 var blockKeywords = words("async catch class def defer do else enum finally for if interface record switch trait try while val var");
-var standaloneKeywords = words("return break continue yield");
+var standaloneKeywords = words("return break continue");
 var atoms = words("null true false this");
 
 var curPunc;
@@ -79,6 +79,11 @@ function tokenBase(stream, state) {
     return "keyword";
   }
   if (cur === "module" && state.lastWord === "import") {
+    state.lastWord = cur;
+    return "keyword";
+  }
+  if (cur === "yield" && stream.match(/^\s*return/, false)) {
+    curPunc = "standalone";
     state.lastWord = cur;
     return "keyword";
   }
