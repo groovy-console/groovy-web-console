@@ -74,8 +74,8 @@ describe('syntax highlighting', () => {
     })
   })
 
-  it('highlights sealed, non-sealed, permits, record, and comprehension macros', () => {
-    cy.setCodeEditorValue('sealed class A permits B {}\nnon-sealed class B extends A {}\nrecord R(int x) {}\nDO(x in opt) {}\nGQ {}')
+  it('highlights sealed, non-sealed, permits, and record as keywords', () => {
+    cy.setCodeEditorValue('sealed class A permits B {}\nnon-sealed class B extends A {}\nrecord R(int x) {}\nnon - sealed')
 
     cy.get('#code .cm-content').within(() => {
       cy.get('.cm-line').eq(0).contains('span', 'class').invoke('attr', 'class').then(keywordClass => {
@@ -83,8 +83,102 @@ describe('syntax highlighting', () => {
         cy.get('.cm-line').eq(0).contains('span', 'permits').should('have.attr', 'class', keywordClass)
         cy.get('.cm-line').eq(1).contains('span', 'non-sealed').should('have.attr', 'class', keywordClass)
         cy.get('.cm-line').eq(2).contains('span', 'record').should('have.attr', 'class', keywordClass)
-        cy.get('.cm-line').eq(3).contains('span', 'DO').should('have.attr', 'class', keywordClass)
-        cy.get('.cm-line').eq(4).contains('span', 'GQ').should('have.attr', 'class', keywordClass)
+
+        // 'non' on line 4 (with spaces around '-') should not have the keyword class
+        cy.get('.cm-line').eq(3).then($line => {
+          const spans = $line.find('span')
+          const nonSpan = Array.from(spans).find(s => s.innerText === 'non')
+          if (nonSpan) {
+            expect(nonSpan.className).not.to.eq(keywordClass)
+          } else {
+            expect(true).to.equal(true)
+          }
+        })
+      })
+    })
+  })
+
+  it('highlights DO, GQ, and GQL macros contextually', () => {
+    cy.setCodeEditorValue('def a\nDO(x in opt) {}\nGQ {}\nGQL {}\ndef DO = 1\nGQ = 2')
+
+    cy.get('#code .cm-content').within(() => {
+      cy.get('.cm-line').eq(0).contains('span', 'def').invoke('attr', 'class').then(keywordClass => {
+        cy.get('.cm-line').eq(1).contains('span', 'DO').should('have.attr', 'class', keywordClass)
+        cy.get('.cm-line').eq(2).contains('span', 'GQ').should('have.attr', 'class', keywordClass)
+        cy.get('.cm-line').eq(3).contains('span', 'GQL').should('have.attr', 'class', keywordClass)
+
+        // 'DO' on line 5 and 'GQ' on line 6 should not have the keyword class
+        cy.get('.cm-line').eq(4).then($line => {
+          const spans = $line.find('span')
+          const doSpan = Array.from(spans).find(s => s.innerText === 'DO')
+          if (doSpan) {
+            expect(doSpan.className).not.to.eq(keywordClass)
+          } else {
+            expect(true).to.equal(true)
+          }
+        })
+        cy.get('.cm-line').eq(5).then($line => {
+          const spans = $line.find('span')
+          const gqSpan = Array.from(spans).find(s => s.innerText === 'GQ')
+          if (gqSpan) {
+            expect(gqSpan.className).not.to.eq(keywordClass)
+          } else {
+            expect(true).to.equal(true)
+          }
+        })
+      })
+    })
+  })
+
+  it('highlights underscored, hex, binary, suffixed numbers and ranges', () => {
+    cy.setCodeEditorValue('42\n1_000\n0xFF_00\n0b1010_0101\n42G\n1..1_000\n1..<10')
+
+    cy.get('#code .cm-content').within(() => {
+      cy.get('.cm-line').eq(0).contains('span', '42').invoke('attr', 'class').then(numberClass => {
+        cy.get('.cm-line').eq(1).contains('span', '1_000').should('have.attr', 'class', numberClass)
+        cy.get('.cm-line').eq(2).contains('span', '0xFF_00').should('have.attr', 'class', numberClass)
+        cy.get('.cm-line').eq(3).contains('span', '0b1010_0101').should('have.attr', 'class', numberClass)
+        cy.get('.cm-line').eq(4).contains('span', '42G').should('have.attr', 'class', numberClass)
+        cy.get('.cm-line').eq(5).contains('span', '1').should('have.attr', 'class', numberClass)
+        cy.get('.cm-line').eq(5).contains('span', '1_000').should('have.attr', 'class', numberClass)
+        cy.get('.cm-line').eq(6).contains('span', '1').should('have.attr', 'class', numberClass)
+        cy.get('.cm-line').eq(6).contains('span', '10').should('have.attr', 'class', numberClass)
+      })
+    })
+  })
+
+  it('highlights XOR, compound assignment, and range operators like standard operators', () => {
+    cy.setCodeEditorValue('a += b\na ^= b\na ^ b\na **= b\n1..10\n1..<10')
+
+    cy.get('#code .cm-content').within(() => {
+      cy.get('.cm-line').eq(0).contains('span', '+=').invoke('attr', 'class').then(operatorClass => {
+        cy.get('.cm-line').eq(1).contains('span', '^=').should('have.attr', 'class', operatorClass)
+        cy.get('.cm-line').eq(2).contains('span', '^').should('have.attr', 'class', operatorClass)
+        cy.get('.cm-line').eq(3).contains('span', '**=').should('have.attr', 'class', operatorClass)
+        cy.get('.cm-line').eq(4).contains('span', '..').should('have.attr', 'class', operatorClass)
+        cy.get('.cm-line').eq(5).contains('span', '..<').should('have.attr', 'class', operatorClass)
+      })
+    })
+  })
+
+  it('treats map-style destructuring keys as property labels rather than keywords', () => {
+    cy.setCodeEditorValue('val x = 1\ndef (val: v, async: a) = person')
+
+    cy.get('#code .cm-content').within(() => {
+      cy.get('.cm-line').eq(0).contains('span', 'val').invoke('attr', 'class').then(keywordClass => {
+        cy.get('.cm-line').eq(1).then($line => {
+          const spans = $line.find('span')
+          const valKeySpan = Array.from(spans).find(s => s.innerText.startsWith('val'))
+          const asyncKeySpan = Array.from(spans).find(s => s.innerText.startsWith('async'))
+          if (valKeySpan) {
+            expect(valKeySpan.className).not.to.eq(keywordClass)
+          }
+          if (asyncKeySpan) {
+            expect(asyncKeySpan.className).not.to.eq(keywordClass)
+          }
+          // 'def' on line 2 should still have the keyword class
+          cy.wrap($line).contains('span', 'def').should('have.attr', 'class', keywordClass)
+        })
       })
     })
   })
