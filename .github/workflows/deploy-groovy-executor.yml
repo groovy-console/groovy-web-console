@@ -15,7 +15,7 @@ jobs:
             java: 21
           - variant: 'groovy_5_1'
             java: 21
-          - variant: 'groovy_6_0_rc'
+          - variant: 'groovy_6_0'
             java: 21
     steps:
       - uses: actions/checkout@v7
